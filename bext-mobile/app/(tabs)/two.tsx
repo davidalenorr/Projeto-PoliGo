@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -8,17 +8,46 @@ import {
   View,
 } from 'react-native';
 import { colors } from '../../src/theme/colors';
+import { Detective, findDetectiveById } from '@/src/data/detectives';
+import { getSelectedDetectiveId } from '@/src/storage/detectiveSelection';
 
 export default function MissionsScreen() {
+  const [selectedDetective, setSelectedDetective] = useState<Detective | undefined>(
+    findDetectiveById('joao')
+  );
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function syncSelection() {
+      const selectedDetectiveId = await getSelectedDetectiveId();
+      const detective = findDetectiveById(selectedDetectiveId) ?? findDetectiveById('joao');
+
+      if (isMounted) {
+        setSelectedDetective(detective);
+      }
+    }
+
+    syncSelection();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const firstName = useMemo(() => selectedDetective?.name.split(' ')[0] ?? 'Detetive', [selectedDetective]);
+
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.headerRow}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>J</Text>
+          <View style={[styles.avatar, { backgroundColor: selectedDetective?.avatarBg ?? '#2F84B0' }]}>
+            <Text style={[styles.avatarText, selectedDetective?.avatarColor ? { color: selectedDetective.avatarColor } : null]}>
+              {selectedDetective?.avatar ?? 'D'}
+            </Text>
           </View>
           <View>
-            <Text style={styles.welcome}>Ola, Joao!</Text>
+            <Text style={styles.welcome}>Ola, {firstName}!</Text>
             <Text style={styles.points}>100 Pts</Text>
           </View>
         </View>
@@ -27,7 +56,7 @@ export default function MissionsScreen() {
 
         <View style={styles.phaseCard}>
           <Text style={styles.phaseSmall}>MISSAO ATUAL</Text>
-          <Text style={styles.phaseTitle}>Fase 2: Arquiteto</Text>
+          <Text style={styles.phaseTitle}>{selectedDetective?.phase ?? 'Fase 1: Detetive das Formas'}</Text>
           <Text style={styles.phaseDesc}>Soma dos angulos e diagonais</Text>
 
           <View style={styles.progressBase}>

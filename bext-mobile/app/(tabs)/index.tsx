@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
+  Alert,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -8,38 +10,49 @@ import {
   View,
 } from 'react-native';
 import { router } from 'expo-router';
-
-type Detective = {
-  id: string;
-  name: string;
-  phase: string;
-  avatar: string;
-  avatarBg: string;
-  avatarColor?: string;
-};
-
-const detectives: Detective[] = [
-  {
-    id: 'joao',
-    name: 'Joao Pedro',
-    phase: 'Fase 2: Arquiteto',
-    avatar: 'J',
-    avatarBg: '#2F84B0',
-  },
-  {
-    id: 'maria',
-    name: 'Maria Silva',
-    phase: 'Fase 4: O Mosaico',
-    avatar: 'M',
-    avatarBg: '#F6C131',
-    avatarColor: '#111827',
-  },
-];
+import { detectives } from '@/src/data/detectives';
+import { getSelectedDetectiveId, saveSelectedDetectiveId } from '@/src/storage/detectiveSelection';
 
 export default function InitialScreen() {
-  const handleSelectDetective = () => {
-    router.push('/(tabs)/two');
+  const [isCheckingSelection, setIsCheckingSelection] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function bootstrapSelection() {
+      const selectedDetectiveId = await getSelectedDetectiveId();
+
+      if (!isMounted) {
+        return;
+      }
+
+      if (selectedDetectiveId) {
+        router.replace('/(tabs)/two');
+        return;
+      }
+
+      setIsCheckingSelection(false);
+    }
+
+    bootstrapSelection();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleSelectDetective = async (detectiveId: string) => {
+    await saveSelectedDetectiveId(detectiveId);
+    router.replace('/(tabs)/two');
   };
+
+  if (isCheckingSelection) {
+    return (
+      <SafeAreaView style={styles.loadingSafe}>
+        <ActivityIndicator size="large" color="#0B5F8F" />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -55,8 +68,8 @@ export default function InitialScreen() {
             {detectives.map((detective) => (
               <Pressable
                 key={detective.id}
-                onPress={handleSelectDetective}
-                style={styles.playerCard}
+                onPress={() => handleSelectDetective(detective.id)}
+                style={({ pressed }) => [styles.playerCard, pressed && styles.playerCardPressed]}
               >
                 <View style={[styles.avatar, { backgroundColor: detective.avatarBg }]}>
                   <Text style={[styles.avatarText, detective.avatarColor ? { color: detective.avatarColor } : null]}>
@@ -71,7 +84,10 @@ export default function InitialScreen() {
               </Pressable>
             ))}
 
-            <Pressable style={styles.newDetectiveButton}>
+            <Pressable
+              onPress={() => Alert.alert('Em breve', 'Cadastro de novo detetive em construcao.')}
+              style={({ pressed }) => [styles.newDetectiveButton, pressed && styles.newDetectiveButtonPressed]}
+            >
               <Text style={styles.newDetectiveText}>+ Novo Detetive</Text>
             </Pressable>
           </View>
@@ -82,6 +98,12 @@ export default function InitialScreen() {
 }
 
 const styles = StyleSheet.create({
+  loadingSafe: {
+    flex: 1,
+    backgroundColor: '#D8D8DB',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   safe: {
     flex: 1,
     backgroundColor: '#D8D8DB',
@@ -136,6 +158,10 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
+  playerCardPressed: {
+    transform: [{ scale: 0.985 }],
+    opacity: 0.9,
+  },
   avatar: {
     width: 56,
     height: 56,
@@ -172,6 +198,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 2,
+  },
+  newDetectiveButtonPressed: {
+    opacity: 0.85,
   },
   newDetectiveText: {
     color: '#0B5F8F',
