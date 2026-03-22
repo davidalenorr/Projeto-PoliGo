@@ -1,35 +1,39 @@
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
+  Modal,
   Pressable,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import { router } from 'expo-router';
-import { detectives } from '@/src/data/detectives';
-import { getSelectedDetectiveId, saveSelectedDetectiveId } from '@/src/storage/detectiveSelection';
+import { Detective } from '@/src/data/detectives';
+import { saveSelectedDetectiveId } from '@/src/storage/detectiveSelection';
+import { createDetective, getDetectives } from '@/src/storage/detectives';
 
 export default function InitialScreen() {
   const [isCheckingSelection, setIsCheckingSelection] = useState(true);
+  const [detectives, setDetectives] = useState<Detective[]>([]);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [newDetectiveName, setNewDetectiveName] = useState('');
+  const [formError, setFormError] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
 
     async function bootstrapSelection() {
-      const selectedDetectiveId = await getSelectedDetectiveId();
+      const detectiveList = await getDetectives();
 
       if (!isMounted) {
         return;
       }
 
-      if (selectedDetectiveId) {
-        router.replace('/(tabs)/two');
-        return;
-      }
+      setDetectives(detectiveList);
 
       setIsCheckingSelection(false);
     }
@@ -46,6 +50,28 @@ export default function InitialScreen() {
     router.replace('/(tabs)/two');
   };
 
+  const handleCreateDetective = async () => {
+    const normalizedName = newDetectiveName.trim();
+
+    if (normalizedName.length < 3) {
+      setFormError('Digite pelo menos 3 letras.');
+      return;
+    }
+
+    try {
+      setIsCreating(true);
+      setFormError('');
+      const detective = await createDetective(normalizedName);
+      setDetectives((current) => [...current, detective]);
+      setNewDetectiveName('');
+      setIsCreateModalOpen(false);
+    } catch {
+      setFormError('Nao foi possivel cadastrar. Tente novamente.');
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
   if (isCheckingSelection) {
     return (
       <SafeAreaView style={styles.loadingSafe}>
@@ -60,6 +86,7 @@ export default function InitialScreen() {
         <View style={styles.deviceFrame}>
           <View style={styles.header}>
             <Text style={styles.logo}>PoliGo</Text>
+            <Text style={styles.subtitle}>Seu portal de missões de geometria</Text>
           </View>
 
           <Text style={styles.title}>Quem esta jogando?</Text>
@@ -80,12 +107,16 @@ export default function InitialScreen() {
                 <View style={styles.playerText}>
                   <Text style={styles.playerName}>{detective.name}</Text>
                   <Text style={styles.playerPhase}>{detective.phase}</Text>
+                  <Text style={styles.playerHint}>Toque para entrar</Text>
                 </View>
               </Pressable>
             ))}
 
             <Pressable
-              onPress={() => Alert.alert('Em breve', 'Cadastro de novo detetive em construcao.')}
+              onPress={() => {
+                setFormError('');
+                setIsCreateModalOpen(true);
+              }}
               style={({ pressed }) => [styles.newDetectiveButton, pressed && styles.newDetectiveButtonPressed]}
             >
               <Text style={styles.newDetectiveText}>+ Novo Detetive</Text>
@@ -93,6 +124,54 @@ export default function InitialScreen() {
           </View>
         </View>
       </ScrollView>
+
+      <Modal
+        visible={isCreateModalOpen}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setIsCreateModalOpen(false)}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>Cadastrar detetive</Text>
+            <Text style={styles.modalDescription}>Escolha um nome para seu perfil.</Text>
+
+            <TextInput
+              value={newDetectiveName}
+              onChangeText={(value) => {
+                setNewDetectiveName(value);
+                if (formError) {
+                  setFormError('');
+                }
+              }}
+              placeholder="Ex: Ana Clara"
+              maxLength={24}
+              autoFocus
+              style={styles.input}
+            />
+
+            {formError ? <Text style={styles.errorText}>{formError}</Text> : null}
+
+            <View style={styles.modalActions}>
+              <Pressable
+                onPress={() => setIsCreateModalOpen(false)}
+                style={({ pressed }) => [styles.secondaryButton, pressed && styles.secondaryButtonPressed]}
+                disabled={isCreating}
+              >
+                <Text style={styles.secondaryButtonText}>Cancelar</Text>
+              </Pressable>
+
+              <Pressable
+                onPress={handleCreateDetective}
+                style={({ pressed }) => [styles.primaryButton, pressed && styles.primaryButtonPressed]}
+                disabled={isCreating}
+              >
+                <Text style={styles.primaryButtonText}>{isCreating ? 'Salvando...' : 'Criar'}</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -135,6 +214,12 @@ const styles = StyleSheet.create({
     fontSize: 44,
     fontWeight: '600',
     letterSpacing: 2,
+  },
+  subtitle: {
+    color: '#617286',
+    fontSize: 14,
+    marginTop: 6,
+    fontWeight: '500',
   },
   title: {
     color: '#1F3E66',
@@ -189,6 +274,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginTop: 2,
   },
+  playerHint: {
+    color: '#708399',
+    fontSize: 12,
+    marginTop: 4,
+    fontWeight: '500',
+  },
   newDetectiveButton: {
     borderWidth: 3,
     borderStyle: 'dashed',
@@ -206,5 +297,105 @@ const styles = StyleSheet.create({
     color: '#0B5F8F',
     fontSize: 32 / 2,
     fontWeight: '700',
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(12, 23, 38, 0.5)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 22,
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 380,
+    borderRadius: 24,
+    backgroundColor: '#FFFFFF',
+    padding: 18,
+  },
+  modalTitle: {
+    color: '#1F3E66',
+    fontSize: 22,
+    fontWeight: '800',
+  },
+  modalDescription: {
+    color: '#607287',
+    marginTop: 4,
+    marginBottom: 12,
+    fontSize: 14,
+  },
+  helpPanel: {
+    marginTop: 16,
+    backgroundColor: '#ECF4FB',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#D0DFEE',
+    padding: 12,
+  },
+  helpTitle: {
+    color: '#214564',
+    fontSize: 15,
+    fontWeight: '800',
+    marginBottom: 10,
+  },
+  helpRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  helpButton: {
+    flex: 1,
+    borderRadius: 14,
+    marginTop: 4,
+    marginBottom: 12,
+    fontSize: 14,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#C9D8E5',
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 16,
+    color: '#0F172A',
+    backgroundColor: '#F8FBFF',
+  },
+  errorText: {
+    color: '#B42318',
+    marginTop: 8,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  modalActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 10,
+    marginTop: 16,
+  },
+  secondaryButton: {
+    borderWidth: 1,
+    borderColor: '#C7D7E6',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    backgroundColor: '#FFFFFF',
+  },
+  secondaryButtonPressed: {
+    opacity: 0.8,
+  },
+  secondaryButtonText: {
+    color: '#315776',
+    fontWeight: '700',
+  },
+  primaryButton: {
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: '#0B5F8F',
+  },
+  primaryButtonPressed: {
+    opacity: 0.85,
+  },
+  primaryButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '800',
   },
 });

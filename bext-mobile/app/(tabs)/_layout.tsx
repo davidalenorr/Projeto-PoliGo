@@ -42,13 +42,47 @@ export default function TabLayout() {
       <Tabs.Screen
         name="two"
         options={{
-          title: 'Missoes/Fases',
+          title: 'Hub',
           tabBarIcon: ({ color }) => (
             <SymbolView
               name={{
                 ios: 'flag.fill',
                 android: 'explore',
                 web: 'flag',
+              }}
+              tintColor={color}
+              size={28}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="phases"
+        options={{
+          title: 'Fases',
+          tabBarIcon: ({ color }) => (
+            <SymbolView
+              name={{
+                ios: 'book.fill',
+                android: 'description',
+                web: 'book',
+              }}
+              tintColor={color}
+              size={28}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="lab"
+        options={{
+          title: 'Lab',
+          tabBarIcon: ({ color }) => (
+            <SymbolView
+              name={{
+                ios: 'flask.fill',
+                android: 'build',
+                web: 'settings',
               }}
               tintColor={color}
               size={28}

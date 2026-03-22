@@ -9,3 +9,7 @@ export async function saveSelectedDetectiveId(detectiveId: string): Promise<void
 export async function getSelectedDetectiveId(): Promise<string | null> {
   return AsyncStorage.getItem(SELECTED_DETECTIVE_KEY);
 }
+
+export async function clearSelectedDetectiveId(): Promise<void> {
+  await AsyncStorage.removeItem(SELECTED_DETECTIVE_KEY);
+}

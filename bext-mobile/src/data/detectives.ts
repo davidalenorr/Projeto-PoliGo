@@ -2,33 +2,21 @@ export type Detective = {
   id: string;
   name: string;
   phase: string;
+  points: number;
+  progress: number;
   avatar: string;
   avatarBg: string;
   avatarColor?: string;
 };
 
-export const detectives: Detective[] = [
+export const defaultDetectives: Detective[] = [
   {
-    id: 'joao',
-    name: 'Joao Pedro',
-    phase: 'Fase 2: Arquiteto',
-    avatar: 'J',
+    id: 'david',
+    name: 'David',
+    phase: 'Fase 1: Detetive das Formas',
+    points: 0,
+    progress: 0,
+    avatar: 'D',
     avatarBg: '#2F84B0',
   },
-  {
-    id: 'maria',
-    name: 'Maria Silva',
-    phase: 'Fase 4: O Mosaico',
-    avatar: 'M',
-    avatarBg: '#F6C131',
-    avatarColor: '#111827',
-  },
 ];
-
-export function findDetectiveById(id?: string | null): Detective | undefined {
-  if (!id) {
-    return undefined;
-  }
-
-  return detectives.find((detective) => detective.id === id);
-}
