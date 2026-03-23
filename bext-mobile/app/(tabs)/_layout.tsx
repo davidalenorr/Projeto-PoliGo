@@ -25,6 +25,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Inicial',
+          href: null,
           tabBarStyle: { display: 'none' },
           tabBarIcon: ({ color }) => (
             <SymbolView
@@ -42,7 +43,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="two"
         options={{
-          title: 'Hub',
+          title: 'Trilha',
           tabBarIcon: ({ color }) => (
             <SymbolView
               name={{
@@ -59,13 +60,30 @@ export default function TabLayout() {
       <Tabs.Screen
         name="phases"
         options={{
-          title: 'Fases',
+          title: 'Aprender',
           tabBarIcon: ({ color }) => (
             <SymbolView
               name={{
                 ios: 'book.fill',
                 android: 'description',
                 web: 'book',
+              }}
+              tintColor={color}
+              size={28}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="achievements"
+        options={{
+          title: 'Conquistas',
+          tabBarIcon: ({ color }) => (
+            <SymbolView
+              name={{
+                ios: 'trophy.fill',
+                android: 'star',
+                web: 'star',
               }}
               tintColor={color}
               size={28}

@@ -79,26 +79,37 @@ export default function MissionsScreen() {
     router.replace('/(tabs)');
   };
 
+  const handleAvatarPress = () => {
+    Alert.alert('Perfil do Detetive', 'Deseja trocar de usuario?', [
+      { text: 'Cancelar', style: 'cancel' },
+      { text: 'Trocar', onPress: () => void handleSwitchDetective() },
+    ]);
+  };
+
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.headerRow}>
-          <View style={[styles.avatar, { backgroundColor: selectedDetective?.avatarBg ?? '#2F84B0' }]}>
+          <Pressable
+            onPress={handleAvatarPress}
+            style={({ pressed }) => [
+              styles.avatar,
+              { backgroundColor: selectedDetective?.avatarBg ?? '#2F84B0' },
+              pressed && styles.avatarPressed,
+            ]}
+          >
             <Text style={[styles.avatarText, selectedDetective?.avatarColor ? { color: selectedDetective.avatarColor } : null]}>
               {selectedDetective?.avatar ?? 'D'}
             </Text>
-          </View>
+          </Pressable>
           <View>
             <Text style={styles.welcome}>Ola, {firstName}!</Text>
             <Text style={styles.points}>{selectedDetective?.points ?? 0} Pts</Text>
+            <Text style={styles.profileHint}>Toque no avatar para trocar</Text>
           </View>
         </View>
 
-        <Pressable onPress={handleSwitchDetective} style={({ pressed }) => [styles.switchButton, pressed && styles.switchButtonPressed]}>
-          <Text style={styles.switchButtonText}>Trocar detetive</Text>
-        </Pressable>
-
-        <Text style={styles.sectionLabel}>HUB DE MISSOES</Text>
+        <Text style={styles.sectionLabel}>TRILHA DE MISSOES</Text>
 
         <View style={styles.phaseCard}>
           <Text style={styles.phaseSmall}>MISSAO ATUAL</Text>
@@ -118,26 +129,6 @@ export default function MissionsScreen() {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.supportCard}>
-          <Text style={styles.supportTitle}>Ajuda de estudo</Text>
-          <View style={styles.supportRow}>
-            <Pressable
-              style={({ pressed }) => [styles.supportButton, pressed && styles.supportButtonPressed]}
-              onPress={() => router.push('/learn')}
-            >
-              <Text style={styles.supportButtonTitle}>Aprender</Text>
-              <Text style={styles.supportButtonSub}>Formulas e exemplos</Text>
-            </Pressable>
-            <Pressable
-              style={({ pressed }) => [styles.supportButton, pressed && styles.supportButtonPressed]}
-              onPress={() => router.push('/tutorial')}
-            >
-              <Text style={styles.supportButtonTitle}>Tutorial</Text>
-              <Text style={styles.supportButtonSub}>Guia rapido</Text>
-            </Pressable>
-          </View>
-        </View>
-
         <Pressable
           style={({ pressed }) => [styles.challengesButton, pressed && styles.challengesButtonPressed]}
           onPress={() => router.push('/challenges')}
@@ -145,6 +136,27 @@ export default function MissionsScreen() {
           <Text style={styles.challengesButtonText}>🎯 HUB DE DESAFIOS</Text>
           <Text style={styles.challengesButtonSub}>Visualize todas as 5 fases</Text>
         </Pressable>
+
+        <View style={styles.journeyCard}>
+          <Text style={styles.journeyTitle}>Acessos da Jornada</Text>
+          <View style={styles.journeyRow}>
+            <Pressable
+              style={({ pressed }) => [styles.journeyButton, pressed && styles.journeyButtonPressed]}
+              onPress={() => router.push('/challenges')}
+            >
+              <Text style={styles.journeyButtonTitle}>Fases</Text>
+              <Text style={styles.journeyButtonSub}>Mapa completo da trilha</Text>
+            </Pressable>
+
+            <Pressable
+              style={({ pressed }) => [styles.journeyButton, pressed && styles.journeyButtonPressed]}
+              onPress={() => router.push('/submissions')}
+            >
+              <Text style={styles.journeyButtonTitle}>Submissoes</Text>
+              <Text style={styles.journeyButtonSub}>Status das entregas</Text>
+            </Pressable>
+          </View>
+        </View>
 
         <Text style={styles.quickAccessTitle}>Acesso Rapido</Text>
         <View style={styles.quickRow}>
@@ -218,26 +230,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     elevation: 3,
   },
+  avatarPressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.97 }],
+  },
   avatarText: { color: colors.white, fontSize: 26, fontWeight: '800' },
   welcome: { color: colors.text, fontSize: 32 / 2, fontWeight: '800' },
   points: { color: colors.muted, fontSize: 16, marginTop: 4, textAlign: 'right' },
-  switchButton: {
-    alignSelf: 'flex-end',
-    backgroundColor: '#F0F5FA',
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: '#D4E0EC',
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    marginTop: -2,
-  },
-  switchButtonPressed: {
-    opacity: 0.8,
-  },
-  switchButtonText: {
-    color: '#355877',
-    fontSize: 12,
-    fontWeight: '700',
+  profileHint: {
+    color: '#6D7F94',
+    fontSize: 11,
+    marginTop: 3,
+    textAlign: 'right',
   },
 
   sectionLabel: {
@@ -289,48 +293,6 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   ctaText: { color: '#111827', fontWeight: '900', fontSize: 17 },
-  supportCard: {
-    backgroundColor: '#ECF4FB',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#D0DFEE',
-    padding: 12,
-  },
-  supportTitle: {
-    color: '#214564',
-    fontSize: 15,
-    fontWeight: '800',
-    marginBottom: 10,
-  },
-  supportRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  supportButton: {
-    flex: 1,
-    borderRadius: 14,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#D2E2F0',
-    paddingHorizontal: 10,
-    paddingVertical: 12,
-  },
-  supportButtonPressed: {
-    opacity: 0.85,
-    transform: [{ scale: 0.985 }],
-  },
-  supportButtonTitle: {
-    color: '#0B5F8F',
-    fontSize: 15,
-    fontWeight: '800',
-  },
-  supportButtonSub: {
-    color: '#607287',
-    marginTop: 3,
-    fontSize: 12,
-    fontWeight: '500',
-  },
-
   challengesButton: {
     backgroundColor: '#FFC928',
     borderRadius: 20,
@@ -357,6 +319,48 @@ const styles = StyleSheet.create({
     marginTop: 3,
     fontSize: 12,
     fontWeight: '600',
+  },
+
+  journeyCard: {
+    backgroundColor: '#ECF4FB',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#D0DFEE',
+    padding: 12,
+  },
+  journeyTitle: {
+    color: '#214564',
+    fontSize: 15,
+    fontWeight: '800',
+    marginBottom: 10,
+  },
+  journeyRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  journeyButton: {
+    flex: 1,
+    borderRadius: 14,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#D2E2F0',
+    paddingHorizontal: 10,
+    paddingVertical: 12,
+  },
+  journeyButtonPressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.985 }],
+  },
+  journeyButtonTitle: {
+    color: '#0B5F8F',
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  journeyButtonSub: {
+    color: '#607287',
+    marginTop: 3,
+    fontSize: 12,
+    fontWeight: '500',
   },
 
   quickAccessTitle: {

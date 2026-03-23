@@ -1,14 +1,74 @@
+import React, { useEffect, useMemo, useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { useIsFocused } from '@react-navigation/native';
+import { Detective } from '@/src/data/detectives';
+import { getDetectives } from '@/src/storage/detectives';
+import { getSelectedDetectiveId } from '@/src/storage/detectiveSelection';
+
+function getCurrentPhaseIndex(phase?: string): number {
+  if (!phase) {
+    return 0;
+  }
+
+  const match = phase.match(/Fase\s*(\d+)/i);
+  const value = match ? Number(match[1]) : 1;
+
+  if (Number.isNaN(value) || value < 1) {
+    return 0;
+  }
+
+  return Math.max(0, value - 1);
+}
 
 export default function LabScreen() {
+  const [selectedDetective, setSelectedDetective] = useState<Detective | undefined>(undefined);
+  const isFocused = useIsFocused();
+
+  useEffect(() => {
+    if (!isFocused) {
+      return;
+    }
+
+    let isMounted = true;
+
+    async function syncSelection() {
+      const detectiveList = await getDetectives();
+      const selectedDetectiveId = await getSelectedDetectiveId();
+      const detective = detectiveList.find((item) => item.id === selectedDetectiveId) ?? detectiveList[0];
+
+      if (isMounted) {
+        setSelectedDetective(detective);
+      }
+    }
+
+    syncSelection();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isFocused]);
+
+  const currentPhaseIndex = useMemo(() => getCurrentPhaseIndex(selectedDetective?.phase), [selectedDetective?.phase]);
+  const currentProgress = selectedDetective?.progress ?? 0;
+  const labUnlocked = currentPhaseIndex > 1 || (currentPhaseIndex === 1 && currentProgress >= 100);
+
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
         <View style={styles.card}>
-          <Text style={styles.badge}>EM BREVE</Text>
+          <Text style={styles.badge}>{labUnlocked ? 'DESBLOQUEADO' : 'BLOQUEADO'}</Text>
           <Text style={styles.title}>Laboratorio</Text>
-          <Text style={styles.text}>
-            O modo livre com ferramentas de geometria sera liberado nas proximas etapas.
+          {labUnlocked ? (
+            <Text style={styles.text}>
+              Laboratorio de Geometria Dinamica desbloqueado. Aqui voce podera desenhar livremente, testar construcoes e explorar conceitos sem limite.
+            </Text>
+          ) : (
+            <Text style={styles.text}>
+              O Laboratorio de Geometria Dinamica e uma ferramenta de desenho livre. Complete a Fase 2 (Arquiteto) para provar suas habilidades e desbloquear esta area.
+            </Text>
+          )}
+          <Text style={styles.statusLine}>
+            Seu estado atual: {selectedDetective?.phase ?? 'Fase 1'} - {currentProgress}% da fase.
           </Text>
         </View>
       </View>
@@ -56,5 +116,12 @@ const styles = StyleSheet.create({
     color: '#516074',
     fontSize: 16,
     lineHeight: 24,
+  },
+  statusLine: {
+    color: '#0B5F8F',
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '700',
+    marginTop: 2,
   },
 });

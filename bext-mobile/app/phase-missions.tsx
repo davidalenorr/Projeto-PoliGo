@@ -158,6 +158,12 @@ export default function PhaseMissionsScreen() {
 
               <Pressable
                 style={({ pressed }) => [styles.startButton, pressed && styles.startButtonPressed]}
+                onPress={() =>
+                  router.push({
+                    pathname: '/mission-play',
+                    params: { missionId: mission.id },
+                  })
+                }
               >
                 <Text style={styles.startButtonText}>Começar Missão →</Text>
               </Pressable>

@@ -50,10 +50,11 @@ function RootLayoutNav() {
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="learn" options={{ title: 'Aprender' }} />
         <Stack.Screen name="tutorial" options={{ title: 'Tutorial' }} />
         <Stack.Screen name="challenges" options={{ title: 'Hub de Desafios' }} />
+        <Stack.Screen name="submissions" options={{ title: 'Submissoes' }} />
         <Stack.Screen name="phase-missions" options={{ title: 'Missões da Fase' }} />
+        <Stack.Screen name="mission-play" options={{ title: 'Missão' }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
       </Stack>
     </ThemeProvider>
