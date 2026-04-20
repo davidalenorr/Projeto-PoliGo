@@ -15,6 +15,13 @@ import { colors } from '../../src/theme/colors';
 import { Detective } from '@/src/data/detectives';
 import { clearSelectedDetectiveId, getSelectedDetectiveId } from '@/src/storage/detectiveSelection';
 import { getDetectives } from '@/src/storage/detectives';
+import { missions } from '@/src/data/missions';
+import {
+  getCurrentPhaseIndex,
+  getCurrentPhaseNumber,
+  getFirstMissionIdForPhase,
+  getPhaseIdFromNumber,
+} from '@/src/domain/progress';
 
 const phaseTrail = [
   'Fase 1: Detetive das Formas',
@@ -23,21 +30,6 @@ const phaseTrail = [
   'Fase 4: O Mosaico',
   'Fase 5: Missao Final',
 ];
-
-function getCurrentPhaseIndex(phase?: string): number {
-  if (!phase) {
-    return 0;
-  }
-
-  const match = phase.match(/Fase\s*(\d+)/i);
-  const value = match ? Number(match[1]) : 1;
-
-  if (Number.isNaN(value) || value < 1) {
-    return 0;
-  }
-
-  return Math.min(value - 1, phaseTrail.length - 1);
-}
 
 export default function MissionsScreen() {
   const [selectedDetective, setSelectedDetective] = useState<Detective | undefined>(undefined);
@@ -70,9 +62,28 @@ export default function MissionsScreen() {
 
   const firstName = useMemo(() => selectedDetective?.name.split(' ')[0] ?? 'Detetive', [selectedDetective]);
   const currentPhaseIndex = useMemo(
-    () => getCurrentPhaseIndex(selectedDetective?.phase),
+    () => getCurrentPhaseIndex(selectedDetective?.phase, phaseTrail.length),
     [selectedDetective?.phase]
   );
+  const currentPhaseNumber = useMemo(
+    () => getCurrentPhaseNumber(selectedDetective?.phase, phaseTrail.length),
+    [selectedDetective?.phase]
+  );
+  const currentPhaseId = useMemo(() => getPhaseIdFromNumber(currentPhaseNumber), [currentPhaseNumber]);
+
+  const handleResumeMission = () => {
+    const firstMissionId = getFirstMissionIdForPhase(currentPhaseId, missions);
+
+    if (!firstMissionId) {
+      Alert.alert('Missao indisponivel', 'Ainda nao ha missoes cadastradas para esta fase.');
+      return;
+    }
+
+    router.push({
+      pathname: '/mission-play',
+      params: { missionId: firstMissionId, phaseId: currentPhaseId, from: 'trilha' },
+    });
+  };
 
   const handleSwitchDetective = async () => {
     await clearSelectedDetectiveId();
@@ -123,7 +134,7 @@ export default function MissionsScreen() {
 
           <TouchableOpacity
             style={styles.cta}
-            onPress={() => Alert.alert('Em breve', 'A retomada da missão sera liberada na proxima etapa.')}
+            onPress={handleResumeMission}
           >
             <Text style={styles.ctaText}>RETOMAR</Text>
           </TouchableOpacity>
@@ -166,6 +177,9 @@ export default function MissionsScreen() {
               currentPhaseIndex === 0 && styles.quickCardActive,
               pressed && styles.quickCardPressed,
             ]}
+            onPress={() =>
+              router.push({ pathname: '/phase-missions', params: { phaseId: 'fase1', from: 'trilha' } })
+            }
           >
             <Text style={styles.quickTitle}>Fase 1</Text>
             <Text style={styles.quickSub}>
@@ -179,6 +193,13 @@ export default function MissionsScreen() {
               currentPhaseIndex < 1 && styles.quickCardLocked,
               pressed && styles.quickCardPressed,
             ]}
+            onPress={() => {
+              if (currentPhaseIndex < 1) {
+                return;
+              }
+
+              router.push({ pathname: '/phase-missions', params: { phaseId: 'fase2', from: 'trilha' } });
+            }}
           >
             <Text style={styles.quickTitle}>Fase 2</Text>
             <Text style={styles.quickSub}>

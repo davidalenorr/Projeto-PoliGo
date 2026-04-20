@@ -339,15 +339,39 @@ function GenericMission({ mission }: { mission: Mission }) {
 }
 
 export default function MissionPlayScreen() {
-  const { missionId } = useLocalSearchParams<{ missionId: string }>();
+  const { missionId, phaseId, from } = useLocalSearchParams<{
+    missionId: string;
+    phaseId?: string;
+    from?: string;
+  }>();
   const mission = useMemo(() => (missionId ? getMissionById(missionId) : undefined), [missionId]);
+
+  const handleBack = () => {
+    if (phaseId) {
+      router.replace({
+        pathname: '/phase-missions',
+        params: {
+          phaseId,
+          from: from === 'submissions' ? 'submissions' : from === 'challenges' ? 'challenges' : 'trilha',
+        },
+      });
+      return;
+    }
+
+    if (from === 'submissions') {
+      router.replace('/submissions');
+      return;
+    }
+
+    router.replace('/(tabs)/two');
+  };
 
   if (!mission) {
     return (
       <SafeAreaView style={styles.safe}>
         <View style={styles.notFound}>
           <Text style={styles.notFoundText}>Missao nao encontrada.</Text>
-          <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <Pressable style={styles.backButton} onPress={handleBack}>
             <Text style={styles.backButtonText}>Voltar</Text>
           </Pressable>
         </View>
@@ -358,7 +382,7 @@ export default function MissionPlayScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Pressable style={styles.backButton} onPress={() => router.back()}>
+        <Pressable style={styles.backButton} onPress={handleBack}>
           <Text style={styles.backButtonText}>← Voltar para Missoes</Text>
         </Pressable>
 

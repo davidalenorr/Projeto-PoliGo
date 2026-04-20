@@ -6,25 +6,11 @@ import { Detective } from '@/src/data/detectives';
 import { getDetectives } from '@/src/storage/detectives';
 import { getSelectedDetectiveId } from '@/src/storage/detectiveSelection';
 import { missions } from '@/src/data/missions';
-
-function getCurrentPhaseIndex(phase?: string): number {
-  if (!phase) {
-    return 0;
-  }
-
-  const match = phase.match(/Fase\s*(\d+)/i);
-  const value = match ? Number(match[1]) : 1;
-
-  if (Number.isNaN(value) || value < 1) {
-    return 0;
-  }
-
-  return Math.max(0, value - 1);
-}
-
-function getPhaseIdFromNumber(phaseNumber: number): string {
-  return `fase${phaseNumber}`;
-}
+import {
+  getCurrentPhaseNumber,
+  getFirstMissionIdForPhase,
+  getPhaseIdFromNumber,
+} from '@/src/domain/progress';
 
 export default function SubmissionsScreen() {
   const [selectedDetective, setSelectedDetective] = useState<Detective | undefined>(undefined);
@@ -54,12 +40,12 @@ export default function SubmissionsScreen() {
     };
   }, [isFocused]);
 
-  const currentPhase = useMemo(() => getCurrentPhaseIndex(selectedDetective?.phase) + 1, [selectedDetective?.phase]);
+  const currentPhase = useMemo(() => getCurrentPhaseNumber(selectedDetective?.phase), [selectedDetective?.phase]);
+  const currentPhaseId = useMemo(() => getPhaseIdFromNumber(currentPhase), [currentPhase]);
 
   const pendentes = useMemo(() => {
-    const currentPhaseId = getPhaseIdFromNumber(currentPhase);
     return missions.filter((mission) => mission.phaseId === currentPhaseId);
-  }, [currentPhase]);
+  }, [currentPhaseId]);
 
   const bloqueadas = useMemo(() => {
     return missions.filter((mission) => {
@@ -71,6 +57,13 @@ export default function SubmissionsScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
+        <Pressable
+          style={({ pressed }) => [styles.inlineBackButton, pressed && styles.inlineBackButtonPressed]}
+          onPress={() => router.replace('/(tabs)/two')}
+        >
+          <Text style={styles.inlineBackButtonText}>← Voltar para Trilha</Text>
+        </Pressable>
+
         <Text style={styles.title}>Submissoes</Text>
         <Text style={styles.subtitle}>Acompanhe entregas da trilha e o que falta concluir</Text>
 
@@ -93,11 +86,29 @@ export default function SubmissionsScreen() {
           ))}
 
           <Pressable
+            style={({ pressed }) => [styles.secondaryActionButton, pressed && styles.actionButtonPressed]}
+            onPress={() => {
+              const firstMissionId = getFirstMissionIdForPhase(currentPhaseId, missions);
+
+              if (!firstMissionId) {
+                return;
+              }
+
+              router.push({
+                pathname: '/mission-play',
+                params: { missionId: firstMissionId, phaseId: currentPhaseId, from: 'submissions' },
+              });
+            }}
+          >
+            <Text style={styles.secondaryActionButtonText}>Continuar missao atual</Text>
+          </Pressable>
+
+          <Pressable
             style={({ pressed }) => [styles.actionButton, pressed && styles.actionButtonPressed]}
             onPress={() =>
               router.push({
                 pathname: '/phase-missions',
-                params: { phaseId: getPhaseIdFromNumber(currentPhase) },
+                params: { phaseId: currentPhaseId, from: 'submissions' },
               })
             }
           >
@@ -140,6 +151,19 @@ const styles = StyleSheet.create({
     color: '#617286',
     fontSize: 14,
     marginBottom: 4,
+  },
+  inlineBackButton: {
+    alignSelf: 'flex-start',
+    paddingVertical: 6,
+    paddingHorizontal: 2,
+  },
+  inlineBackButtonPressed: {
+    opacity: 0.85,
+  },
+  inlineBackButtonText: {
+    color: '#0B5F8F',
+    fontWeight: '700',
+    fontSize: 14,
   },
   profileCard: {
     backgroundColor: '#FFFFFF',
@@ -238,6 +262,20 @@ const styles = StyleSheet.create({
   },
   actionButtonText: {
     color: '#FFFFFF',
+    fontWeight: '800',
+    fontSize: 14,
+  },
+  secondaryActionButton: {
+    marginTop: 6,
+    backgroundColor: '#EAF4FE',
+    borderRadius: 12,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#BFD9EE',
+  },
+  secondaryActionButtonText: {
+    color: '#0B5F8F',
     fontWeight: '800',
     fontSize: 14,
   },

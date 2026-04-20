@@ -38,17 +38,31 @@ const getDifficultyBgColor = (difficulty: string) => {
 };
 
 export default function PhaseMissionsScreen() {
-  const { phaseId } = useLocalSearchParams<{ phaseId: string }>();
+  const { phaseId, from } = useLocalSearchParams<{ phaseId: string; from?: string }>();
 
   const phase = useMemo(() => getPhaseById(phaseId!), [phaseId]);
   const missions = useMemo(() => (phaseId ? getMissionsByPhaseId(phaseId) : []), [phaseId]);
+
+  const handleBack = () => {
+    if (from === 'submissions') {
+      router.replace('/submissions');
+      return;
+    }
+
+    if (from === 'challenges') {
+      router.replace('/challenges');
+      return;
+    }
+
+    router.replace('/(tabs)/two');
+  };
 
   if (!phase) {
     return (
       <SafeAreaView style={styles.safe}>
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>Fase não encontrada</Text>
-          <Pressable onPress={() => router.back()} style={styles.backButton}>
+          <Pressable onPress={handleBack} style={styles.backButton}>
             <Text style={styles.backButtonText}>Voltar</Text>
           </Pressable>
         </View>
@@ -61,7 +75,7 @@ export default function PhaseMissionsScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Pressable onPress={() => router.back()} style={styles.backButton}>
+        <Pressable onPress={handleBack} style={styles.backButton}>
           <Text style={styles.backButtonText}>← Voltar</Text>
         </Pressable>
 
@@ -161,7 +175,7 @@ export default function PhaseMissionsScreen() {
                 onPress={() =>
                   router.push({
                     pathname: '/mission-play',
-                    params: { missionId: mission.id },
+                    params: { missionId: mission.id, phaseId, from: from ?? 'phase-missions' },
                   })
                 }
               >

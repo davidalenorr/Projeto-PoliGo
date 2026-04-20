@@ -1,0 +1,19 @@
+services:
+  bext-app:
+    build:
+      context: ./bext-app
+      dockerfile: Dockerfile.dev
+    container_name: poligo-web
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./bext-app:/app
+      - bext_app_node_modules:/app/node_modules
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+    command: npm run dev -- --host 0.0.0.0 --port 5173
+    stdin_open: true
+    tty: true
+
+volumes:
+  bext_app_node_modules:
