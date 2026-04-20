@@ -27,7 +27,8 @@ export const phases: Phase[] = [
       'Identificar e nomear polígonos',
       'Diferenciar polígonos convexos de côncavos',
       'Contar vértices, lados e ângulos',
-      'Reconhecer padrões geométricos',
+      'Reconhecer padrões geométricos em cenas reais',
+      'Aplicar os conceitos em desafios curtos e progressivos',
     ],
     formulas: [
       {
@@ -54,9 +55,11 @@ export const phases: Phase[] = [
       'Diagonal: segmento que liga dois vértices não consecutivos',
     ],
     challenges: [
+      'Siga uma missão guiada para dominar vértices, lados e nomenclatura',
       'Identifique se um polígono é convexo ou côncavo olhando para sua forma',
       'Conte corretamente os vértices e lados de diferentes figuras',
       'Distinga entre polígonos regulares e irregulares',
+      'Detecte triângulos ocultos em fotografia arquitetônica',
     ],
   },
   {

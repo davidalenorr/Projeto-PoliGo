@@ -1,29 +1,31 @@
 import React from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { router } from 'expo-router';
+import { ScreenBackButton } from '@/components/ScreenBackButton';
 
 const formulas = [
   {
-    title: 'Soma dos angulos internos',
+    title: 'Soma dos ângulos internos',
     formula: 'S = (n - 2) x 180',
-    example: 'Pentagono: (5 - 2) x 180 = 540 graus',
+    example: 'Pentágono: (5 - 2) x 180 = 540 graus',
   },
   {
-    title: 'Cada angulo no poligono regular',
+    title: 'Cada ângulo no polígono regular',
     formula: 'A = S / n',
-    example: 'Hexagono: 720 / 6 = 120 graus',
+    example: 'Hexágono: 720 / 6 = 120 graus',
   },
   {
-    title: 'Numero de diagonais',
+    title: 'Número de diagonais',
     formula: 'D = n x (n - 3) / 2',
-    example: 'Hexagono: 6 x 3 / 2 = 9 diagonais',
+    example: 'Hexágono: 6 x 3 / 2 = 9 diagonais',
   },
   {
-    title: 'Perimetro',
+    title: 'Perímetro',
     formula: 'P = soma de todos os lados',
     example: 'Quadrado de lado 4: P = 16',
   },
   {
-    title: 'Area do triangulo',
+    title: 'Área do triângulo',
     formula: 'A = (base x altura) / 2',
     example: 'Base 10 e altura 4: A = 20',
   },
@@ -33,8 +35,10 @@ export default function LearnScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
+        <ScreenBackButton label="← Voltar para Trilha" onPress={() => router.replace('/(tabs)/two')} />
+
         <Text style={styles.title}>Aprender</Text>
-        <Text style={styles.subtitle}>Resumo rapido para revisar antes das missoes</Text>
+        <Text style={styles.subtitle}>Resumo rápido para revisar antes das missões</Text>
 
         {formulas.map((item) => (
           <View key={item.title} style={styles.card}>

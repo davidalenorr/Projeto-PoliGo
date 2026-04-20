@@ -66,7 +66,7 @@ export default function InitialScreen() {
       setNewDetectiveName('');
       setIsCreateModalOpen(false);
     } catch {
-      setFormError('Nao foi possivel cadastrar. Tente novamente.');
+      setFormError('Não foi possível cadastrar. Tente novamente.');
     } finally {
       setIsCreating(false);
     }
@@ -89,7 +89,7 @@ export default function InitialScreen() {
             <Text style={styles.subtitle}>Seu portal de missões de geometria</Text>
           </View>
 
-          <Text style={styles.title}>Quem esta jogando?</Text>
+          <Text style={styles.title}>Quem está jogando?</Text>
 
           <View style={styles.playersList}>
             {detectives.map((detective) => (

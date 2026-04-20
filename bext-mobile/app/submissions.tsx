@@ -8,13 +8,14 @@ import { getSelectedDetectiveId } from '@/src/storage/detectiveSelection';
 import { missions } from '@/src/data/missions';
 import {
   getCurrentPhaseNumber,
-  getFirstMissionIdForPhase,
   getPhaseIdFromNumber,
 } from '@/src/domain/progress';
+import { getNextMissionIdForDetectivePhase, isMissionCompletedForDetective } from '@/src/storage/missionProgress';
 
 export default function SubmissionsScreen() {
   const [selectedDetective, setSelectedDetective] = useState<Detective | undefined>(undefined);
   const isFocused = useIsFocused();
+  const [completedMap, setCompletedMap] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (!isFocused) {
@@ -47,6 +48,38 @@ export default function SubmissionsScreen() {
     return missions.filter((mission) => mission.phaseId === currentPhaseId);
   }, [currentPhaseId]);
 
+  useEffect(() => {
+    if (!isFocused) {
+      return;
+    }
+
+    let isMounted = true;
+
+    async function syncCompleted() {
+      if (!selectedDetective?.id || pendentes.length === 0) {
+        setCompletedMap({});
+        return;
+      }
+
+      const entries = await Promise.all(
+        pendentes.map(async (mission) => {
+          const completed = await isMissionCompletedForDetective(selectedDetective.id, mission.id);
+          return [mission.id, completed] as const;
+        })
+      );
+
+      if (isMounted) {
+        setCompletedMap(Object.fromEntries(entries));
+      }
+    }
+
+    syncCompleted();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isFocused, pendentes, selectedDetective?.id]);
+
   const bloqueadas = useMemo(() => {
     return missions.filter((mission) => {
       const missionPhase = Number(mission.phaseId.replace('fase', ''));
@@ -64,7 +97,7 @@ export default function SubmissionsScreen() {
           <Text style={styles.inlineBackButtonText}>← Voltar para Trilha</Text>
         </Pressable>
 
-        <Text style={styles.title}>Submissoes</Text>
+        <Text style={styles.title}>Submissões</Text>
         <Text style={styles.subtitle}>Acompanhe entregas da trilha e o que falta concluir</Text>
 
         <View style={styles.profileCard}>
@@ -74,10 +107,12 @@ export default function SubmissionsScreen() {
         </View>
 
         <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>Pendentes na fase atual</Text>
+          <Text style={styles.sectionTitle}>Missões da fase atual</Text>
           {pendentes.map((mission) => (
             <View key={mission.id} style={styles.itemRow}>
-              <View style={styles.dotPending} />
+              <View style={completedMap[mission.id] ? styles.checkDone : styles.dotPending}>
+                {completedMap[mission.id] ? <Text style={styles.checkDoneText}>✓</Text> : null}
+              </View>
               <View style={styles.itemTextWrap}>
                 <Text style={styles.itemTitle}>{mission.title}</Text>
                 <Text style={styles.itemSub}>{mission.description}</Text>
@@ -87,20 +122,24 @@ export default function SubmissionsScreen() {
 
           <Pressable
             style={({ pressed }) => [styles.secondaryActionButton, pressed && styles.actionButtonPressed]}
-            onPress={() => {
-              const firstMissionId = getFirstMissionIdForPhase(currentPhaseId, missions);
+            onPress={async () => {
+              if (!selectedDetective?.id) {
+                return;
+              }
 
-              if (!firstMissionId) {
+              const nextMissionId = await getNextMissionIdForDetectivePhase(selectedDetective.id, currentPhaseId);
+
+              if (!nextMissionId) {
                 return;
               }
 
               router.push({
                 pathname: '/mission-play',
-                params: { missionId: firstMissionId, phaseId: currentPhaseId, from: 'submissions' },
+                params: { missionId: nextMissionId, phaseId: currentPhaseId, from: 'submissions' },
               });
             }}
           >
-            <Text style={styles.secondaryActionButtonText}>Continuar missao atual</Text>
+            <Text style={styles.secondaryActionButtonText}>Continuar missão atual</Text>
           </Pressable>
 
           <Pressable
@@ -112,18 +151,18 @@ export default function SubmissionsScreen() {
               })
             }
           >
-            <Text style={styles.actionButtonText}>Ir para missoes da fase</Text>
+            <Text style={styles.actionButtonText}>Ir para missões da fase</Text>
           </Pressable>
         </View>
 
         <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>Bloqueadas (proximas submissões)</Text>
+          <Text style={styles.sectionTitle}>Bloqueadas (próximas submissões)</Text>
           {bloqueadas.slice(0, 5).map((mission) => (
             <View key={mission.id} style={styles.itemRowMuted}>
               <View style={styles.dotLocked} />
               <View style={styles.itemTextWrap}>
                 <Text style={styles.itemTitleMuted}>{mission.title}</Text>
-                <Text style={styles.itemSubMuted}>{mission.phaseId.toUpperCase()} · desbloqueia ao avancar</Text>
+                <Text style={styles.itemSubMuted}>{mission.phaseId.toUpperCase()} · desbloqueia ao avançar</Text>
               </View>
             </View>
           ))}
@@ -219,6 +258,28 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     backgroundColor: '#F59E0B',
     marginTop: 6,
+  },
+  dotDone: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#22C55E',
+    marginTop: 6,
+  },
+  checkDone: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#22C55E',
+    marginTop: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkDoneText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '900',
+    lineHeight: 12,
   },
   dotLocked: {
     width: 10,

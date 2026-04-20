@@ -57,14 +57,14 @@ export default function LabScreen() {
       <View style={styles.container}>
         <View style={styles.card}>
           <Text style={styles.badge}>{labUnlocked ? 'DESBLOQUEADO' : 'BLOQUEADO'}</Text>
-          <Text style={styles.title}>Laboratorio</Text>
+          <Text style={styles.title}>Laboratório</Text>
           {labUnlocked ? (
             <Text style={styles.text}>
-              Laboratorio de Geometria Dinamica desbloqueado. Aqui voce podera desenhar livremente, testar construcoes e explorar conceitos sem limite.
+              Laboratório de Geometria Dinâmica desbloqueado. Aqui você poderá desenhar livremente, testar construções e explorar conceitos sem limite.
             </Text>
           ) : (
             <Text style={styles.text}>
-              O Laboratorio de Geometria Dinamica e uma ferramenta de desenho livre. Complete a Fase 2 (Arquiteto) para provar suas habilidades e desbloquear esta area.
+              O Laboratório de Geometria Dinâmica é uma ferramenta de desenho livre. Complete a Fase 2 (Arquiteto) para provar suas habilidades e desbloquear esta área.
             </Text>
           )}
           <Text style={styles.statusLine}>

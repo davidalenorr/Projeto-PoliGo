@@ -3,42 +3,42 @@ import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 const formulas = [
   {
-    title: 'Soma dos Angulos Internos',
+    title: 'Soma dos Ângulos Internos',
     formula: 'S = (n - 2) x 180',
-    resumo: 'Calcula a soma dos angulos internos de qualquer poligono.',
-    exemplo: 'Hexagono: (6 - 2) x 180 = 720 graus',
+    resumo: 'Calcula a soma dos ângulos internos de qualquer polígono.',
+    exemplo: 'Hexágono: (6 - 2) x 180 = 720 graus',
   },
   {
-    title: 'Numero de Diagonais',
+    title: 'Número de Diagonais',
     formula: 'D = n x (n - 3) / 2',
-    resumo: 'Mostra quantas diagonais um poligono possui.',
-    exemplo: 'Pentagono: 5 x 2 / 2 = 5 diagonais',
+    resumo: 'Mostra quantas diagonais um polígono possui.',
+    exemplo: 'Pentágono: 5 x 2 / 2 = 5 diagonais',
   },
   {
-    title: 'Angulo Interno no Poligono Regular',
+    title: 'Ângulo Interno no Polígono Regular',
     formula: 'Ai = (n - 2) x 180 / n',
-    resumo: 'Retorna o valor de cada angulo interno em poligonos regulares.',
-    exemplo: 'Octogono regular: (8 - 2) x 180 / 8 = 135 graus',
+    resumo: 'Retorna o valor de cada ângulo interno em polígonos regulares.',
+    exemplo: 'Octógono regular: (8 - 2) x 180 / 8 = 135 graus',
   },
   {
-    title: 'Soma dos Angulos Externos',
+    title: 'Soma dos Ângulos Externos',
     formula: 'Se = 360',
-    resumo: 'A soma dos angulos externos de qualquer poligono e sempre 360 graus.',
-    exemplo: 'Sempre vale 360, independentemente do numero de lados.',
+    resumo: 'A soma dos ângulos externos de qualquer polígono é sempre 360 graus.',
+    exemplo: 'Sempre vale 360, independentemente do número de lados.',
   },
   {
-    title: 'Area por Triangulacao',
-    formula: 'Atotal = soma das areas dos triangulos',
-    resumo: 'Divida o poligono em triangulos e some as areas.',
-    exemplo: 'A1 + A2 + A3 = Area total do poligono',
+    title: 'Área por Triangulação',
+    formula: 'Atotal = soma das áreas dos triângulos',
+    resumo: 'Divida o polígono em triângulos e some as áreas.',
+    exemplo: 'A1 + A2 + A3 = Área total do polígono',
   },
 ];
 
 const guideSteps = [
   'Comece pela fase atual na Trilha para ganhar pontos.',
-  'Use este caderno para revisar as formulas antes de cada missao.',
+  'Use este caderno para revisar as fórmulas antes de cada missão.',
   'Se travar em uma fase, revise os exemplos desta aba.',
-  'Volte para a Trilha e continue a missao com mais confianca.',
+  'Volte para a Trilha e continue a missão com mais confiança.',
 ];
 
 export default function LearnTabScreen() {
@@ -46,10 +46,10 @@ export default function LearnTabScreen() {
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.title}>Aprender</Text>
-        <Text style={styles.subtitle}>Caderno do aluno com formulas, resumos e revisao rapida</Text>
+        <Text style={styles.subtitle}>Caderno do aluno com fórmulas, resumos e revisão rápida</Text>
 
         <View style={styles.guideCard}>
-          <Text style={styles.guideTitle}>Guia Rapido de Estudo</Text>
+          <Text style={styles.guideTitle}>Guia Rápido de Estudo</Text>
           {guideSteps.map((step) => (
             <Text key={step} style={styles.guideItem}>
               • {step}
@@ -69,7 +69,7 @@ export default function LearnTabScreen() {
         <View style={styles.footerCard}>
           <Text style={styles.footerTitle}>Dica de progresso</Text>
           <Text style={styles.footerText}>
-            Estudar 5 minutos antes da missao aumenta sua precisao e acelera o desbloqueio das proximas fases.
+            Estudar 5 minutos antes da missão aumenta sua precisão e acelera o desbloqueio das próximas fases.
           </Text>
         </View>
       </ScrollView>

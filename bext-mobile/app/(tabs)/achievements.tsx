@@ -70,25 +70,25 @@ export default function AchievementsScreen() {
       {
         id: 'b2',
         title: 'Arquiteto de Formas',
-        description: 'Alcancar a Fase 2: Arquiteto.',
+        description: 'Alcançar a Fase 2: Arquiteto.',
         unlocked: currentPhaseIndex >= 1,
       },
       {
         id: 'b3',
-        title: 'Mestre dos Angulos',
-        description: 'Alcancar a Fase 3 e dominar angulos internos e externos.',
+        title: 'Mestre dos Ângulos',
+        description: 'Alcançar a Fase 3 e dominar ângulos internos e externos.',
         unlocked: currentPhaseIndex >= 2,
       },
       {
         id: 'b4',
         title: 'Mente do Mosaico',
-        description: 'Alcancar a Fase 4 e resolver desafios de ladrilhamento.',
+        description: 'Alcançar a Fase 4 e resolver desafios de ladrilhamento.',
         unlocked: currentPhaseIndex >= 3,
       },
       {
         id: 'b5',
         title: 'Lenda da Geometria',
-        description: 'Concluir toda a jornada ate a Fase 5.',
+        description: 'Concluir toda a jornada até a Fase 5.',
         unlocked: currentPhaseIndex >= 4 && progress >= 100,
       },
       {
@@ -147,7 +147,7 @@ export default function AchievementsScreen() {
                 </Text>
               </View>
               <Text style={[styles.badgeStatus, badge.unlocked ? styles.badgeStatusUnlocked : styles.badgeStatusLocked]}>
-                {badge.unlocked ? 'Concluida' : 'Bloqueada'}
+                {badge.unlocked ? 'Concluída' : 'Bloqueada'}
               </Text>
             </View>
           ))}

@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { useIsFocused } from '@react-navigation/native';
+import { MaterialIcons } from '@expo/vector-icons';
 import { colors } from '../../src/theme/colors';
 import { Detective } from '@/src/data/detectives';
 import { clearSelectedDetectiveId, getSelectedDetectiveId } from '@/src/storage/detectiveSelection';
@@ -19,16 +20,16 @@ import { missions } from '@/src/data/missions';
 import {
   getCurrentPhaseIndex,
   getCurrentPhaseNumber,
-  getFirstMissionIdForPhase,
   getPhaseIdFromNumber,
 } from '@/src/domain/progress';
+import { getNextMissionIdForDetectivePhase } from '@/src/storage/missionProgress';
 
 const phaseTrail = [
   'Fase 1: Detetive das Formas',
   'Fase 2: Arquiteto',
-  'Fase 3: Mestre dos Angulos',
+  'Fase 3: Mestre dos Ângulos',
   'Fase 4: O Mosaico',
-  'Fase 5: Missao Final',
+  'Fase 5: Missão Final',
 ];
 
 export default function MissionsScreen() {
@@ -71,17 +72,22 @@ export default function MissionsScreen() {
   );
   const currentPhaseId = useMemo(() => getPhaseIdFromNumber(currentPhaseNumber), [currentPhaseNumber]);
 
-  const handleResumeMission = () => {
-    const firstMissionId = getFirstMissionIdForPhase(currentPhaseId, missions);
+  const handleResumeMission = async () => {
+    if (!selectedDetective?.id) {
+      Alert.alert('Detetive não encontrado', 'Selecione um detetive para continuar a trilha.');
+      return;
+    }
 
-    if (!firstMissionId) {
-      Alert.alert('Missao indisponivel', 'Ainda nao ha missoes cadastradas para esta fase.');
+    const nextMissionId = await getNextMissionIdForDetectivePhase(selectedDetective.id, currentPhaseId);
+
+    if (!nextMissionId) {
+      Alert.alert('Fase concluída', 'Você já concluiu as missões desta fase. Veja os desafios da próxima fase.');
       return;
     }
 
     router.push({
       pathname: '/mission-play',
-      params: { missionId: firstMissionId, phaseId: currentPhaseId, from: 'trilha' },
+      params: { missionId: nextMissionId, phaseId: currentPhaseId, from: 'trilha' },
     });
   };
 
@@ -91,7 +97,7 @@ export default function MissionsScreen() {
   };
 
   const handleAvatarPress = () => {
-    Alert.alert('Perfil do Detetive', 'Deseja trocar de usuario?', [
+    Alert.alert('Perfil do Detetive', 'Deseja trocar de usuário?', [
       { text: 'Cancelar', style: 'cancel' },
       { text: 'Trocar', onPress: () => void handleSwitchDetective() },
     ]);
@@ -113,19 +119,19 @@ export default function MissionsScreen() {
               {selectedDetective?.avatar ?? 'D'}
             </Text>
           </Pressable>
-          <View>
-            <Text style={styles.welcome}>Ola, {firstName}!</Text>
+          <View style={styles.headerCopy}>
+            <Text style={styles.welcome}>Olá, {firstName}!</Text>
             <Text style={styles.points}>{selectedDetective?.points ?? 0} Pts</Text>
             <Text style={styles.profileHint}>Toque no avatar para trocar</Text>
           </View>
         </View>
 
-        <Text style={styles.sectionLabel}>TRILHA DE MISSOES</Text>
+        <Text style={styles.sectionLabel}>TRILHA DE MISSÕES</Text>
 
         <View style={styles.phaseCard}>
-          <Text style={styles.phaseSmall}>MISSAO ATUAL</Text>
+          <Text style={styles.phaseSmall}>MISSÃO ATUAL</Text>
           <Text style={styles.phaseTitle}>{selectedDetective?.phase ?? 'Fase inicial'}</Text>
-          <Text style={styles.phaseDesc}>Soma dos angulos e diagonais</Text>
+          <Text style={styles.phaseDesc}>Soma dos ângulos e diagonais</Text>
           <Text style={styles.phaseProgressText}>Progresso da fase: {selectedDetective?.progress ?? 0}%</Text>
 
           <View style={styles.progressBase}>
@@ -144,8 +150,13 @@ export default function MissionsScreen() {
           style={({ pressed }) => [styles.challengesButton, pressed && styles.challengesButtonPressed]}
           onPress={() => router.push('/challenges')}
         >
-          <Text style={styles.challengesButtonText}>🎯 HUB DE DESAFIOS</Text>
-          <Text style={styles.challengesButtonSub}>Visualize todas as 5 fases</Text>
+          <View style={styles.challengesButtonHeader}>
+            <View style={styles.challengesIconWrap}>
+              <MaterialIcons name="hub" size={20} color="#1F3E66" />
+            </View>
+            <Text style={styles.challengesButtonText}>Hub de Desafios</Text>
+          </View>
+          <Text style={styles.challengesButtonSub}>Visualize as 5 fases e acompanhe seu avanço</Text>
         </Pressable>
 
         <View style={styles.journeyCard}>
@@ -163,13 +174,13 @@ export default function MissionsScreen() {
               style={({ pressed }) => [styles.journeyButton, pressed && styles.journeyButtonPressed]}
               onPress={() => router.push('/submissions')}
             >
-              <Text style={styles.journeyButtonTitle}>Submissoes</Text>
+              <Text style={styles.journeyButtonTitle}>Submissões</Text>
               <Text style={styles.journeyButtonSub}>Status das entregas</Text>
             </Pressable>
           </View>
         </View>
 
-        <Text style={styles.quickAccessTitle}>Acesso Rapido</Text>
+        <Text style={styles.quickAccessTitle}>Acesso Rápido</Text>
         <View style={styles.quickRow}>
           <Pressable
             style={({ pressed }) => [
@@ -183,7 +194,7 @@ export default function MissionsScreen() {
           >
             <Text style={styles.quickTitle}>Fase 1</Text>
             <Text style={styles.quickSub}>
-              {currentPhaseIndex === 0 ? 'Visualizacao · Atual' : 'Visualizacao'}
+              {currentPhaseIndex === 0 ? 'Visualização · Atual' : 'Visualização'}
             </Text>
           </Pressable>
           <Pressable
@@ -203,7 +214,7 @@ export default function MissionsScreen() {
           >
             <Text style={styles.quickTitle}>Fase 2</Text>
             <Text style={styles.quickSub}>
-              {currentPhaseIndex === 1 ? 'Analise · Atual' : currentPhaseIndex < 1 ? 'Bloqueada' : 'Analise'}
+              {currentPhaseIndex === 1 ? 'Análise · Atual' : currentPhaseIndex < 1 ? 'Bloqueada' : 'Análise'}
             </Text>
           </Pressable>
         </View>
@@ -241,7 +252,12 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
   container: { padding: 20, paddingTop: 10, gap: 14 },
 
-  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  headerRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  headerCopy: {
+    flex: 1,
+    alignItems: 'flex-start',
+    paddingTop: 2,
+  },
   avatar: {
     width: 56,
     height: 56,
@@ -256,13 +272,13 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.97 }],
   },
   avatarText: { color: colors.white, fontSize: 26, fontWeight: '800' },
-  welcome: { color: colors.text, fontSize: 32 / 2, fontWeight: '800' },
-  points: { color: colors.muted, fontSize: 16, marginTop: 4, textAlign: 'right' },
+  welcome: { color: colors.text, fontSize: 32 / 2, fontWeight: '800', textAlign: 'left' },
+  points: { color: colors.muted, fontSize: 16, marginTop: 4, textAlign: 'left' },
   profileHint: {
     color: '#6D7F94',
     fontSize: 11,
     marginTop: 3,
-    textAlign: 'right',
+    textAlign: 'left',
   },
 
   sectionLabel: {
@@ -316,9 +332,9 @@ const styles = StyleSheet.create({
   ctaText: { color: '#111827', fontWeight: '900', fontSize: 17 },
   challengesButton: {
     backgroundColor: '#FFC928',
-    borderRadius: 20,
+    borderRadius: 28,
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 4,
@@ -326,20 +342,38 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#FFB800',
   },
+  challengesButtonHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  challengesIconWrap: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#FFD95B',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#F0B90B',
+  },
   challengesButtonPressed: {
     opacity: 0.9,
     transform: [{ scale: 0.97 }],
   },
   challengesButtonText: {
     color: '#1F3E66',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '900',
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
   },
   challengesButtonSub: {
     color: '#2D5282',
-    marginTop: 3,
-    fontSize: 12,
+    marginTop: 4,
+    fontSize: 13,
     fontWeight: '600',
+    textAlign: 'center',
   },
 
   journeyCard: {

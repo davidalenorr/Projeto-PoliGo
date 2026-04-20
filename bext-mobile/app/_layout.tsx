@@ -52,6 +52,7 @@ function RootLayoutNav() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="tutorial" options={{ title: 'Tutorial' }} />
         <Stack.Screen name="challenges" options={{ headerShown: false }} />
+        <Stack.Screen name="learn" options={{ headerShown: false }} />
         <Stack.Screen name="submissions" options={{ headerShown: false }} />
         <Stack.Screen name="phase-missions" options={{ headerShown: false }} />
         <Stack.Screen name="mission-play" options={{ headerShown: false }} />

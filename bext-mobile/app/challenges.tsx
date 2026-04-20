@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { router } from 'expo-router';
 import { useIsFocused } from '@react-navigation/native';
 import { Detective } from '@/src/data/detectives';
 import { getDetectives } from '@/src/storage/detectives';
 import { getSelectedDetectiveId } from '@/src/storage/detectiveSelection';
 import { phases } from '@/src/data/phases';
+import { ScreenBackButton } from '@/components/ScreenBackButton';
 
 function getCurrentPhaseIndex(phase?: string): number {
   if (!phase) {
@@ -57,6 +59,8 @@ export default function ChallengesHubScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
+        <ScreenBackButton label="← Voltar para Trilha" onPress={() => router.replace('/(tabs)/two')} />
+
         <View style={styles.header}>
           <Text style={styles.mainTitle}>Hub de Desafios</Text>
           <Text style={styles.subtitle}>Trilha de Missões - As 5 Fases do Jogo</Text>
@@ -154,7 +158,7 @@ export default function ChallengesHubScreen() {
 
         <View style={styles.footerBox}>
           <Text style={styles.footerText}>
-            Completa todos os desafios de cada fase para avançar para a próxima. Use a página "Aprender" no Hub para revisar conceitos e fórmulas!
+            Complete todos os desafios de cada fase para avançar para a próxima. Use a página "Aprender" no Hub para revisar conceitos e fórmulas!
           </Text>
         </View>
 

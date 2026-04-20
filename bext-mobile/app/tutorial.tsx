@@ -1,6 +1,8 @@
 import React from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { router } from 'expo-router';
 import { phases } from '@/src/data/phases';
+import { ScreenBackButton } from '@/components/ScreenBackButton';
 
 const gettingStartedSteps = [
   {
@@ -45,6 +47,8 @@ export default function TutorialScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
+        <ScreenBackButton label="← Voltar para Trilha" onPress={() => router.replace('/(tabs)/two')} />
+
         <View style={styles.header}>
           <Text style={styles.title}>Tutorial Completo</Text>
           <Text style={styles.subtitle}>Seu guia para dominar PoliGo</Text>
@@ -110,7 +114,7 @@ export default function TutorialScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>📚 As 5 Fases</Text>
           <Text style={styles.sectionDescription}>
-            Conheça cada fase do seu jornada
+            Conheça cada fase da sua jornada
           </Text>
 
           {phases.map((phase) => (
@@ -247,7 +251,7 @@ export default function TutorialScreen() {
           <View style={styles.faqCard}>
             <Text style={styles.faqQuestion}>O que acontece se eu não entender um conceito?</Text>
             <Text style={styles.faqAnswer}>
-              Use a página "Aprender" para revisar formulas e exemplos. Se ainda tiver dúvidas, revisite a explicação desta página no Tutorial.
+              Use a página "Aprender" para revisar fórmulas e exemplos. Se ainda tiver dúvidas, revisite a explicação desta página no Tutorial.
             </Text>
           </View>
 
