@@ -159,26 +159,18 @@ export default function MissionsScreen() {
           <Text style={styles.challengesButtonSub}>Visualize as 5 fases e acompanhe seu avanço</Text>
         </Pressable>
 
-        <View style={styles.journeyCard}>
-          <Text style={styles.journeyTitle}>Acessos da Jornada</Text>
-          <View style={styles.journeyRow}>
-            <Pressable
-              style={({ pressed }) => [styles.journeyButton, pressed && styles.journeyButtonPressed]}
-              onPress={() => router.push('/challenges')}
-            >
-              <Text style={styles.journeyButtonTitle}>Fases</Text>
-              <Text style={styles.journeyButtonSub}>Mapa completo da trilha</Text>
-            </Pressable>
-
-            <Pressable
-              style={({ pressed }) => [styles.journeyButton, pressed && styles.journeyButtonPressed]}
-              onPress={() => router.push('/submissions')}
-            >
-              <Text style={styles.journeyButtonTitle}>Submissões</Text>
-              <Text style={styles.journeyButtonSub}>Status das entregas</Text>
-            </Pressable>
+        <Pressable
+          style={({ pressed }) => [styles.challengesButton, pressed && styles.challengesButtonPressed]}
+          onPress={() => router.push('/submissions')}
+        >
+          <View style={styles.challengesButtonHeader}>
+            <View style={styles.challengesIconWrap}>
+              <MaterialIcons name="receipt" size={20} color="#1F3E66" />
+            </View>
+            <Text style={styles.challengesButtonText}>Submissões</Text>
           </View>
-        </View>
+          <Text style={styles.challengesButtonSub}>Status das suas entregas</Text>
+        </Pressable>
 
         <Text style={styles.quickAccessTitle}>Acesso Rápido</Text>
         <View style={styles.quickRow}>
@@ -331,16 +323,16 @@ const styles = StyleSheet.create({
   },
   ctaText: { color: '#111827', fontWeight: '900', fontSize: 17 },
   challengesButton: {
-    backgroundColor: '#FFC928',
-    borderRadius: 28,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    backgroundColor: '#E2E8F0',
+    borderRadius: 24,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 4,
-    elevation: 3,
-    borderWidth: 2,
-    borderColor: '#FFB800',
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
   },
   challengesButtonHeader: {
     flexDirection: 'row',
@@ -348,31 +340,31 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   challengesIconWrap: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: '#FFD95B',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#F1F5F9',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#F0B90B',
+    borderColor: '#CBD5E1',
   },
   challengesButtonPressed: {
-    opacity: 0.9,
+    opacity: 0.8,
     transform: [{ scale: 0.97 }],
   },
   challengesButtonText: {
-    color: '#1F3E66',
-    fontSize: 18,
-    fontWeight: '900',
+    color: '#1E293B',
+    fontSize: 15,
+    fontWeight: '800',
     textTransform: 'uppercase',
-    letterSpacing: 0.3,
+    letterSpacing: 0.2,
   },
   challengesButtonSub: {
-    color: '#2D5282',
-    marginTop: 4,
-    fontSize: 13,
-    fontWeight: '600',
+    color: '#475569',
+    marginTop: 3,
+    fontSize: 12,
+    fontWeight: '500',
     textAlign: 'center',
   },
 

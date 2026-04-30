@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView, ScrollView, StyleSheet, Text, View, Pressable, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
 import { useIsFocused } from '@react-navigation/native';
 import { Detective } from '@/src/data/detectives';
@@ -139,6 +139,22 @@ export default function ChallengesHubScreen() {
                     </View>
                   ))}
                 </View>
+              )}
+
+              {isUnlocked && (
+                <TouchableOpacity
+                  style={styles.viewMissionsButton}
+                  onPress={() =>
+                    router.push({
+                      pathname: '/phase-missions',
+                      params: { phaseId: phase.id, from: 'challenges' },
+                    })
+                  }
+                >
+                  <Text style={styles.viewMissionsButtonText}>
+                    {isCurrent ? '▶ Continuar' : '🔄 Treinar'}
+                  </Text>
+                </TouchableOpacity>
               )}
 
               {isCurrent && (
@@ -331,6 +347,19 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontStyle: 'italic',
     marginTop: 2,
+  },
+  viewMissionsButton: {
+    backgroundColor: '#0B5F8F',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginBottom: 12,
+    alignItems: 'center',
+  },
+  viewMissionsButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+    fontSize: 14,
   },
   statusBadge: {
     backgroundColor: '#D4F1D4',
