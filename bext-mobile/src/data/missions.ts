@@ -87,50 +87,80 @@ export const missions: Mission[] = [
     ],
   },
 
-  // Fase 2: Arquiteto
+  // Fase 2: Engenheiro de Medidas
   {
     id: 'fase2_m1',
     phaseId: 'fase2',
-    title: 'Soma dos Ângulos Internos',
-    description: 'Calcule a soma dos ângulos de qualquer polígono',
-    difficulty: 'médio',
-    points: 15,
+    title: 'Guardião do Perímetro',
+    description: 'Entenda perímetro como medida do contorno',
+    difficulty: 'fácil',
+    points: 10,
     objective:
-      'Use a fórmula S = (n - 2) × 180° para calcular a soma dos ângulos internos de polígonos com 3 a 8 lados.',
+      'Calcule perímetros somando os lados e diferencie contorno de espaço interno em situações visuais.',
     tips: [
-      'A fórmula é S = (n - 2) × 180°',
-      'n = número de lados',
-      'Teste com um triângulo (n=3): (3-2)×180° = 180°',
+      'Perímetro é a soma de todos os lados',
+      'Cerca e muro pedem perímetro',
+      'Não confunda contorno com área',
     ],
   },
   {
     id: 'fase2_m2',
     phaseId: 'fase2',
-    title: 'Cálculo de Diagonais',
-    description: 'Encontre o número de diagonais usando a fórmula',
+    title: 'Mestre da Área',
+    description: 'Calcule área de quadrado, retângulo e triângulo',
     difficulty: 'médio',
     points: 15,
     objective:
-      'Calcule o número de diagonais de polígonos usando d = n(n-3)/2. Complete 5 cálculos diferentes.',
+      'Resolva desafios de superfície com as fórmulas de área e compare área com perímetro em exemplos práticos.',
     tips: [
-      'A fórmula é d = n(n-3)/2',
-      'Diagonal liga dois vértices não consecutivos',
-      'Um triângulo tem 0 diagonais',
+      'Quadrado: A = l x l',
+      'Retângulo: A = b x h',
+      'Triângulo: A = (b x h) / 2',
     ],
   },
   {
     id: 'fase2_m3',
     phaseId: 'fase2',
-    title: 'Problemas Combinados',
-    description: 'Resolva problemas usando ambas as fórmulas',
+    title: 'Segredo do Apótema',
+    description: 'Use apótema em polígonos regulares',
+    difficulty: 'médio',
+    points: 20,
+    objective:
+      'Identifique o apótema e aplique A = (P x a) / 2 para calcular áreas de polígonos regulares.',
+    tips: [
+      'Apótema vai do centro ao meio do lado',
+      'Apótema é perpendicular ao lado',
+      'Use perímetro e apótema na fórmula da área',
+    ],
+  },
+  {
+    id: 'fase2_m4',
+    phaseId: 'fase2',
+    title: 'Construtor de Espaços',
+    description: 'Resolva situações reais com perímetro e área',
     difficulty: 'difícil',
     points: 25,
     objective:
-      'Complete 3 problemas que exigem uso de ambas as fórmulas de ângulos e diagonais.',
+      'Interprete cenários e decida quando usar perímetro e quando usar área para resolver problemas aplicados.',
     tips: [
-      'Leia o problema com atenção',
-      'Identifique o que é pedido',
-      'Use o número de lados para aplicar as fórmulas',
+      'Se for cercar, pense em perímetro',
+      'Se for cobrir, pense em área',
+      'Leia a pergunta antes de escolher a fórmula',
+    ],
+  },
+  {
+    id: 'fase2_m5',
+    phaseId: 'fase2',
+    title: 'Engenheiro Supremo',
+    description: 'Integre todos os conceitos da trilha',
+    difficulty: 'difícil',
+    points: 30,
+    objective:
+      'Resolva um desafio final que mistura perímetro, área, apótema e interpretação de contexto em múltiplas etapas.',
+    tips: [
+      'Organize os dados antes de calcular',
+      'Separe o problema em partes menores',
+      'Valide unidade de cada resposta',
     ],
   },
 

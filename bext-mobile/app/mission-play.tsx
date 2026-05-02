@@ -1227,6 +1227,716 @@ function DetectiveReportMission({
   );
 }
 
+type QuizQuestion = {
+  id: string;
+  prompt: string;
+  options: string[];
+  answer: string;
+  explanation: string;
+};
+
+function MissionQuizFlow({
+  title,
+  subtitle,
+  questions,
+  onComplete,
+  alreadyCompleted,
+  nextMissionId,
+  onNext,
+}: {
+  title: string;
+  subtitle: string;
+  questions: QuizQuestion[];
+  onComplete: () => void;
+  alreadyCompleted: boolean;
+  nextMissionId?: string | null;
+  onNext?: () => void;
+}) {
+  const [index, setIndex] = useState(0);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState('');
+  const [locked, setLocked] = useState(false);
+  const [hits, setHits] = useState(0);
+
+  const finished = index >= questions.length;
+  const current = finished ? null : questions[index];
+
+  if (finished) {
+    const scorePct = Math.round((hits / questions.length) * 100);
+
+    return (
+      <View style={styles.missionCard}>
+        <View style={styles.successCard}>
+          <Text style={styles.successTitle}>Missão concluída!</Text>
+          <Text style={styles.successText}>
+            Acertos: {hits}/{questions.length} ({scorePct}%).
+          </Text>
+        </View>
+        <MissionCompletionAction
+          alreadyCompleted={alreadyCompleted}
+          nextMissionId={nextMissionId}
+          onComplete={onComplete}
+          onNext={onNext}
+        />
+      </View>
+    );
+  }
+
+  if (!current) {
+    return null;
+  }
+
+  return (
+    <View style={styles.missionCard}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      <Text style={styles.sectionSubtitle}>{subtitle}</Text>
+
+      <View style={styles.trainingCard}>
+        <Text style={styles.trainingTitle}>Questão {index + 1} de {questions.length}</Text>
+        <Text style={styles.caseContext}>{current.prompt}</Text>
+
+        <View style={styles.optionsWrap}>
+          {current.options.map((option) => {
+            const isSelected = selected === option;
+
+            return (
+              <Pressable
+                key={option}
+                style={({ pressed }) => [
+                  styles.optionButton,
+                  isSelected && styles.optionButtonSelected,
+                  locked && styles.optionButtonDisabled,
+                  pressed && !locked && styles.optionButtonPressed,
+                ]}
+                disabled={locked}
+                onPress={() => setSelected(option)}
+              >
+                <Text style={styles.optionButtonText}>{option}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
+        {!!feedback && <Text style={styles.feedbackText}>{feedback}</Text>}
+
+        {!locked ? (
+          <Pressable
+            style={({ pressed }) => [
+              styles.nextCaseButton,
+              pressed && styles.nextCaseButtonPressed,
+              !selected && styles.nextStepButtonDisabled,
+            ]}
+            disabled={!selected}
+            onPress={() => {
+              if (!selected) {
+                return;
+              }
+
+              const correct = selected === current.answer;
+              if (correct) {
+                setHits((prev) => prev + 1);
+              }
+
+              setFeedback(`${correct ? 'Correto!' : 'Resposta incorreta.'} ${current.explanation}`);
+              setLocked(true);
+            }}
+          >
+            <Text style={styles.nextCaseButtonText}>Validar resposta</Text>
+          </Pressable>
+        ) : (
+          <Pressable
+            style={({ pressed }) => [styles.nextCaseButton, pressed && styles.nextCaseButtonPressed]}
+            onPress={() => {
+              setIndex((prev) => prev + 1);
+              setSelected(null);
+              setFeedback('');
+              setLocked(false);
+            }}
+          >
+            <Text style={styles.nextCaseButtonText}>
+              {index + 1 === questions.length ? 'Ver resultado' : 'Próxima questão'}
+            </Text>
+          </Pressable>
+        )}
+      </View>
+    </View>
+  );
+}
+
+function PerimeterGuardianMission(props: {
+  onComplete: () => void;
+  alreadyCompleted: boolean;
+  nextMissionId?: string | null;
+  onNext?: () => void;
+}) {
+  const questions: QuizQuestion[] = [
+    {
+      id: 'p1',
+      prompt: 'Um pentágono tem lados 5m, 6m, 7m, 6m e 4m. Qual é o perímetro?',
+      options: ['26 m', '28 m', '30 m', '32 m'],
+      answer: '28 m',
+      explanation: 'Perímetro é a soma de todos os lados: 5 + 6 + 7 + 6 + 4 = 28.',
+    },
+    {
+      id: 'p2',
+      prompt: 'Para cercar um jardim quadrado de lado 9m, você precisa calcular...',
+      options: ['Área', 'Perímetro', 'Apótema', 'Diagonal'],
+      answer: 'Perímetro',
+      explanation: 'Cercar significa medir contorno. Contorno é perímetro.',
+    },
+    {
+      id: 'p3',
+      prompt: 'Qual expressão representa o perímetro de um polígono qualquer?',
+      options: ['P = l1 + l2 + ... + ln', 'P = b x h', 'P = (b x h)/2', 'P = (P x a)/2'],
+      answer: 'P = l1 + l2 + ... + ln',
+      explanation: 'Perímetro é sempre soma dos lados.',
+    },
+  ];
+
+  return (
+    <MissionQuizFlow
+      {...props}
+      title="Guardião do Perímetro"
+      subtitle="Treine contorno e soma de lados em cenários práticos."
+      questions={questions}
+    />
+  );
+}
+
+function AreaMasterMission(props: {
+  onComplete: () => void;
+  alreadyCompleted: boolean;
+  nextMissionId?: string | null;
+  onNext?: () => void;
+}) {
+  const stages = [
+    {
+      id: 'a1',
+      title: 'Piso Quadrado',
+      shape: 'quadrado' as const,
+      formula: 'A = l²',
+      hint: 'Lado do piso: 6m',
+      prompt: 'Quantos metros quadrados o piso ocupa?',
+      options: ['24 m²', '30 m²', '36 m²', '12 m²'],
+      answer: '36 m²',
+      explanation: 'Quadrado: A = l². Com lado 6, a área é 6 × 6 = 36 m².',
+    },
+    {
+      id: 'a2',
+      title: 'Terreno Retangular',
+      shape: 'retangulo' as const,
+      formula: 'A = b × h',
+      hint: 'Base 8m e altura 5m',
+      prompt: 'Qual é a área total do terreno?',
+      options: ['20 m²', '30 m²', '35 m²', '40 m²'],
+      answer: '40 m²',
+      explanation: 'Retângulo: A = b × h. Com 8 e 5, a área é 40 m².',
+    },
+    {
+      id: 'a3',
+      title: 'Jardim Triangular',
+      shape: 'triangulo' as const,
+      formula: 'A = (b × h) / 2',
+      hint: 'Base 10m e altura 6m',
+      prompt: 'Qual a área do jardim?',
+      options: ['16 m²', '24 m²', '30 m²', '60 m²'],
+      answer: '30 m²',
+      explanation: 'Triângulo: A = (b × h)/2. Com 10 e 6, a área é 30 m².',
+    },
+  ];
+
+  const [stepIndex, setStepIndex] = useState(0);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [locked, setLocked] = useState(false);
+  const [feedback, setFeedback] = useState('');
+  const [hits, setHits] = useState(0);
+
+  const current = stages[stepIndex];
+  const finished = stepIndex >= stages.length;
+
+  if (finished) {
+    const scorePct = Math.round((hits / stages.length) * 100);
+
+    return (
+      <View style={styles.missionCard}>
+        <View style={styles.successCard}>
+          <Text style={styles.successTitle}>Superfície dominada!</Text>
+          <Text style={styles.successText}>
+            Você concluiu a missão com {hits}/{stages.length} acertos ({scorePct}%).
+          </Text>
+        </View>
+        <MissionCompletionAction
+          alreadyCompleted={props.alreadyCompleted}
+          nextMissionId={props.nextMissionId}
+          onComplete={props.onComplete}
+          onNext={props.onNext}
+        />
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.missionCard}>
+      <Text style={styles.sectionTitle}>Mestre da Área</Text>
+      <Text style={styles.sectionSubtitle}>Leia a figura, escolha a fórmula e calcule a superfície correta.</Text>
+
+      <View style={styles.trainingCard}>
+        <Text style={styles.trainingTitle}>Desafio {stepIndex + 1} de {stages.length}: {current.title}</Text>
+
+        <View style={styles.areaPreviewWrap}>
+          <AreaShapePreview shape={current.shape} />
+          <View style={styles.areaPreviewInfo}>
+            <Text style={styles.areaFormulaLabel}>Fórmula</Text>
+            <Text style={styles.areaFormulaValue}>{current.formula}</Text>
+            <Text style={styles.areaHint}>{current.hint}</Text>
+          </View>
+        </View>
+
+        <Text style={styles.caseContext}>{current.prompt}</Text>
+
+        <View style={styles.optionsWrap}>
+          {current.options.map((option) => {
+            const isSelected = selected === option;
+
+            return (
+              <Pressable
+                key={option}
+                style={({ pressed }) => [
+                  styles.optionButton,
+                  isSelected && styles.optionButtonSelected,
+                  locked && styles.optionButtonDisabled,
+                  pressed && !locked && styles.optionButtonPressed,
+                ]}
+                disabled={locked}
+                onPress={() => setSelected(option)}
+              >
+                <Text style={styles.optionButtonText}>{option}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
+        {!!feedback && <Text style={styles.feedbackText}>{feedback}</Text>}
+
+        {!locked ? (
+          <Pressable
+            style={({ pressed }) => [
+              styles.nextCaseButton,
+              pressed && styles.nextCaseButtonPressed,
+              !selected && styles.nextStepButtonDisabled,
+            ]}
+            disabled={!selected}
+            onPress={() => {
+              if (!selected) {
+                return;
+              }
+
+              const correct = selected === current.answer;
+              if (correct) {
+                setHits((prev) => prev + 1);
+              }
+
+              setFeedback(`${correct ? 'Correto!' : 'Não foi dessa vez.'} ${current.explanation}`);
+              setLocked(true);
+            }}
+          >
+            <Text style={styles.nextCaseButtonText}>Validar cálculo</Text>
+          </Pressable>
+        ) : (
+          <Pressable
+            style={({ pressed }) => [styles.nextCaseButton, pressed && styles.nextCaseButtonPressed]}
+            onPress={() => {
+              setStepIndex((prev) => prev + 1);
+              setSelected(null);
+              setFeedback('');
+              setLocked(false);
+            }}
+          >
+            <Text style={styles.nextCaseButtonText}>
+              {stepIndex + 1 === stages.length ? 'Ver resultado' : 'Próximo desafio'}
+            </Text>
+          </Pressable>
+        )}
+      </View>
+    </View>
+  );
+}
+
+function AreaShapePreview({ shape }: { shape: 'quadrado' | 'retangulo' | 'triangulo' }) {
+  if (shape === 'quadrado') {
+    return (
+      <View style={styles.areaShapeCard}>
+        <View style={styles.squareShape}>
+          <Text style={styles.shapeMeasureText}>6m</Text>
+        </View>
+        <Text style={styles.shapeCaption}>Quadrado</Text>
+      </View>
+    );
+  }
+
+  if (shape === 'retangulo') {
+    return (
+      <View style={styles.areaShapeCard}>
+        <View style={styles.rectangleShape}>
+          <Text style={styles.shapeMeasureText}>8m</Text>
+          <Text style={styles.shapeMeasureTextSmall}>5m</Text>
+        </View>
+        <Text style={styles.shapeCaption}>Retângulo</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.areaShapeCard}>
+      <View style={styles.triangleShape} />
+      <View style={styles.triangleLabelsRow}>
+        <Text style={styles.shapeMeasureTextSmall}>10m</Text>
+        <Text style={styles.shapeMeasureTextSmall}>6m</Text>
+      </View>
+      <Text style={styles.shapeCaption}>Triângulo</Text>
+    </View>
+  );
+}
+
+function PolygonAngleCalculator({
+  onComplete,
+  alreadyCompleted,
+  nextMissionId,
+  onNext,
+}: {
+  onComplete: () => void;
+  alreadyCompleted: boolean;
+  nextMissionId?: string | null;
+  onNext?: () => void;
+}) {
+  const [n, setN] = useState(5);
+  const ai = Math.round(((n - 2) * 180) / n * 100) / 100;
+  const options = useMemo(() => {
+    const correct = `${ai}°`;
+    const alt1 = `${Math.round(((n - 1) * 180) / n)}°`;
+    const alt2 = `${Math.round(((n - 3) * 180) / n)}°`;
+    const alt3 = `${Math.round(((n - 2) * 180) / (n + 1))}°`;
+    return [correct, alt1, alt2, alt3].sort(() => Math.random() - 0.5);
+  }, [n, ai]);
+
+  const [selected, setSelected] = useState<string | null>(null);
+  const [locked, setLocked] = useState(false);
+  const [hits, setHits] = useState(0);
+
+  const handleValidate = () => {
+    if (!selected) return;
+    const correct = selected === `${ai}°`;
+    if (correct) setHits((h) => h + 1);
+    setLocked(true);
+  };
+
+  return (
+    <View style={styles.missionCard}>
+      <Text style={styles.sectionTitle}>Ângulos em Polígonos Regulares</Text>
+      <Text style={styles.sectionSubtitle}>Escolha o número de lados e calcule o ângulo interno.</Text>
+
+      <View style={styles.trainingCard}>
+        <Text style={styles.trainingTitle}>Selecione o número de lados (n)</Text>
+        <View style={styles.optionsWrap}>
+          {Array.from({ length: 10 }).map((_, i) => {
+            const val = i + 3;
+            const active = val === n;
+            return (
+              <Pressable
+                key={val}
+                style={({ pressed }) => [styles.sideChip, active && styles.sideChipTouched, pressed && styles.optionButtonPressed]}
+                onPress={() => {
+                  setN(val);
+                  setSelected(null);
+                  setLocked(false);
+                }}
+              >
+                <Text style={[styles.sideChipText, active && styles.sideChipTextTouched]}>{val}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
+        <Text style={[styles.caseContext, { marginTop: 8 }]}>Fórmula: a_i = (n-2) × 180° / n</Text>
+        <Text style={[styles.caseContext]}>Resultado esperado para n = {n}: {ai}°</Text>
+
+        <View style={{ marginTop: 8 }} />
+        <Text style={styles.trainingTitle}>Escolha a resposta correta</Text>
+        <View style={styles.optionsWrap}>
+          {options.map((opt) => (
+            <Pressable
+              key={opt}
+              style={({ pressed }) => [styles.optionButton, selected === opt && styles.optionButtonSelected, pressed && !locked && styles.optionButtonPressed]}
+              disabled={locked}
+              onPress={() => setSelected(opt)}
+            >
+              <Text style={styles.optionButtonText}>{opt}</Text>
+            </Pressable>
+          ))}
+        </View>
+
+        {!locked ? (
+          <Pressable style={styles.nextCaseButton} onPress={handleValidate} disabled={!selected}>
+            <Text style={styles.nextCaseButtonText}>Validar resposta</Text>
+          </Pressable>
+        ) : (
+          <View style={{ gap: 8 }}>
+            <Text style={styles.feedbackText}>{selected === `${ai}°` ? 'Correto! Ótimo cálculo.' : `Resposta incorreta. O ângulo interno é ${ai}°.`}</Text>
+            <MissionCompletionAction alreadyCompleted={alreadyCompleted} nextMissionId={nextMissionId} onComplete={onComplete} onNext={onNext} />
+          </View>
+        )}
+      </View>
+    </View>
+  );
+}
+
+function ExternalAngleVisualizer({
+  onComplete,
+  alreadyCompleted,
+  nextMissionId,
+  onNext,
+}: {
+  onComplete: () => void;
+  alreadyCompleted: boolean;
+  nextMissionId?: string | null;
+  onNext?: () => void;
+}) {
+  const [n, setN] = useState(6);
+  const ae = Math.round((360 / n) * 100) / 100;
+  const [rotation, setRotation] = useState(0);
+
+  const rotateStep = () => {
+    const next = Math.round((rotation + ae) * 100) / 100;
+    setRotation(next % 360);
+  };
+
+  const completed = Math.abs(rotation % 360) < 0.001;
+
+  return (
+    <View style={styles.missionCard}>
+      <Text style={styles.sectionTitle}>Ângulos Externos</Text>
+      <Text style={styles.sectionSubtitle}>Gire o polígono em passos de a_e = 360° / n até completar 360°.</Text>
+
+      <View style={styles.trainingCard}>
+        <Text style={styles.trainingTitle}>Lados: {n} — passo: {ae}°</Text>
+        <View style={{ alignItems: 'center', paddingVertical: 12 }}>
+          <View style={{ width: 140, height: 140, borderRadius: 8, backgroundColor: '#EEF4FA', alignItems: 'center', justifyContent: 'center' }}>
+            <Text style={{ color: '#0B5F8F', fontWeight: '900' }}>Rotação: {rotation.toFixed(0)}°</Text>
+          </View>
+        </View>
+
+        <View style={styles.optionsWrap}>
+          <Pressable style={styles.optionButton} onPress={() => setN((v) => Math.max(3, v - 1))}><Text style={styles.optionButtonText}>−</Text></Pressable>
+          <Pressable style={styles.optionButton} onPress={() => setN((v) => Math.min(12, v + 1))}><Text style={styles.optionButtonText}>+</Text></Pressable>
+        </View>
+
+        <Pressable style={[styles.nextCaseButton, { marginTop: 12 }]} onPress={rotateStep}>
+          <Text style={styles.nextCaseButtonText}>Girar {ae}°</Text>
+        </Pressable>
+
+        {completed && (
+          <View style={{ marginTop: 12 }}>
+            <View style={styles.successCard}>
+              <Text style={styles.successTitle}>Perfeito!</Text>
+              <Text style={styles.successText}>Após passos de {ae}° você completou 360° — soma dos ângulos externos = 360°.</Text>
+            </View>
+            <MissionCompletionAction alreadyCompleted={alreadyCompleted} nextMissionId={nextMissionId} onComplete={onComplete} onNext={onNext} />
+          </View>
+        )}
+      </View>
+    </View>
+  );
+}
+
+function SymmetryExplorer({
+  onComplete,
+  alreadyCompleted,
+  nextMissionId,
+  onNext,
+}: {
+  onComplete: () => void;
+  alreadyCompleted: boolean;
+  nextMissionId?: string | null;
+  onNext?: () => void;
+}) {
+  const [n, setN] = useState(8);
+  const options = [n, n - 1, n + 1, Math.max(3, Math.floor(n / 2))];
+  const [selected, setSelected] = useState<number | null>(null);
+
+  const correct = n;
+  const solved = selected === correct;
+
+  return (
+    <View style={styles.missionCard}>
+      <Text style={styles.sectionTitle}>Simetria em Polígonos Regulares</Text>
+      <Text style={styles.sectionSubtitle}>Identifique quantos eixos de simetria tem um polígono regular.</Text>
+
+      <View style={styles.trainingCard}>
+        <Text style={styles.trainingTitle}>Escolha o número de eixos para n = {n}</Text>
+        <View style={styles.optionsWrap}>
+          {options.map((opt) => (
+            <Pressable
+              key={String(opt)}
+              style={({ pressed }) => [styles.optionButton, selected === opt && styles.optionButtonSelected, pressed && styles.optionButtonPressed]}
+              onPress={() => setSelected(opt)}
+            >
+              <Text style={styles.optionButtonText}>{opt}</Text>
+            </Pressable>
+          ))}
+        </View>
+
+        <View style={{ marginTop: 8 }}>
+          <Pressable style={styles.nextCaseButton} onPress={() => {}}>
+            <Text style={styles.nextCaseButtonText}>Exibir animação (em desenvolvimento)</Text>
+          </Pressable>
+        </View>
+
+        {selected !== null && (
+          <View style={{ marginTop: 10 }}>
+            <Text style={styles.feedbackText}>{solved ? 'Correto — número de eixos = número de lados.' : 'Resposta incorreta — reveja a definição.'}</Text>
+            {solved && <MissionCompletionAction alreadyCompleted={alreadyCompleted} nextMissionId={nextMissionId} onComplete={onComplete} onNext={onNext} />}
+          </View>
+        )}
+      </View>
+    </View>
+  );
+}
+
+function ApothemaSecretMission(props: {
+  onComplete: () => void;
+  alreadyCompleted: boolean;
+  nextMissionId?: string | null;
+  onNext?: () => void;
+}) {
+  const questions: QuizQuestion[] = [
+    {
+      id: 'ap1',
+      prompt: 'Apótema é o segmento que vai...',
+      options: [
+        'do centro ao vértice',
+        'do centro ao meio de um lado (perpendicular)',
+        'de um vértice ao outro',
+        'da base ao topo',
+      ],
+      answer: 'do centro ao meio de um lado (perpendicular)',
+      explanation: 'Essa é a definição correta de apótema.',
+    },
+    {
+      id: 'ap2',
+      prompt: 'Área de polígono regular usando apótema:',
+      options: ['A = (P x a)/2', 'A = b x h', 'A = l²', 'A = (n-2) x 180'],
+      answer: 'A = (P x a)/2',
+      explanation: 'Perímetro vezes apótema dividido por 2.',
+    },
+    {
+      id: 'ap3',
+      prompt: 'Hexágono regular com P = 24 e a = 4. Área?',
+      options: ['48', '96', '24', '12'],
+      answer: '48',
+      explanation: 'A = (24 x 4)/2 = 48.',
+    },
+  ];
+
+  return (
+    <MissionQuizFlow
+      {...props}
+      title="Segredo do Apótema"
+      subtitle="Identifique apótema e aplique a fórmula de área em polígonos regulares."
+      questions={questions}
+    />
+  );
+}
+
+function SpaceBuilderMission(props: {
+  onComplete: () => void;
+  alreadyCompleted: boolean;
+  nextMissionId?: string | null;
+  onNext?: () => void;
+}) {
+  const questions: QuizQuestion[] = [
+    {
+      id: 's1',
+      prompt: 'Um muro para cercar um terreno exige qual medida?',
+      options: ['Área', 'Perímetro', 'Apótema', 'Volume'],
+      answer: 'Perímetro',
+      explanation: 'Muro acompanha o contorno.',
+    },
+    {
+      id: 's2',
+      prompt: 'Quantidade de grama para cobrir um jardim exige...',
+      options: ['Área', 'Perímetro', 'Ângulo interno', 'Número de lados'],
+      answer: 'Área',
+      explanation: 'Cobrir superfície é calcular área.',
+    },
+    {
+      id: 's3',
+      prompt: 'Jardim hexagonal regular: cerca + grama. Você usa...',
+      options: [
+        'Só área',
+        'Só perímetro',
+        'Perímetro para cerca e área para grama',
+        'Nenhuma das anteriores',
+      ],
+      answer: 'Perímetro para cerca e área para grama',
+      explanation: 'Cenários mistos pedem medidas diferentes para cada objetivo.',
+    },
+  ];
+
+  return (
+    <MissionQuizFlow
+      {...props}
+      title="Construtor de Espaços"
+      subtitle="Interprete o problema antes de escolher a fórmula."
+      questions={questions}
+    />
+  );
+}
+
+function SupremeEngineerMission(props: {
+  onComplete: () => void;
+  alreadyCompleted: boolean;
+  nextMissionId?: string | null;
+  onNext?: () => void;
+}) {
+  const questions: QuizQuestion[] = [
+    {
+      id: 'e1',
+      prompt: 'Um quadrado tem perímetro 40m. Qual o lado?',
+      options: ['8 m', '10 m', '12 m', '20 m'],
+      answer: '10 m',
+      explanation: 'Para quadrado, P = 4l. Então l = 40/4 = 10.',
+    },
+    {
+      id: 'e2',
+      prompt: 'Com lado 10m, qual a área desse quadrado?',
+      options: ['20 m²', '40 m²', '100 m²', '400 m²'],
+      answer: '100 m²',
+      explanation: 'A = l² = 10² = 100.',
+    },
+    {
+      id: 'e3',
+      prompt: 'Um desafio pede cercar e revestir uma praça. Quais medidas entram?',
+      options: [
+        'Somente área',
+        'Somente perímetro',
+        'Perímetro e área',
+        'Somente apótema',
+      ],
+      answer: 'Perímetro e área',
+      explanation: 'Cercar = perímetro, revestir = área.',
+    },
+  ];
+
+  return (
+    <MissionQuizFlow
+      {...props}
+      title="Engenheiro Supremo"
+      subtitle="Integre perímetro, área, apótema e interpretação de cenário."
+      questions={questions}
+    />
+  );
+}
+
 function GenericMission({
   mission,
   onComplete,
@@ -1266,6 +1976,23 @@ export default function MissionPlayScreen() {
   const [nextMissionId, setNextMissionId] = useState<string | null>(null);
   const [completionFeedback, setCompletionFeedback] = useState('');
 
+  const resolveNextMissionId = async (detectiveId: string, missionPhaseId: string) => {
+    const currentPhaseNextMissionId = await getNextMissionIdForDetectivePhase(detectiveId, missionPhaseId);
+
+    if (currentPhaseNextMissionId) {
+      return currentPhaseNextMissionId;
+    }
+
+    const currentPhaseNumber = Number(missionPhaseId.replace('fase', ''));
+    const nextPhase = phases.find((phase) => phase.number === currentPhaseNumber + 1);
+
+    if (!nextPhase) {
+      return null;
+    }
+
+    return getNextMissionIdForDetectivePhase(detectiveId, nextPhase.id);
+  };
+
   useEffect(() => {
     let isMounted = true;
 
@@ -1290,17 +2017,12 @@ export default function MissionPlayScreen() {
         setMissionAlreadyCompleted(completed);
       }
 
-      const detectives = await getDetectives();
-      const detective = detectives.find((item) => item.id === detectiveId);
-
-      if (!detective) {
+      if (!mission?.phaseId) {
         setNextMissionId(null);
         return;
       }
 
-      const currentPhaseNumber = getCurrentPhaseNumber(detective.phase, phases.length);
-      const currentPhaseId = getPhaseIdFromNumber(currentPhaseNumber);
-      const nextId = await getNextMissionIdForDetectivePhase(detective.id, currentPhaseId);
+      const nextId = await resolveNextMissionId(detectiveId, mission.phaseId);
 
       if (isMounted) {
         setNextMissionId(nextId ?? null);
@@ -1322,14 +2044,9 @@ export default function MissionPlayScreen() {
     const result = await completeMissionForDetective(selectedDetectiveId, mission.id);
     setMissionAlreadyCompleted(true);
 
-    const detectives = await getDetectives();
-    const detective = detectives.find((item) => item.id === selectedDetectiveId);
-
-    if (detective) {
-      const currentPhaseNumber = getCurrentPhaseNumber(detective.phase, phases.length);
-      const currentPhaseId = getPhaseIdFromNumber(currentPhaseNumber);
-      const nextId = await getNextMissionIdForDetectivePhase(detective.id, currentPhaseId);
-      setNextMissionId(nextId ?? null);
+      if (mission.phaseId) {
+        const nextId = await resolveNextMissionId(selectedDetectiveId, mission.phaseId);
+        setNextMissionId(nextId ?? null);
     }
 
     setCompletionFeedback(
@@ -1452,7 +2169,82 @@ export default function MissionPlayScreen() {
             nextMissionId={nextMissionId}
           />
         )}
-        {!['fase1_m1', 'fase1_m2', 'fase1_m3', 'fase1_m4', 'fase1_m5'].includes(mission.id) && (
+        {mission.id === 'fase2_m1' && (
+          <PerimeterGuardianMission
+            onComplete={handleCompleteMission}
+            onNext={handleNextMission}
+            alreadyCompleted={missionAlreadyCompleted}
+            nextMissionId={nextMissionId}
+          />
+        )}
+        {mission.id === 'fase2_m2' && (
+          <AreaMasterMission
+            onComplete={handleCompleteMission}
+            onNext={handleNextMission}
+            alreadyCompleted={missionAlreadyCompleted}
+            nextMissionId={nextMissionId}
+          />
+        )}
+        {mission.id === 'fase2_m3' && (
+          <ApothemaSecretMission
+            onComplete={handleCompleteMission}
+            onNext={handleNextMission}
+            alreadyCompleted={missionAlreadyCompleted}
+            nextMissionId={nextMissionId}
+          />
+        )}
+        {mission.id === 'fase2_m4' && (
+          <SpaceBuilderMission
+            onComplete={handleCompleteMission}
+            onNext={handleNextMission}
+            alreadyCompleted={missionAlreadyCompleted}
+            nextMissionId={nextMissionId}
+          />
+        )}
+        {mission.id === 'fase2_m5' && (
+          <SupremeEngineerMission
+            onComplete={handleCompleteMission}
+            onNext={handleNextMission}
+            alreadyCompleted={missionAlreadyCompleted}
+            nextMissionId={nextMissionId}
+          />
+        )}
+        {mission.id === 'fase3_m1' && (
+          <PolygonAngleCalculator
+            onComplete={handleCompleteMission}
+            onNext={handleNextMission}
+            alreadyCompleted={missionAlreadyCompleted}
+            nextMissionId={nextMissionId}
+          />
+        )}
+        {mission.id === 'fase3_m2' && (
+          <ExternalAngleVisualizer
+            onComplete={handleCompleteMission}
+            onNext={handleNextMission}
+            alreadyCompleted={missionAlreadyCompleted}
+            nextMissionId={nextMissionId}
+          />
+        )}
+        {mission.id === 'fase3_m3' && (
+          <SymmetryExplorer
+            onComplete={handleCompleteMission}
+            onNext={handleNextMission}
+            alreadyCompleted={missionAlreadyCompleted}
+            nextMissionId={nextMissionId}
+          />
+        )}
+        {![
+          'fase1_m1',
+          'fase1_m2',
+          'fase1_m3',
+          'fase1_m4',
+          'fase1_m5',
+          'fase2_m1',
+          'fase2_m2',
+          'fase2_m3',
+          'fase2_m4',
+          'fase2_m5',
+        ].includes(mission.id) && (
           <GenericMission
             mission={mission}
             onComplete={handleCompleteMission}
@@ -1650,6 +2442,96 @@ const styles = StyleSheet.create({
   trainingTitle: {
     color: '#0D3D66',
     fontSize: 14,
+    fontWeight: '800',
+  },
+  areaPreviewWrap: {
+    flexDirection: 'row',
+    gap: 12,
+    alignItems: 'center',
+  },
+  areaShapeCard: {
+    width: 144,
+    minHeight: 132,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#D5E2ED',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 10,
+    gap: 8,
+  },
+  areaPreviewInfo: {
+    flex: 1,
+    gap: 4,
+  },
+  areaFormulaLabel: {
+    color: '#0B5F8F',
+    fontSize: 11,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
+  areaFormulaValue: {
+    color: '#1F3E66',
+    fontSize: 16,
+    fontWeight: '900',
+  },
+  areaHint: {
+    color: '#4A6078',
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: '600',
+  },
+  squareShape: {
+    width: 68,
+    height: 68,
+    borderWidth: 3,
+    borderColor: '#0B5F8F',
+    backgroundColor: '#EAF4FC',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rectangleShape: {
+    width: 88,
+    height: 56,
+    borderWidth: 3,
+    borderColor: '#0B5F8F',
+    backgroundColor: '#EAF4FC',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 2,
+  },
+  triangleShape: {
+    width: 0,
+    height: 0,
+    borderLeftWidth: 36,
+    borderRightWidth: 36,
+    borderBottomWidth: 62,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderBottomColor: '#0B5F8F',
+    marginTop: 4,
+  },
+  triangleLabelsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: 92,
+    marginTop: -2,
+  },
+  shapeCaption: {
+    color: '#0D3D66',
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  shapeMeasureText: {
+    color: '#0D3D66',
+    fontSize: 13,
+    fontWeight: '900',
+  },
+  shapeMeasureTextSmall: {
+    color: '#0D3D66',
+    fontSize: 11,
     fontWeight: '800',
   },
   trainingBoard: {

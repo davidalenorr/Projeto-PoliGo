@@ -65,10 +65,10 @@ export const phases: Phase[] = [
   {
     id: 'fase2',
     number: 2,
-    title: 'Arquiteto',
+    title: 'Engenheiro de Medidas',
     subtitle: 'Diagonais e Soma dos Ângulos Internos',
     description:
-      'Como um arquiteto, você agora utilizará fórmulas para calcular propriedades cruciais dos polígonos. Aprenderá a encontrar o número de diagonais e a soma dos ângulos internos, ferramentas essenciais para projetar estruturas geométricas.',
+      'Como um engenheiro de medidas, você agora utilizará fórmulas para calcular propriedades cruciais dos polígonos. Aprenderá a encontrar o número de diagonais e a soma dos ângulos internos, ferramentas essenciais para projetar estruturas geométricas.',
     objectives: [
       'Calcular o número de diagonais de um polígono',
       'Encontrar a soma dos ângulos internos',

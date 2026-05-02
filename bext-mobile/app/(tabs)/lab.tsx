@@ -64,7 +64,7 @@ export default function LabScreen() {
             </Text>
           ) : (
             <Text style={styles.text}>
-              O Laboratório de Geometria Dinâmica é uma ferramenta de desenho livre. Complete a Fase 2 (Arquiteto) para provar suas habilidades e desbloquear esta área.
+              O Laboratório de Geometria Dinâmica é uma ferramenta de desenho livre. Complete a Fase 2 (Engenheiro de Medidas) para provar suas habilidades e desbloquear esta área.
             </Text>
           )}
           <Text style={styles.statusLine}>

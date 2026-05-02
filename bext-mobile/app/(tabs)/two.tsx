@@ -15,8 +15,9 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { colors } from '../../src/theme/colors';
 import { Detective } from '@/src/data/detectives';
 import { clearSelectedDetectiveId, getSelectedDetectiveId } from '@/src/storage/detectiveSelection';
-import { getDetectives } from '@/src/storage/detectives';
+import { getDetectives, saveDetectives } from '@/src/storage/detectives';
 import { missions } from '@/src/data/missions';
+import { getPhaseById } from '@/src/data/phases';
 import {
   getCurrentPhaseIndex,
   getCurrentPhaseNumber,
@@ -26,7 +27,7 @@ import { getNextMissionIdForDetectivePhase } from '@/src/storage/missionProgress
 
 const phaseTrail = [
   'Fase 1: Detetive das Formas',
-  'Fase 2: Arquiteto',
+  'Fase 2: Engenheiro de Medidas',
   'Fase 3: Mestre dos Ângulos',
   'Fase 4: O Mosaico',
   'Fase 5: Missão Final',
@@ -71,6 +72,7 @@ export default function MissionsScreen() {
     [selectedDetective?.phase]
   );
   const currentPhaseId = useMemo(() => getPhaseIdFromNumber(currentPhaseNumber), [currentPhaseNumber]);
+  const currentPhaseMeta = useMemo(() => (currentPhaseId ? getPhaseById(currentPhaseId) : undefined), [currentPhaseId]);
 
   const handleResumeMission = async () => {
     if (!selectedDetective?.id) {
@@ -103,6 +105,14 @@ export default function MissionsScreen() {
     ]);
   };
 
+  const handleForcePhase3 = async () => {
+    if (!selectedDetective) return;
+    const list = await getDetectives();
+    const updated = list.map((d) => (d.id === selectedDetective.id ? { ...d, phase: 'Fase 3: Mestre dos Ângulos', progress: 0 } : d));
+    await saveDetectives(updated);
+    setSelectedDetective(updated.find((d) => d.id === selectedDetective.id));
+  };
+
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
@@ -126,12 +136,21 @@ export default function MissionsScreen() {
           </View>
         </View>
 
+        {__DEV__ && (
+          <Pressable
+            style={({ pressed }) => [styles.challengesButton, pressed && styles.challengesButtonPressed, { marginTop: 8 }]}
+            onPress={handleForcePhase3}
+          >
+            <Text style={[styles.challengesButtonText, { textTransform: 'none' }]}>DEV: Forçar Fase 3</Text>
+          </Pressable>
+        )}
+
         <Text style={styles.sectionLabel}>TRILHA DE MISSÕES</Text>
 
         <View style={styles.phaseCard}>
           <Text style={styles.phaseSmall}>MISSÃO ATUAL</Text>
-          <Text style={styles.phaseTitle}>{selectedDetective?.phase ?? 'Fase inicial'}</Text>
-          <Text style={styles.phaseDesc}>Soma dos ângulos e diagonais</Text>
+          <Text style={styles.phaseTitle}>{selectedDetective?.phase ?? currentPhaseMeta?.title ?? 'Fase inicial'}</Text>
+          <Text style={styles.phaseDesc}>{currentPhaseMeta?.subtitle ?? 'Soma dos ângulos e diagonais'}</Text>
           <Text style={styles.phaseProgressText}>Progresso da fase: {selectedDetective?.progress ?? 0}%</Text>
 
           <View style={styles.progressBase}>
@@ -207,6 +226,26 @@ export default function MissionsScreen() {
             <Text style={styles.quickTitle}>Fase 2</Text>
             <Text style={styles.quickSub}>
               {currentPhaseIndex === 1 ? 'Análise · Atual' : currentPhaseIndex < 1 ? 'Bloqueada' : 'Análise'}
+            </Text>
+          </Pressable>
+          <Pressable
+            style={({ pressed }) => [
+              styles.quickCard,
+              currentPhaseIndex === 2 && styles.quickCardActive,
+              currentPhaseIndex < 2 && styles.quickCardLocked,
+              pressed && styles.quickCardPressed,
+            ]}
+            onPress={() => {
+              if (currentPhaseIndex < 2) {
+                return;
+              }
+
+              router.push({ pathname: '/phase-missions', params: { phaseId: 'fase3', from: 'trilha' } });
+            }}
+          >
+            <Text style={styles.quickTitle}>Fase 3</Text>
+            <Text style={styles.quickSub}>
+              {currentPhaseIndex === 2 ? 'Mestre · Atual' : currentPhaseIndex < 2 ? 'Bloqueada' : 'Mestre'}
             </Text>
           </Pressable>
         </View>

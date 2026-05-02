@@ -69,8 +69,8 @@ export default function AchievementsScreen() {
       },
       {
         id: 'b2',
-        title: 'Arquiteto de Formas',
-        description: 'Alcançar a Fase 2: Arquiteto.',
+        title: 'Engenheiro de Medidas',
+        description: 'Alcançar a Fase 2: Engenheiro de Medidas.',
         unlocked: currentPhaseIndex >= 1,
       },
       {
