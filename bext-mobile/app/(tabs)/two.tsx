@@ -15,9 +15,9 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { colors } from '../../src/theme/colors';
 import { Detective } from '@/src/data/detectives';
 import { clearSelectedDetectiveId, getSelectedDetectiveId } from '@/src/storage/detectiveSelection';
-import { getDetectives, saveDetectives } from '@/src/storage/detectives';
+import { getDetectives } from '@/src/storage/detectives';
 import { missions } from '@/src/data/missions';
-import { getPhaseById } from '@/src/data/phases';
+import { getPhaseById, phases } from '@/src/data/phases';
 import {
   getCurrentPhaseIndex,
   getCurrentPhaseNumber,
@@ -29,8 +29,8 @@ const phaseTrail = [
   'Fase 1: Detetive das Formas',
   'Fase 2: Engenheiro de Medidas',
   'Fase 3: Mestre dos Ângulos',
-  'Fase 4: O Mosaico',
-  'Fase 5: Missão Final',
+  'Fase 4: Laboratório de Equações',
+  'Fase 5: Triunfo Final',
 ];
 
 export default function MissionsScreen() {
@@ -73,6 +73,15 @@ export default function MissionsScreen() {
   );
   const currentPhaseId = useMemo(() => getPhaseIdFromNumber(currentPhaseNumber), [currentPhaseNumber]);
   const currentPhaseMeta = useMemo(() => (currentPhaseId ? getPhaseById(currentPhaseId) : undefined), [currentPhaseId]);
+  const phaseSummary = useMemo(
+    () =>
+      phases.map((phase) => ({
+        ...phase,
+        missionCount: missions.filter((mission) => mission.phaseId === phase.id).length,
+      })),
+    []
+  );
+  const totalMissionCount = useMemo(() => missions.length, []);
 
   const handleResumeMission = async () => {
     if (!selectedDetective?.id) {
@@ -105,14 +114,6 @@ export default function MissionsScreen() {
     ]);
   };
 
-  const handleForcePhase3 = async () => {
-    if (!selectedDetective) return;
-    const list = await getDetectives();
-    const updated = list.map((d) => (d.id === selectedDetective.id ? { ...d, phase: 'Fase 3: Mestre dos Ângulos', progress: 0 } : d));
-    await saveDetectives(updated);
-    setSelectedDetective(updated.find((d) => d.id === selectedDetective.id));
-  };
-
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
@@ -136,21 +137,36 @@ export default function MissionsScreen() {
           </View>
         </View>
 
-        {__DEV__ && (
-          <Pressable
-            style={({ pressed }) => [styles.challengesButton, pressed && styles.challengesButtonPressed, { marginTop: 8 }]}
-            onPress={handleForcePhase3}
-          >
-            <Text style={[styles.challengesButtonText, { textTransform: 'none' }]}>DEV: Forçar Fase 3</Text>
-          </Pressable>
-        )}
-
         <Text style={styles.sectionLabel}>TRILHA DE MISSÕES</Text>
+
+        <View style={styles.overviewCard}>
+          <Text style={styles.overviewTitle}>Como a trilha funciona</Text>
+          <Text style={styles.overviewText}>
+            Cada fase reúne missões com dificuldade crescente e objetivos de aprendizagem claros. Progrida resolvendo missões para avançar.
+          </Text>
+          <View style={styles.overviewSteps}>
+            <View style={styles.overviewStepCard}>
+              <Text style={styles.overviewStepTitle}>Retomar</Text>
+              <Text style={styles.overviewStepText}>Volta para a missão atual do seu progresso.</Text>
+            </View>
+            <View style={styles.overviewStepCard}>
+              <Text style={styles.overviewStepTitle}>Hub</Text>
+              <Text style={styles.overviewStepText}>Mostra todas as fases e o que já foi concluído.</Text>
+            </View>
+            <View style={styles.overviewStepCard}>
+              <Text style={styles.overviewStepTitle}>Submissões</Text>
+              <Text style={styles.overviewStepText}>Acompanha entregas e resultados já registrados.</Text>
+            </View>
+          </View>
+        </View>
 
         <View style={styles.phaseCard}>
           <Text style={styles.phaseSmall}>MISSÃO ATUAL</Text>
           <Text style={styles.phaseTitle}>{selectedDetective?.phase ?? currentPhaseMeta?.title ?? 'Fase inicial'}</Text>
           <Text style={styles.phaseDesc}>{currentPhaseMeta?.subtitle ?? 'Soma dos ângulos e diagonais'}</Text>
+          <Text style={styles.phaseMetaText}>
+            Fase {currentPhaseNumber} de {phaseTrail.length} · {phaseSummary[currentPhaseIndex]?.missionCount ?? 0} missões nesta fase
+          </Text>
           <Text style={styles.phaseProgressText}>Progresso da fase: {selectedDetective?.progress ?? 0}%</Text>
 
           <View style={styles.progressBase}>
@@ -161,97 +177,80 @@ export default function MissionsScreen() {
             style={styles.cta}
             onPress={handleResumeMission}
           >
-            <Text style={styles.ctaText}>RETOMAR</Text>
+            <Text style={styles.ctaText}>RETOMAR MISSÃO</Text>
           </TouchableOpacity>
         </View>
 
-        <Pressable
-          style={({ pressed }) => [styles.challengesButton, pressed && styles.challengesButtonPressed]}
-          onPress={() => router.push('/challenges')}
-        >
-          <View style={styles.challengesButtonHeader}>
-            <View style={styles.challengesIconWrap}>
-              <MaterialIcons name="hub" size={20} color="#1F3E66" />
-            </View>
-            <Text style={styles.challengesButtonText}>Hub de Desafios</Text>
+        <View style={styles.navigationCard}>
+          <Text style={styles.navigationTitle}>Atalhos principais</Text>
+          <View style={styles.navigationList}>
+            <Pressable
+              style={({ pressed }) => [styles.navigationButton, pressed && styles.navigationButtonPressed]}
+              onPress={() => router.push('/challenges')}
+            >
+              <View style={styles.navigationButtonHeader}>
+                <View style={styles.navigationIconWrap}>
+                  <MaterialIcons name="hub" size={20} color="#1F3E66" />
+                </View>
+                <View style={styles.navigationCopy}>
+                  <Text style={styles.navigationButtonTitle}>Hub de Desafios</Text>
+                  <Text style={styles.navigationButtonSub}>Veja as 5 fases e o progresso geral.</Text>
+                </View>
+              </View>
+            </Pressable>
+
+            <Pressable
+              style={({ pressed }) => [styles.navigationButton, pressed && styles.navigationButtonPressed]}
+              onPress={() => router.push('/submissions')}
+            >
+              <View style={styles.navigationButtonHeader}>
+                <View style={styles.navigationIconWrap}>
+                  <MaterialIcons name="receipt" size={20} color="#1F3E66" />
+                </View>
+                <View style={styles.navigationCopy}>
+                  <Text style={styles.navigationButtonTitle}>Submissões</Text>
+                  <Text style={styles.navigationButtonSub}>Acompanhe entregas e resultados já feitos.</Text>
+                </View>
+              </View>
+            </Pressable>
           </View>
-          <Text style={styles.challengesButtonSub}>Visualize as 5 fases e acompanhe seu avanço</Text>
-        </Pressable>
+        </View>
 
-        <Pressable
-          style={({ pressed }) => [styles.challengesButton, pressed && styles.challengesButtonPressed]}
-          onPress={() => router.push('/submissions')}
-        >
-          <View style={styles.challengesButtonHeader}>
-            <View style={styles.challengesIconWrap}>
-              <MaterialIcons name="receipt" size={20} color="#1F3E66" />
-            </View>
-            <Text style={styles.challengesButtonText}>Submissões</Text>
-          </View>
-          <Text style={styles.challengesButtonSub}>Status das suas entregas</Text>
-        </Pressable>
+        <Text style={styles.quickAccessTitle}>Mapa das 5 Fases</Text>
+        <View style={styles.phaseGrid}>
+          {phaseSummary.map((phase, index) => {
+            const isCurrent = index === currentPhaseIndex;
+            const isUnlocked = index <= currentPhaseIndex;
 
-        <Text style={styles.quickAccessTitle}>Acesso Rápido</Text>
-        <View style={styles.quickRow}>
-          <Pressable
-            style={({ pressed }) => [
-              styles.quickCard,
-              currentPhaseIndex === 0 && styles.quickCardActive,
-              pressed && styles.quickCardPressed,
-            ]}
-            onPress={() =>
-              router.push({ pathname: '/phase-missions', params: { phaseId: 'fase1', from: 'trilha' } })
-            }
-          >
-            <Text style={styles.quickTitle}>Fase 1</Text>
-            <Text style={styles.quickSub}>
-              {currentPhaseIndex === 0 ? 'Visualização · Atual' : 'Visualização'}
-            </Text>
-          </Pressable>
-          <Pressable
-            style={({ pressed }) => [
-              styles.quickCard,
-              currentPhaseIndex === 1 && styles.quickCardActive,
-              currentPhaseIndex < 1 && styles.quickCardLocked,
-              pressed && styles.quickCardPressed,
-            ]}
-            onPress={() => {
-              if (currentPhaseIndex < 1) {
-                return;
-              }
+            return (
+              <Pressable
+                key={phase.id}
+                style={({ pressed }) => [
+                  styles.phaseTile,
+                  isCurrent && styles.phaseTileActive,
+                  !isUnlocked && styles.phaseTileLocked,
+                  pressed && styles.phaseTilePressed,
+                ]}
+                onPress={() => {
+                  if (!isUnlocked) {
+                    return;
+                  }
 
-              router.push({ pathname: '/phase-missions', params: { phaseId: 'fase2', from: 'trilha' } });
-            }}
-          >
-            <Text style={styles.quickTitle}>Fase 2</Text>
-            <Text style={styles.quickSub}>
-              {currentPhaseIndex === 1 ? 'Análise · Atual' : currentPhaseIndex < 1 ? 'Bloqueada' : 'Análise'}
-            </Text>
-          </Pressable>
-          <Pressable
-            style={({ pressed }) => [
-              styles.quickCard,
-              currentPhaseIndex === 2 && styles.quickCardActive,
-              currentPhaseIndex < 2 && styles.quickCardLocked,
-              pressed && styles.quickCardPressed,
-            ]}
-            onPress={() => {
-              if (currentPhaseIndex < 2) {
-                return;
-              }
-
-              router.push({ pathname: '/phase-missions', params: { phaseId: 'fase3', from: 'trilha' } });
-            }}
-          >
-            <Text style={styles.quickTitle}>Fase 3</Text>
-            <Text style={styles.quickSub}>
-              {currentPhaseIndex === 2 ? 'Mestre · Atual' : currentPhaseIndex < 2 ? 'Bloqueada' : 'Mestre'}
-            </Text>
-          </Pressable>
+                  router.push({ pathname: '/phase-missions', params: { phaseId: phase.id, from: 'trilha' } });
+                }}
+              >
+                <Text style={styles.phaseTileNumber}>Fase {phase.number}</Text>
+                <Text style={styles.phaseTileTitle}>{phase.title}</Text>
+                <Text style={styles.phaseTileSub}>{phase.missionCount} missões</Text>
+                <Text style={styles.phaseTileMeta}>{isCurrent ? 'Atual' : isUnlocked ? 'Desbloqueada' : 'Bloqueada'}</Text>
+              </Pressable>
+            );
+          })}
         </View>
 
         <View style={styles.phaseListCard}>
-          <Text style={styles.phaseListTitle}>Trilha de Fases</Text>
+          <Text style={styles.phaseListTitle}>Resumo da trilha</Text>
+          <Text style={styles.phaseListSubtitle}>Cada fase reúne missões com foco pedagógico próprio.</Text>
           {phaseTrail.map((phaseName, index) => {
             const isCurrent = index === currentPhaseIndex;
             const isUnlocked = index <= currentPhaseIndex;
@@ -320,6 +319,66 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
   },
 
+  overviewCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: '#D7E4EF',
+    padding: 16,
+    gap: 10,
+  },
+  overviewBadgeRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  overviewBadge: {
+    backgroundColor: '#EEF6FF',
+    borderWidth: 1,
+    borderColor: '#C9DEEF',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  overviewBadgeText: {
+    color: '#0B5F8F',
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  overviewTitle: {
+    color: '#0D3D66',
+    fontSize: 18,
+    fontWeight: '900',
+  },
+  overviewText: {
+    color: '#475A6F',
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  overviewSteps: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  overviewStepCard: {
+    flex: 1,
+    backgroundColor: '#F8FBFF',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#D5E2ED',
+    padding: 10,
+    gap: 3,
+  },
+  overviewStepTitle: {
+    color: '#0B5F8F',
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  overviewStepText: {
+    color: '#4A6078',
+    fontSize: 12,
+    lineHeight: 16,
+  },
+
   phaseCard: {
     backgroundColor: colors.primary,
     borderRadius: 30,
@@ -334,6 +393,12 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   phaseDesc: { color: colors.white, fontSize: 16, marginTop: 6 },
+  phaseMetaText: {
+    color: '#DCECF8',
+    fontSize: 12,
+    marginTop: 6,
+    fontWeight: '700',
+  },
   phaseProgressText: {
     color: '#DCECF8',
     fontSize: 12,
@@ -407,46 +472,62 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  journeyCard: {
+  navigationCard: {
     backgroundColor: '#ECF4FB',
     borderRadius: 20,
     borderWidth: 1,
     borderColor: '#D0DFEE',
     padding: 12,
+    gap: 10,
   },
-  journeyTitle: {
+  navigationTitle: {
     color: '#214564',
     fontSize: 15,
     fontWeight: '800',
-    marginBottom: 10,
   },
-  journeyRow: {
-    flexDirection: 'row',
+  navigationList: {
     gap: 10,
   },
-  journeyButton: {
-    flex: 1,
-    borderRadius: 14,
+  navigationButton: {
     backgroundColor: '#FFFFFF',
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: '#D2E2F0',
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     paddingVertical: 12,
   },
-  journeyButtonPressed: {
-    opacity: 0.85,
-    transform: [{ scale: 0.985 }],
+  navigationButtonPressed: {
+    opacity: 0.88,
+    transform: [{ scale: 0.99 }],
   },
-  journeyButtonTitle: {
-    color: '#0B5F8F',
+  navigationButtonHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  navigationIconWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+  },
+  navigationCopy: {
+    flex: 1,
+    gap: 2,
+  },
+  navigationButtonTitle: {
+    color: '#0D3D66',
     fontSize: 15,
     fontWeight: '800',
   },
-  journeyButtonSub: {
+  navigationButtonSub: {
     color: '#607287',
-    marginTop: 3,
     fontSize: 12,
-    fontWeight: '500',
+    lineHeight: 16,
   },
 
   quickAccessTitle: {
@@ -455,30 +536,55 @@ const styles = StyleSheet.create({
     fontSize: 34 / 2,
     fontWeight: '800',
   },
-  quickRow: { flexDirection: 'row', gap: 14 },
-  quickCard: {
-    flex: 1,
-    backgroundColor: colors.card,
-    borderRadius: 24,
-    minHeight: 110,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 2,
+  phaseGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
   },
-  quickCardActive: {
-    borderWidth: 2,
-    borderColor: '#9FC3DD',
+  phaseTile: {
+    width: '48%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#D5E2ED',
+    padding: 12,
+    gap: 4,
+  },
+  phaseTileActive: {
+    borderColor: '#0B5F8F',
     backgroundColor: '#F8FBFF',
+    borderWidth: 2,
   },
-  quickCardPressed: {
-    transform: [{ scale: 0.98 }],
-    opacity: 0.9,
+  phaseTileLocked: {
+    opacity: 0.6,
   },
-  quickCardLocked: {
-    opacity: 0.65,
+  phaseTilePressed: {
+    transform: [{ scale: 0.985 }],
+    opacity: 0.92,
   },
-  quickTitle: { color: colors.primary, fontSize: 18, fontWeight: '800' },
-  quickSub: { color: colors.muted, marginTop: 6, fontSize: 12 },
+  phaseTileNumber: {
+    color: '#0B5F8F',
+    fontSize: 11,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
+  phaseTileTitle: {
+    color: '#0D3D66',
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  phaseTileSub: {
+    color: '#475569',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  phaseTileMeta: {
+    color: '#607287',
+    fontSize: 11,
+    marginTop: 2,
+    fontWeight: '700',
+  },
 
   phaseListCard: {
     backgroundColor: '#FFFFFF',
@@ -491,6 +597,12 @@ const styles = StyleSheet.create({
     color: '#1F3E66',
     fontSize: 18,
     fontWeight: '800',
+    marginBottom: 10,
+  },
+  phaseListSubtitle: {
+    color: '#607287',
+    fontSize: 12,
+    lineHeight: 17,
     marginBottom: 10,
   },
   phaseItem: {

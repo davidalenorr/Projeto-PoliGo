@@ -179,14 +179,14 @@ export default function PhaseMissionsScreen() {
 
         <View style={styles.missionsList}>
           {missions.map((mission, index) => (
-            <View key={mission.id} style={styles.missionCard}>
+            <View key={mission.id} style={[styles.missionCard, completedMap[mission.id] && styles.missionCardCompleted]}>
               <View style={styles.missionHeader}>
                 <View style={styles.missionNumberBadge}>
                   <Text style={styles.missionNumberText}>{index + 1}</Text>
                 </View>
                 <View style={styles.missionHeaderInfo}>
                   <View style={styles.missionTitleRow}>
-                    <Text style={styles.missionTitle}>{mission.title}</Text>
+                    <Text style={[styles.missionTitle, completedMap[mission.id] && styles.missionTitleCompleted]}>{mission.title}</Text>
                     {completedMap[mission.id] ? (
                       <View style={styles.inlineDoneBadge}>
                         <Text style={styles.inlineDoneBadgeText}>Concluída</Text>
@@ -486,6 +486,13 @@ const styles = StyleSheet.create({
   difficultyText: {
     fontWeight: '700',
     fontSize: 11,
+  },
+  missionCardCompleted: {
+    backgroundColor: '#F0FDF4',
+    borderColor: '#86EFAC',
+  },
+  missionTitleCompleted: {
+    color: '#166534',
   },
   pointsBadge: {
     backgroundColor: '#FEF3C7',

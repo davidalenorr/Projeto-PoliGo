@@ -1,44 +1,12 @@
 import React from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
-
-const formulas = [
-  {
-    title: 'Soma dos Ângulos Internos',
-    formula: 'S = (n - 2) x 180',
-    resumo: 'Calcula a soma dos ângulos internos de qualquer polígono.',
-    exemplo: 'Hexágono: (6 - 2) x 180 = 720 graus',
-  },
-  {
-    title: 'Número de Diagonais',
-    formula: 'D = n x (n - 3) / 2',
-    resumo: 'Mostra quantas diagonais um polígono possui.',
-    exemplo: 'Pentágono: 5 x 2 / 2 = 5 diagonais',
-  },
-  {
-    title: 'Ângulo Interno no Polígono Regular',
-    formula: 'Ai = (n - 2) x 180 / n',
-    resumo: 'Retorna o valor de cada ângulo interno em polígonos regulares.',
-    exemplo: 'Octógono regular: (8 - 2) x 180 / 8 = 135 graus',
-  },
-  {
-    title: 'Soma dos Ângulos Externos',
-    formula: 'Se = 360',
-    resumo: 'A soma dos ângulos externos de qualquer polígono é sempre 360 graus.',
-    exemplo: 'Sempre vale 360, independentemente do número de lados.',
-  },
-  {
-    title: 'Área por Triangulação',
-    formula: 'Atotal = soma das áreas dos triângulos',
-    resumo: 'Divida o polígono em triângulos e some as áreas.',
-    exemplo: 'A1 + A2 + A3 = Área total do polígono',
-  },
-];
+import { phases } from '@/src/data/phases';
 
 const guideSteps = [
   'Comece pela fase atual na Trilha para ganhar pontos.',
-  'Use este caderno para revisar as fórmulas antes de cada missão.',
-  'Se travar em uma fase, revise os exemplos desta aba.',
-  'Volte para a Trilha e continue a missão com mais confiança.',
+  'Abra a fase correspondente e revise as fórmulas-chave antes da missão.',
+  'Se travar, use as dicas estratégicas de cada fase para retomar.',
+  'Volte para a Trilha e aplique a revisão imediatamente.',
 ];
 
 export default function LearnTabScreen() {
@@ -57,12 +25,34 @@ export default function LearnTabScreen() {
           ))}
         </View>
 
-        {formulas.map((item) => (
-          <View key={item.title} style={styles.card}>
-            <Text style={styles.cardTitle}>{item.title}</Text>
-            <Text style={styles.formula}>{item.formula}</Text>
-            <Text style={styles.resumo}>{item.resumo}</Text>
-            <Text style={styles.example}>Exemplo: {item.exemplo}</Text>
+        {phases.map((phase) => (
+          <View key={phase.id} style={styles.phaseCard}>
+            <View style={styles.phaseHeader}>
+              <Text style={styles.phaseBadge}>Fase {phase.number}</Text>
+              <Text style={styles.phaseTitle}>{phase.title}</Text>
+              <Text style={styles.phaseSubtitle}>{phase.subtitle}</Text>
+            </View>
+
+            <Text style={styles.phaseDescription}>{phase.description}</Text>
+
+            <Text style={styles.sectionTitle}>Fórmulas desta fase</Text>
+            {phase.formulas.map((item) => (
+              <View key={`${phase.id}-${item.title}`} style={styles.card}>
+                <Text style={styles.cardTitle}>{item.title}</Text>
+                <Text style={styles.formula}>{item.formula}</Text>
+                <Text style={styles.resumo}>{item.explanation}</Text>
+                <Text style={styles.example}>Exemplo: {item.example}</Text>
+              </View>
+            ))}
+
+            <Text style={styles.sectionTitle}>Dicas estratégicas</Text>
+            <View style={styles.tipsBox}>
+              {phase.challenges.map((challenge) => (
+                <Text key={`${phase.id}-${challenge}`} style={styles.tipItem}>
+                  • {challenge}
+                </Text>
+              ))}
+            </View>
           </View>
         ))}
 
@@ -122,6 +112,48 @@ const styles = StyleSheet.create({
     padding: 14,
     gap: 5,
   },
+  phaseCard: {
+    backgroundColor: '#F8FBFF',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#CFE0EF',
+    padding: 14,
+    gap: 10,
+  },
+  phaseHeader: {
+    gap: 2,
+  },
+  phaseBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#EAF4FC',
+    color: '#0B5F8F',
+    fontSize: 11,
+    fontWeight: '900',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+  },
+  phaseTitle: {
+    color: '#0D3D66',
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  phaseSubtitle: {
+    color: '#0B5F8F',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  phaseDescription: {
+    color: '#475A6F',
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  sectionTitle: {
+    color: '#1F3E66',
+    fontSize: 14,
+    fontWeight: '800',
+    marginTop: 2,
+  },
   cardTitle: {
     color: '#0D3D66',
     fontSize: 16,
@@ -139,6 +171,19 @@ const styles = StyleSheet.create({
   example: {
     color: '#334155',
     fontSize: 13,
+  },
+  tipsBox: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#D5E2ED',
+    borderRadius: 14,
+    padding: 10,
+    gap: 6,
+  },
+  tipItem: {
+    color: '#334155',
+    fontSize: 13,
+    lineHeight: 18,
   },
   footerCard: {
     marginTop: 4,

@@ -66,42 +66,50 @@ export const phases: Phase[] = [
     id: 'fase2',
     number: 2,
     title: 'Engenheiro de Medidas',
-    subtitle: 'Diagonais e Soma dos Ângulos Internos',
+    subtitle: 'Perímetro, Área e Apótema',
     description:
-      'Como um engenheiro de medidas, você agora utilizará fórmulas para calcular propriedades cruciais dos polígonos. Aprenderá a encontrar o número de diagonais e a soma dos ângulos internos, ferramentas essenciais para projetar estruturas geométricas.',
+      'Como um engenheiro de medidas, você vai calcular contornos e superfícies com fórmulas. Nesta fase, o foco é decidir quando usar perímetro, quando usar área e como aplicar o apótema em polígonos regulares.',
     objectives: [
-      'Calcular o número de diagonais de um polígono',
-      'Encontrar a soma dos ângulos internos',
-      'Aplicar fórmulas a diferentes polígonos',
-      'Resolver problemas com polígonos regulares',
+      'Calcular perímetro em figuras planas',
+      'Encontrar área de quadrados, retângulos e triângulos',
+      'Aplicar o apótema na área de polígonos regulares',
+      'Escolher a fórmula correta para cada situação',
     ],
     formulas: [
       {
-        title: 'Soma dos Ângulos Internos',
-        formula: 'S = (n - 2) × 180°',
+        title: 'Perímetro',
+        formula: 'P = soma de todos os lados',
         explanation:
-          'A soma de todos os ângulos internos de um polígono com n lados é calculada subtraindo 2 do número de lados, multiplicando por 180 graus.',
+          'O perímetro mede o contorno da figura. Basta somar todos os lados para descobrir quanto a forma “anda” em volta.',
         example:
-          'Um pentágono (5 lados): S = (5 - 2) × 180° = 3 × 180° = 540°',
+          'Um retângulo com lados 8 e 5: P = 8 + 5 + 8 + 5 = 26.',
       },
       {
-        title: 'Número de Diagonais',
-        formula: 'd = n(n-3)/2',
+        title: 'Área de Quadrado, Retângulo e Triângulo',
+        formula: 'A = l², A = b × h, A = (b × h) / 2',
         explanation:
-          'O número de diagonais de um polígono com n lados é calculado usando esta fórmula. Cada vértice conecta-se a (n-3) outros vértices através de diagonais.',
+          'Área mede a superfície ocupada pela figura. Cada forma tem uma fórmula própria, então é importante reconhecer o desenho antes de calcular.',
         example:
-          'Um hexágono (6 lados): d = 6(6-3)/2 = 6×3/2 = 9 diagonais',
+          'Um triângulo com base 10 e altura 6: A = (10 × 6) / 2 = 30.',
+      },
+      {
+        title: 'Área de Polígono Regular',
+        formula: 'A = (P × a) / 2',
+        explanation:
+          'Quando a figura é regular, o apótema ajuda a calcular a área com precisão usando o perímetro e a distância do centro ao meio de um lado.',
+        example:
+          'Se P = 24 e a = 4, então A = (24 × 4) / 2 = 48.',
       },
     ],
     concepts: [
-      'Triângulo como unidade: todo polígono pode ser dividido em triângulos',
-      'Relação entre número de lados e propriedades do polígono',
-      'Aplicação de fórmulas algébricas na geometria',
+      'Perímetro é o contorno da figura',
+      'Área mede a superfície ocupada',
+      'Apótema liga o centro ao meio de um lado, perpendicularmente',
     ],
     challenges: [
-      'Calcule a soma dos ângulos para polígonos com diferentes números de lados',
-      'Determine o número de diagonais de um heptágono',
-      'Resolva problemas inversos: encontre o número de lados a partir da soma dos ângulos',
+      'Descubra quando usar perímetro e quando usar área',
+      'Calcule a superfície de figuras simples com segurança',
+      'Aplique o apótema para resolver problemas de polígonos regulares',
     ],
   },
   {
@@ -157,36 +165,53 @@ export const phases: Phase[] = [
   {
     id: 'fase4',
     number: 4,
-    title: 'O Mosaico',
-    subtitle: 'Deducción Lógica de Ladrilhamentos',
+    title: 'Laboratório de Equações',
+    subtitle: 'Modelagem Algébrica em Geometria',
     description:
-      'Nesta fase, você descobrirá como polígonos regulares se encaixam perfeitamente para formar mosaicos. Aprenderá a lógica por trás dos padrões que enfeitam pisos, paredes e obras de arte ao redor do mundo.',
+      'Nesta fase, você vai resolver desafios geométricos com equações. Em vez de apenas reconhecer formas, será necessário modelar situações, encontrar incógnitas e validar resultados em construções do jogo.',
     objectives: [
-      'Entender condições para formação de mosaicos',
-      'Identificar quais polígonos regulares formam mosaicos regulares',
-      'Aplicar a regra de vértice para mosaicos',
-      'Reconhecer mosaicos no mundo real',
+      'Modelar situações geométricas com equações',
+      'Resolver equações do 1º grau e sistemas simples',
+      'Aplicar Pitágoras e relações angulares para encontrar medidas',
+      'Validar soluções algébricas em cenários visuais',
     ],
     formulas: [
       {
-        title: 'Regra Lógica do Vértice',
-        formula: 'Σ a_i = 360° (no vértice de junção)',
+        title: 'Perímetro e Área de Retângulo',
+        formula: 'P = 2x + 2y e A = x × y',
         explanation:
-          'Em um mosaico, a soma dos ângulos internos dos polígonos que se encontram em cada vértice deve ser exatamente 360 graus.',
+          'Com duas equações envolvendo os lados x e y, é possível determinar medidas exatas de um retângulo em problemas de construção.',
         example:
-          'Um hexágono regular (120°) pode ter exatamente 3 hexágonos em cada vértice: 3 × 120° = 360°',
+          'Se P = 30 e A = 56, então 2x + 2y = 30 e x × y = 56.',
+      },
+      {
+        title: 'Teorema de Pitágoras',
+        formula: 'a² + b² = c²',
+        explanation:
+          'Em triângulos retângulos, o quadrado da hipotenusa é a soma dos quadrados dos catetos. Isso permite encontrar medidas desconhecidas.',
+        example:
+          'Se c = 13 e b = 12, então a² + 12² = 13², logo a = 5.',
+      },
+      {
+        title: 'Equação da Reta',
+        formula: 'y = mx + b',
+        explanation:
+          'A posição de pontos no plano cartesiano pode ser prevista com uma função afim. O coeficiente angular m define inclinação e b define intercepto.',
+        example:
+          'Uma reta com m = 2 e b = 1 passa por (1,3), (3,7) e (5,11).',
       },
     ],
     concepts: [
-      'Apenas 3 polígonos regulares formam mosaicos: triângulo, quadrado, hexágono',
-      'Mosaicos semirregulares combinam mais de um tipo de polígono',
-      'Padrões simétricos em natureza e arte',
-      'Aplicações práticas em design e construção',
+      'Modelagem: transformar cenário em equação',
+      'Incógnita: valor desconhecido a ser descoberto',
+      'Sistema linear com duas variáveis',
+      'Validação matemática no contexto geométrico',
     ],
     challenges: [
-      'Determine quais polígonos regulares podem formar mosaicos',
-      'Calcule quantos polígonos de cada tipo se encontram em cada vértice',
-      'Design seu próprio mosaico usando polígonos regulares',
+      'Abrir o cofre resolvendo perímetro e área simultaneamente',
+      'Completar triângulos usando Pitágoras e soma dos ângulos',
+      'Ajustar uma rota no plano cartesiano com y = mx + b',
+      'Resolver sistemas em projetos geométricos com duas incógnitas',
     ],
   },
   {
@@ -238,6 +263,52 @@ export const phases: Phase[] = [
       'Calcule a área de um polígono irregular usando triangulação',
       'Encontre a apótema de um polígono regular conhecendo sua área',
       'Resolva problemas práticos de medição de terrenos e superfícies',
+    ],
+  },
+  {
+    id: 'fase6',
+    number: 6,
+    title: 'Álgebra Aplicada',
+    subtitle: 'Modelagem e Resolução de Sistemas',
+    description:
+      'A fase de Álgebra Aplicada conecta a geometria à álgebra: aqui você modela situações, monta equações e resolve sistemas para validar projetos e decisões.',
+    objectives: [
+      'Modelar situações geométricas com equações',
+      'Resolver equações do 1º grau e sistemas 2×2',
+      'Aplicar Pitágoras em problemas com escala',
+      'Raciocinar sobre otimização simples (área vs perímetro)',
+    ],
+    formulas: [
+      {
+        title: 'Equação Linear Simples',
+        formula: 'ax + b = c',
+        explanation: 'Isole x com operações inversas: x = (c - b) / a.',
+        example: '2x + 3 = 11 → x = (11 - 3) / 2 = 4.',
+      },
+      {
+        title: 'Sistema Linear 2×2 (exemplo)',
+        formula: 'x + y = 10; x - y = 2',
+        explanation: 'Soma e subtração permitem isolar e encontrar x e y.',
+        example: 'x = 6, y = 4.',
+      },
+      {
+        title: 'Teorema de Pitágoras',
+        formula: 'a² + b² = c²',
+        explanation: 'Use para encontrar um lado quando os outros dois são conhecidos.',
+        example: 'Se a = 3 e b = 4, c = 5.',
+      },
+    ],
+    concepts: [
+      'Isolamento de incógnitas',
+      'Métodos de resolução de sistemas: substituição e adição',
+      'Relação entre escala geométrica e medidas',
+      'Comparação de áreas sob restrições',
+    ],
+    challenges: [
+      'Transforme enunciados em equações',
+      'Resolva sistemas simples e valide soluções geometricamente',
+      'Use Pitágoras em problemas com escala',
+      'Escolha configurações que maximizem área com perímetro fixo',
     ],
   },
 ];

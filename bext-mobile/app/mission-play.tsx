@@ -9,6 +9,7 @@ import {
   StyleSheet,
   Text,
   View,
+  TextInput,
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Mission, getMissionById } from '@/src/data/missions';
@@ -32,6 +33,587 @@ function MissionHeader({ mission }: { mission: Mission }) {
       <Text style={styles.headerDescription}>{mission.description}</Text>
       <Text style={styles.headerObjective}>{mission.objective}</Text>
     </View>
+  );
+}
+
+function TriangleAreaPractice({ onComplete, alreadyCompleted, nextMissionId, onNext }: {
+  onComplete: () => void;
+  alreadyCompleted: boolean;
+  nextMissionId?: string | null;
+  onNext?: () => void;
+}) {
+  const [base, setBase] = useState('6');
+  const [height, setHeight] = useState('4');
+  const [submitted, setSubmitted] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const [canComplete, setCanComplete] = useState(false);
+  const area = (parseFloat(base || '0') * parseFloat(height || '0')) / 2;
+  const expectedArea = 12;
+
+  const handleValidate = () => {
+    const parsedBase = Number(base);
+    const parsedHeight = Number(height);
+
+    if (!Number.isFinite(parsedBase) || !Number.isFinite(parsedHeight) || parsedBase <= 0 || parsedHeight <= 0) {
+      setFeedback('Insira base e altura válidas, maiores que zero.');
+      setSubmitted(true);
+      setCanComplete(false);
+      return;
+    }
+
+    setSubmitted(true);
+    if (area === expectedArea) {
+      setFeedback(`Correto! A área é ${expectedArea} m².`);
+      setCanComplete(true);
+      return;
+    }
+
+    setFeedback(`Resultado incorreto. Para base 6 e altura 4, a área correta é ${expectedArea} m².`);
+    setCanComplete(false);
+  };
+
+  return (
+    <View style={styles.missionCard}>
+      <Text style={styles.sectionTitle}>Prática: Área de Triângulo</Text>
+      <Text style={styles.sectionSubtitle}>Digite base e altura para calcular a área.</Text>
+
+      <View style={styles.trainingCard}>
+        <Text style={styles.trainingTitle}>Valores</Text>
+        <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.caseContext}>Base (b)</Text>
+            <TextInput
+              style={styles.textInput}
+              keyboardType="numeric"
+              value={base}
+              onChangeText={(value) => {
+                setBase(value);
+                setSubmitted(false);
+                setCanComplete(false);
+                setFeedback(null);
+              }}
+            />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.caseContext}>Altura (h)</Text>
+            <TextInput
+              style={styles.textInput}
+              keyboardType="numeric"
+              value={height}
+              onChangeText={(value) => {
+                setHeight(value);
+                setSubmitted(false);
+                setCanComplete(false);
+                setFeedback(null);
+              }}
+            />
+          </View>
+        </View>
+
+        <Text style={[styles.caseContext, { marginTop: 10 }]}>Área atual: {Number.isNaN(area) ? '—' : `${area} m²`}</Text>
+
+        {!!feedback && <Text style={[styles.feedbackText, !canComplete && { color: '#B91C1C' }]}>{feedback}</Text>}
+
+        {!submitted ? (
+          <Pressable style={styles.nextCaseButton} onPress={handleValidate}>
+            <Text style={styles.nextCaseButtonText}>Validar resposta</Text>
+          </Pressable>
+        ) : canComplete ? (
+          <MissionCompletionAction alreadyCompleted={alreadyCompleted} nextMissionId={nextMissionId} onComplete={onComplete} onNext={onNext} />
+        ) : (
+          <Pressable
+            style={styles.nextCaseButton}
+            onPress={() => {
+              setSubmitted(false);
+              setFeedback(null);
+            }}
+          >
+            <Text style={styles.nextCaseButtonText}>Corrigir valores</Text>
+          </Pressable>
+        )}
+      </View>
+    </View>
+  );
+}
+
+function PolygonTriangulationPractice({ onComplete, alreadyCompleted, nextMissionId, onNext }: {
+  onComplete: () => void;
+  alreadyCompleted: boolean;
+  nextMissionId?: string | null;
+  onNext?: () => void;
+}) {
+  const [tri1, setTri1] = useState('12');
+  const [tri2, setTri2] = useState('18');
+  const [tri3, setTri3] = useState('24');
+  const [done, setDone] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const [canComplete, setCanComplete] = useState(false);
+
+  const total = (parseFloat(tri1 || '0') + parseFloat(tri2 || '0') + parseFloat(tri3 || '0')) || 0;
+  const expectedTotal = 54;
+
+  return (
+    <View style={styles.missionCard}>
+      <Text style={styles.sectionTitle}>Prática: Triangulação de Polígonos</Text>
+      <Text style={styles.sectionSubtitle}>Some as áreas dos triângulos que compõem o polígono.</Text>
+
+      <View style={styles.trainingCard}>
+        <Text style={styles.trainingTitle}>Áreas dos triângulos</Text>
+        <Text style={styles.caseContext}>Triângulo 1</Text>
+        <TextInput
+          style={styles.textInput}
+          keyboardType="numeric"
+          value={tri1}
+          onChangeText={(value) => {
+            setTri1(value);
+            setDone(false);
+            setCanComplete(false);
+            setFeedback(null);
+          }}
+        />
+        <Text style={styles.caseContext}>Triângulo 2</Text>
+        <TextInput
+          style={styles.textInput}
+          keyboardType="numeric"
+          value={tri2}
+          onChangeText={(value) => {
+            setTri2(value);
+            setDone(false);
+            setCanComplete(false);
+            setFeedback(null);
+          }}
+        />
+        <Text style={styles.caseContext}>Triângulo 3</Text>
+        <TextInput
+          style={styles.textInput}
+          keyboardType="numeric"
+          value={tri3}
+          onChangeText={(value) => {
+            setTri3(value);
+            setDone(false);
+            setCanComplete(false);
+            setFeedback(null);
+          }}
+        />
+
+        <Text style={[styles.caseContext, { marginTop: 8 }]}>Área total: {total} m²</Text>
+
+        {!!feedback && <Text style={[styles.feedbackText, !canComplete && { color: '#B91C1C' }]}>{feedback}</Text>}
+
+        {!done ? (
+          <Pressable
+            style={styles.nextCaseButton}
+            onPress={() => {
+              const values = [tri1, tri2, tri3].map((value) => Number(value));
+              if (values.some((value) => !Number.isFinite(value) || value <= 0)) {
+                setFeedback('Preencha as três áreas com números válidos maiores que zero.');
+                setDone(true);
+                setCanComplete(false);
+                return;
+              }
+
+              setDone(true);
+              if (total === expectedTotal) {
+                setFeedback(`Correto! A área total é ${expectedTotal} m².`);
+                setCanComplete(true);
+                return;
+              }
+
+              setFeedback(`Soma incorreta. Para os valores dados, o total correto é ${expectedTotal} m².`);
+              setCanComplete(false);
+            }}
+          >
+            <Text style={styles.nextCaseButtonText}>Confirmar soma</Text>
+          </Pressable>
+        ) : canComplete ? (
+          <MissionCompletionAction alreadyCompleted={alreadyCompleted} nextMissionId={nextMissionId} onComplete={onComplete} onNext={onNext} />
+        ) : (
+          <Pressable
+            style={styles.nextCaseButton}
+            onPress={() => {
+              setDone(false);
+              setFeedback(null);
+            }}
+          >
+            <Text style={styles.nextCaseButtonText}>Corrigir</Text>
+          </Pressable>
+        )}
+      </View>
+    </View>
+  );
+}
+
+function ApothemPractice({ onComplete, alreadyCompleted, nextMissionId, onNext }: {
+  onComplete: () => void;
+  alreadyCompleted: boolean;
+  nextMissionId?: string | null;
+  onNext?: () => void;
+}) {
+  const [perimeter, setPerimeter] = useState('24');
+  const [apothem, setApothem] = useState('4');
+  const [checked, setChecked] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const [canComplete, setCanComplete] = useState(false);
+
+  const area = (parseFloat(perimeter || '0') * parseFloat(apothem || '0')) / 2;
+  const expectedArea = 48;
+
+  return (
+    <View style={styles.missionCard}>
+      <Text style={styles.sectionTitle}>Prática: Área via Apótema</Text>
+      <Text style={styles.sectionSubtitle}>Use A = (P × a) / 2</Text>
+
+      <View style={styles.trainingCard}>
+        <Text style={styles.caseContext}>Perímetro (P)</Text>
+        <TextInput
+          style={styles.textInput}
+          keyboardType="numeric"
+          value={perimeter}
+          onChangeText={(value) => {
+            setPerimeter(value);
+            setChecked(false);
+            setCanComplete(false);
+            setFeedback(null);
+          }}
+        />
+        <Text style={styles.caseContext}>Apótema (a)</Text>
+        <TextInput
+          style={styles.textInput}
+          keyboardType="numeric"
+          value={apothem}
+          onChangeText={(value) => {
+            setApothem(value);
+            setChecked(false);
+            setCanComplete(false);
+            setFeedback(null);
+          }}
+        />
+
+        <Text style={[styles.caseContext, { marginTop: 8 }]}>Área: {Number.isNaN(area) ? '—' : `${area} m²`}</Text>
+
+        {!!feedback && <Text style={[styles.feedbackText, !canComplete && { color: '#B91C1C' }]}>{feedback}</Text>}
+
+        {!checked ? (
+          <Pressable
+            style={styles.nextCaseButton}
+            onPress={() => {
+              const parsedPerimeter = Number(perimeter);
+              const parsedApothem = Number(apothem);
+
+              if (!Number.isFinite(parsedPerimeter) || !Number.isFinite(parsedApothem) || parsedPerimeter <= 0 || parsedApothem <= 0) {
+                setFeedback('Perímetro e apótema devem ser números válidos maiores que zero.');
+                setChecked(true);
+                setCanComplete(false);
+                return;
+              }
+
+              setChecked(true);
+              if (area === expectedArea) {
+                setFeedback(`Correto! A área é ${expectedArea} m².`);
+                setCanComplete(true);
+                return;
+              }
+
+              setFeedback(`Resultado incorreto. Para P = 24 e a = 4, a área correta é ${expectedArea} m².`);
+              setCanComplete(false);
+            }}
+          >
+            <Text style={styles.nextCaseButtonText}>Validar cálculo</Text>
+          </Pressable>
+        ) : canComplete ? (
+          <MissionCompletionAction alreadyCompleted={alreadyCompleted} nextMissionId={nextMissionId} onComplete={onComplete} onNext={onNext} />
+        ) : (
+          <Pressable
+            style={styles.nextCaseButton}
+            onPress={() => {
+              setChecked(false);
+              setFeedback(null);
+            }}
+          >
+            <Text style={styles.nextCaseButtonText}>Corrigir</Text>
+          </Pressable>
+        )}
+      </View>
+    </View>
+  );
+}
+
+function LinearWorkshop({ onComplete, alreadyCompleted, nextMissionId, onNext }: {
+  onComplete: () => void;
+  alreadyCompleted: boolean;
+  nextMissionId?: string | null;
+  onNext?: () => void;
+}) {
+  const [x, setX] = useState('2');
+  const [checked, setChecked] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const [canComplete, setCanComplete] = useState(false);
+  const expected = 2;
+
+  return (
+    <View style={styles.missionCard}>
+      <Text style={styles.sectionTitle}>Oficina Linear</Text>
+      <Text style={styles.sectionSubtitle}>Resolva 3x + 2 = 8</Text>
+
+      <View style={styles.trainingCard}>
+        <Text style={styles.caseContext}>Valor de x</Text>
+        <TextInput
+          style={styles.textInput}
+          keyboardType="numeric"
+          value={x}
+          onChangeText={(value) => {
+            setX(value);
+            setChecked(false);
+            setCanComplete(false);
+            setFeedback(null);
+          }}
+        />
+
+        {!!feedback && <Text style={[styles.feedbackText, !canComplete && { color: '#B91C1C' }]}>{feedback}</Text>}
+
+        {!checked ? (
+          <Pressable
+            style={styles.nextCaseButton}
+            onPress={() => {
+              const parsedX = Number(x);
+              if (!Number.isFinite(parsedX)) {
+                setFeedback('Insira um valor numérico válido para x.');
+                setChecked(true);
+                setCanComplete(false);
+                return;
+              }
+
+              setChecked(true);
+              if (parsedX === expected) {
+                setFeedback(`Correto! x = ${expected}.`);
+                setCanComplete(true);
+                return;
+              }
+
+              setFeedback(`Resposta incorreta. O valor correto é ${expected}.`);
+              setCanComplete(false);
+            }}
+          >
+            <Text style={styles.nextCaseButtonText}>Verificar</Text>
+          </Pressable>
+        ) : canComplete ? (
+          <MissionCompletionAction alreadyCompleted={alreadyCompleted} nextMissionId={nextMissionId} onComplete={onComplete} onNext={onNext} />
+        ) : (
+          <Pressable
+            style={styles.nextCaseButton}
+            onPress={() => {
+              setChecked(false);
+              setFeedback(null);
+            }}
+          >
+            <Text style={styles.nextCaseButtonText}>Tentar novamente</Text>
+          </Pressable>
+        )}
+      </View>
+    </View>
+  );
+}
+
+function SystemSolver({ onComplete, alreadyCompleted, nextMissionId, onNext }: {
+  onComplete: () => void;
+  alreadyCompleted: boolean;
+  nextMissionId?: string | null;
+  onNext?: () => void;
+}) {
+  const [x, setX] = useState('10');
+  const [y, setY] = useState('7');
+  const [checked, setChecked] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const [canComplete, setCanComplete] = useState(false);
+
+  return (
+    <View style={styles.missionCard}>
+      <Text style={styles.sectionTitle}>Solver de Sistemas</Text>
+      <Text style={styles.sectionSubtitle}>Sistema: 2x + 2y = 34 e x - y = 3</Text>
+
+      <View style={styles.trainingCard}>
+        <Text style={styles.caseContext}>x</Text>
+        <TextInput
+          style={styles.textInput}
+          keyboardType="numeric"
+          value={x}
+          onChangeText={(value) => {
+            setX(value);
+            setChecked(false);
+            setCanComplete(false);
+            setFeedback(null);
+          }}
+        />
+        <Text style={styles.caseContext}>y</Text>
+        <TextInput
+          style={styles.textInput}
+          keyboardType="numeric"
+          value={y}
+          onChangeText={(value) => {
+            setY(value);
+            setChecked(false);
+            setCanComplete(false);
+            setFeedback(null);
+          }}
+        />
+
+        {!!feedback && <Text style={[styles.feedbackText, !canComplete && { color: '#B91C1C' }]}>{feedback}</Text>}
+
+        {!checked ? (
+          <Pressable
+            style={styles.nextCaseButton}
+            onPress={() => {
+              const parsedX = Number(x);
+              const parsedY = Number(y);
+
+              if (!Number.isFinite(parsedX) || !Number.isFinite(parsedY)) {
+                setFeedback('Insira valores numéricos válidos para x e y.');
+                setChecked(true);
+                setCanComplete(false);
+                return;
+              }
+
+              setChecked(true);
+              if (parsedX === 10 && parsedY === 7) {
+                setFeedback('Solução correta!');
+                setCanComplete(true);
+                return;
+              }
+
+              setFeedback('Solução incorreta. O par correto é x = 10 e y = 7.');
+              setCanComplete(false);
+            }}
+          >
+            <Text style={styles.nextCaseButtonText}>Validar</Text>
+          </Pressable>
+        ) : canComplete ? (
+          <MissionCompletionAction alreadyCompleted={alreadyCompleted} nextMissionId={nextMissionId} onComplete={onComplete} onNext={onNext} />
+        ) : (
+          <Pressable
+            style={styles.nextCaseButton}
+            onPress={() => {
+              setChecked(false);
+              setFeedback(null);
+            }}
+          >
+            <Text style={styles.nextCaseButtonText}>Tentar novamente</Text>
+          </Pressable>
+        )}
+      </View>
+    </View>
+  );
+}
+
+function PitagorasScale({ onComplete, alreadyCompleted, nextMissionId, onNext }: {
+  onComplete: () => void;
+  alreadyCompleted: boolean;
+  nextMissionId?: string | null;
+  onNext?: () => void;
+}) {
+  const [a, setA] = useState('5');
+  const [b, setB] = useState('12');
+  const [checked, setChecked] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const [canComplete, setCanComplete] = useState(false);
+  const c = Math.sqrt((parseFloat(a || '0') ** 2) + (parseFloat(b || '0') ** 2));
+  const expectedHypotenuse = 13;
+
+  return (
+    <View style={styles.missionCard}>
+      <Text style={styles.sectionTitle}>Escala de Pitágoras</Text>
+      <Text style={styles.sectionSubtitle}>Calcule a hipotenusa</Text>
+
+      <View style={styles.trainingCard}>
+        <Text style={styles.caseContext}>Cateto a</Text>
+        <TextInput
+          style={styles.textInput}
+          keyboardType="numeric"
+          value={a}
+          onChangeText={(value) => {
+            setA(value);
+            setChecked(false);
+            setCanComplete(false);
+            setFeedback(null);
+          }}
+        />
+        <Text style={styles.caseContext}>Cateto b</Text>
+        <TextInput
+          style={styles.textInput}
+          keyboardType="numeric"
+          value={b}
+          onChangeText={(value) => {
+            setB(value);
+            setChecked(false);
+            setCanComplete(false);
+            setFeedback(null);
+          }}
+        />
+
+        {!!feedback && <Text style={[styles.feedbackText, !canComplete && { color: '#B91C1C' }]}>{feedback}</Text>}
+
+        {!checked ? (
+          <Pressable
+            style={styles.nextCaseButton}
+            onPress={() => {
+              const parsedA = Number(a);
+              const parsedB = Number(b);
+
+              if (!Number.isFinite(parsedA) || !Number.isFinite(parsedB) || parsedA <= 0 || parsedB <= 0) {
+                setFeedback('Os dois catetos precisam ser números válidos maiores que zero.');
+                setChecked(true);
+                setCanComplete(false);
+                return;
+              }
+
+              setChecked(true);
+              if (Math.round(c * 100) / 100 === expectedHypotenuse) {
+                setFeedback(`Correto! A hipotenusa é ${expectedHypotenuse}.`);
+                setCanComplete(true);
+                return;
+              }
+
+              setFeedback(`Resultado incorreto. Para 5 e 12, a hipotenusa correta é ${expectedHypotenuse}.`);
+              setCanComplete(false);
+            }}
+          >
+            <Text style={styles.nextCaseButtonText}>Calcular</Text>
+          </Pressable>
+        ) : canComplete ? (
+          <MissionCompletionAction alreadyCompleted={alreadyCompleted} nextMissionId={nextMissionId} onComplete={onComplete} onNext={onNext} />
+        ) : (
+          <Pressable
+            style={styles.nextCaseButton}
+            onPress={() => {
+              setChecked(false);
+              setFeedback(null);
+            }}
+          >
+            <Text style={styles.nextCaseButtonText}>Recalcular</Text>
+          </Pressable>
+        )}
+      </View>
+    </View>
+  );
+}
+
+function OptimizationChallenge({ onComplete, alreadyCompleted, nextMissionId, onNext }: {
+  onComplete: () => void;
+  alreadyCompleted: boolean;
+  nextMissionId?: string | null;
+  onNext?: () => void;
+}) {
+  const questions: QuizQuestion[] = [
+    {
+      id: 'opt1',
+      prompt: 'Você tem duas caixas: A consome 3m de material por unidade e B consome 5m. Se tem 30m, qual combinação maximiza unidades totais?',
+      options: ['10 A', '6 A + 3 B', '5 B', '2 A + 4 B'],
+      answer: '6 A + 3 B',
+      explanation: '6×3 + 3×5 = 18 + 12 = 30, soma 9 unidades que é máxima.',
+    },
+  ];
+
+  return (
+    <MissionQuizFlow title="Desafio de Otimização" subtitle="Escolha a melhor alocação" questions={questions} onComplete={onComplete} alreadyCompleted={alreadyCompleted} nextMissionId={nextMissionId} onNext={onNext} />
   );
 }
 
@@ -1701,50 +2283,40 @@ function ExternalAngleVisualizer({
   nextMissionId?: string | null;
   onNext?: () => void;
 }) {
-  const [n, setN] = useState(6);
-  const ae = Math.round((360 / n) * 100) / 100;
-  const [rotation, setRotation] = useState(0);
-
-  const rotateStep = () => {
-    const next = Math.round((rotation + ae) * 100) / 100;
-    setRotation(next % 360);
-  };
-
-  const completed = Math.abs(rotation % 360) < 0.001;
+  const questions: QuizQuestion[] = [
+    {
+      id: 'ext1',
+      prompt: 'Qual é o ângulo externo de um triângulo regular (n = 3)?',
+      options: ['60°', '90°', '120°', '180°'],
+      answer: '120°',
+      explanation: 'a_e = 360° / n, então 360° / 3 = 120°.',
+    },
+    {
+      id: 'ext2',
+      prompt: 'Qual é o ângulo externo de um quadrado regular (n = 4)?',
+      options: ['45°', '60°', '90°', '120°'],
+      answer: '90°',
+      explanation: '360° / 4 = 90°.',
+    },
+    {
+      id: 'ext3',
+      prompt: 'Qual é o ângulo externo de um octógono regular (n = 8)?',
+      options: ['22.5°', '30°', '45°', '60°'],
+      answer: '45°',
+      explanation: '360° / 8 = 45°.',
+    },
+  ];
 
   return (
-    <View style={styles.missionCard}>
-      <Text style={styles.sectionTitle}>Ângulos Externos</Text>
-      <Text style={styles.sectionSubtitle}>Gire o polígono em passos de a_e = 360° / n até completar 360°.</Text>
-
-      <View style={styles.trainingCard}>
-        <Text style={styles.trainingTitle}>Lados: {n} — passo: {ae}°</Text>
-        <View style={{ alignItems: 'center', paddingVertical: 12 }}>
-          <View style={{ width: 140, height: 140, borderRadius: 8, backgroundColor: '#EEF4FA', alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ color: '#0B5F8F', fontWeight: '900' }}>Rotação: {rotation.toFixed(0)}°</Text>
-          </View>
-        </View>
-
-        <View style={styles.optionsWrap}>
-          <Pressable style={styles.optionButton} onPress={() => setN((v) => Math.max(3, v - 1))}><Text style={styles.optionButtonText}>−</Text></Pressable>
-          <Pressable style={styles.optionButton} onPress={() => setN((v) => Math.min(12, v + 1))}><Text style={styles.optionButtonText}>+</Text></Pressable>
-        </View>
-
-        <Pressable style={[styles.nextCaseButton, { marginTop: 12 }]} onPress={rotateStep}>
-          <Text style={styles.nextCaseButtonText}>Girar {ae}°</Text>
-        </Pressable>
-
-        {completed && (
-          <View style={{ marginTop: 12 }}>
-            <View style={styles.successCard}>
-              <Text style={styles.successTitle}>Perfeito!</Text>
-              <Text style={styles.successText}>Após passos de {ae}° você completou 360° — soma dos ângulos externos = 360°.</Text>
-            </View>
-            <MissionCompletionAction alreadyCompleted={alreadyCompleted} nextMissionId={nextMissionId} onComplete={onComplete} onNext={onNext} />
-          </View>
-        )}
-      </View>
-    </View>
+    <MissionQuizFlow
+      title="Ângulos Externos"
+      subtitle="Calcule a_e = 360° / n para polígonos regulares"
+      questions={questions}
+      onComplete={onComplete}
+      alreadyCompleted={alreadyCompleted}
+      nextMissionId={nextMissionId}
+      onNext={onNext}
+    />
   );
 }
 
@@ -1759,46 +2331,323 @@ function SymmetryExplorer({
   nextMissionId?: string | null;
   onNext?: () => void;
 }) {
-  const [n, setN] = useState(8);
-  const options = [n, n - 1, n + 1, Math.max(3, Math.floor(n / 2))];
-  const [selected, setSelected] = useState<number | null>(null);
+  const questions: QuizQuestion[] = [
+    {
+      id: 'sym1',
+      prompt: 'Quantos eixos de simetria tem um quadrado regular (n = 4)?',
+      options: ['2', '4', '6', '8'],
+      answer: '4',
+      explanation: 'Polígonos regulares possuem n eixos de simetria; para o quadrado, n = 4.',
+    },
+    {
+      id: 'sym2',
+      prompt: 'Quantos eixos de simetria tem um hexágono regular (n = 6)?',
+      options: ['3', '6', '5', '4'],
+      answer: '6',
+      explanation: 'Hexágono regular tem 6 eixos — um por vértice e por lado.',
+    },
+    {
+      id: 'sym3',
+      prompt: 'Quantos eixos de simetria tem um triângulo equilátero (n = 3)?',
+      options: ['1', '2', '3', '6'],
+      answer: '3',
+      explanation: 'Triângulo equilátero tem 3 eixos de simetria, um por vértice.',
+    },
+  ];
 
-  const correct = n;
-  const solved = selected === correct;
+  return (
+    <MissionQuizFlow
+      title="Mapa da Simetria"
+      subtitle="Identifique o número de eixos de simetria em polígonos regulares"
+      questions={questions}
+      onComplete={onComplete}
+      alreadyCompleted={alreadyCompleted}
+      nextMissionId={nextMissionId}
+      onNext={onNext}
+    />
+  );
+}
+
+function EquationVaultMission({
+  onComplete,
+  alreadyCompleted,
+  nextMissionId,
+  onNext,
+}: {
+  onComplete: () => void;
+  alreadyCompleted: boolean;
+  nextMissionId?: string | null;
+  onNext?: () => void;
+}) {
+  const [x, setX] = useState(4);
+  const [y, setY] = useState(4);
+
+  const perimeter = 2 * x + 2 * y;
+  const area = x * y;
+
+  const perimeterOk = perimeter === 30;
+  const areaOk = area === 56;
+  const solved = perimeterOk && areaOk;
 
   return (
     <View style={styles.missionCard}>
-      <Text style={styles.sectionTitle}>Simetria em Polígonos Regulares</Text>
-      <Text style={styles.sectionSubtitle}>Identifique quantos eixos de simetria tem um polígono regular.</Text>
+      <Text style={styles.sectionTitle}>Cofre Geométrico</Text>
+      <Text style={styles.sectionSubtitle}>Ajuste x e y para cumprir as duas equações simultaneamente.</Text>
 
       <View style={styles.trainingCard}>
-        <Text style={styles.trainingTitle}>Escolha o número de eixos para n = {n}</Text>
-        <View style={styles.optionsWrap}>
-          {options.map((opt) => (
-            <Pressable
-              key={String(opt)}
-              style={({ pressed }) => [styles.optionButton, selected === opt && styles.optionButtonSelected, pressed && styles.optionButtonPressed]}
-              onPress={() => setSelected(opt)}
-            >
-              <Text style={styles.optionButtonText}>{opt}</Text>
-            </Pressable>
-          ))}
-        </View>
+        <Text style={styles.trainingTitle}>Regras do cofre</Text>
+        <Text style={styles.caseContext}>2x + 2y = 30</Text>
+        <Text style={styles.caseContext}>x × y = 56</Text>
 
-        <View style={{ marginTop: 8 }}>
-          <Pressable style={styles.nextCaseButton} onPress={() => {}}>
-            <Text style={styles.nextCaseButtonText}>Exibir animação (em desenvolvimento)</Text>
-          </Pressable>
-        </View>
-
-        {selected !== null && (
-          <View style={{ marginTop: 10 }}>
-            <Text style={styles.feedbackText}>{solved ? 'Correto — número de eixos = número de lados.' : 'Resposta incorreta — reveja a definição.'}</Text>
-            {solved && <MissionCompletionAction alreadyCompleted={alreadyCompleted} nextMissionId={nextMissionId} onComplete={onComplete} onNext={onNext} />}
+        <View style={styles.equationAdjustGrid}>
+          <View style={styles.equationAdjustCard}>
+            <Text style={styles.equationAdjustLabel}>Valor de x</Text>
+            <View style={styles.equationAdjustControls}>
+              <Pressable
+                style={({ pressed }) => [styles.optionButton, pressed && styles.optionButtonPressed]}
+                onPress={() => setX((prev) => Math.max(1, prev - 1))}
+              >
+                <Text style={styles.optionButtonText}>-</Text>
+              </Pressable>
+              <Text style={styles.equationAdjustValue}>{x}</Text>
+              <Pressable
+                style={({ pressed }) => [styles.optionButton, pressed && styles.optionButtonPressed]}
+                onPress={() => setX((prev) => Math.min(30, prev + 1))}
+              >
+                <Text style={styles.optionButtonText}>+</Text>
+              </Pressable>
+            </View>
           </View>
+
+          <View style={styles.equationAdjustCard}>
+            <Text style={styles.equationAdjustLabel}>Valor de y</Text>
+            <View style={styles.equationAdjustControls}>
+              <Pressable
+                style={({ pressed }) => [styles.optionButton, pressed && styles.optionButtonPressed]}
+                onPress={() => setY((prev) => Math.max(1, prev - 1))}
+              >
+                <Text style={styles.optionButtonText}>-</Text>
+              </Pressable>
+              <Text style={styles.equationAdjustValue}>{y}</Text>
+              <Pressable
+                style={({ pressed }) => [styles.optionButton, pressed && styles.optionButtonPressed]}
+                onPress={() => setY((prev) => Math.min(30, prev + 1))}
+              >
+                <Text style={styles.optionButtonText}>+</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.equationStatusWrap}>
+          <Text style={[styles.equationStatusText, perimeterOk && styles.equationStatusTextOk]}>
+            Perímetro atual: {perimeter} {perimeterOk ? 'OK' : '(alvo 30)'}
+          </Text>
+          <Text style={[styles.equationStatusText, areaOk && styles.equationStatusTextOk]}>
+            Área atual: {area} {areaOk ? 'OK' : '(alvo 56)'}
+          </Text>
+        </View>
+
+        {solved && (
+          <>
+            <View style={styles.successCard}>
+              <Text style={styles.successTitle}>Cofre aberto!</Text>
+              <Text style={styles.successText}>Você encontrou medidas que satisfazem as duas equações.</Text>
+            </View>
+            <MissionCompletionAction
+              alreadyCompleted={alreadyCompleted}
+              nextMissionId={nextMissionId}
+              onComplete={onComplete}
+              onNext={onNext}
+            />
+          </>
         )}
       </View>
     </View>
+  );
+}
+
+function TriangleBalanceMission(props: {
+  onComplete: () => void;
+  alreadyCompleted: boolean;
+  nextMissionId?: string | null;
+  onNext?: () => void;
+}) {
+  const questions: QuizQuestion[] = [
+    {
+      id: 'tb1',
+      prompt: 'Em um triângulo retângulo: x² + 12² = 13². Qual o valor de x?',
+      options: ['4', '5', '6', '7'],
+      answer: '5',
+      explanation: 'x² = 169 - 144 = 25, então x = 5.',
+    },
+    {
+      id: 'tb2',
+      prompt: 'Resolva 8^2 + x^2 = 17^2 para encontrar o outro cateto.',
+      options: ['12', '13', '15', '16'],
+      answer: '15',
+      explanation: 'x² = 289 - 64 = 225, logo x = 15.',
+    },
+    {
+      id: 'tb3',
+      prompt: 'Em um triângulo, x + 35 + 90 = 180. Quanto vale x?',
+      options: ['45', '50', '55', '60'],
+      answer: '55',
+      explanation: 'x = 180 - 125 = 55.',
+    },
+  ];
+
+  return (
+    <MissionQuizFlow
+      {...props}
+      title="Triângulo em Equilíbrio"
+      subtitle="Use Pitágoras e soma dos ângulos para descobrir medidas faltantes."
+      questions={questions}
+    />
+  );
+}
+
+function CartesianRouteMission({
+  onComplete,
+  alreadyCompleted,
+  nextMissionId,
+  onNext,
+}: {
+  onComplete: () => void;
+  alreadyCompleted: boolean;
+  nextMissionId?: string | null;
+  onNext?: () => void;
+}) {
+  const [m, setM] = useState(0);
+  const [b, setB] = useState(0);
+
+  const pointAOk = m * 1 + b === 3;
+  const pointBOk = m * 3 + b === 7;
+  const forecastOk = m * 5 + b === 11;
+  const solved = pointAOk && pointBOk && forecastOk;
+
+  return (
+    <View style={styles.missionCard}>
+      <Text style={styles.sectionTitle}>Rota no Plano Cartesiano</Text>
+      <Text style={styles.sectionSubtitle}>Ajuste m e b para modelar a rota usando y = mx + b.</Text>
+
+      <View style={styles.trainingCard}>
+        <Text style={styles.trainingTitle}>Pontos da rota</Text>
+        <Text style={styles.caseContext}>A(1, 3), B(3, 7) e previsão para x = 5 com y = 11</Text>
+
+        <View style={styles.equationAdjustGrid}>
+          <View style={styles.equationAdjustCard}>
+            <Text style={styles.equationAdjustLabel}>Coeficiente m</Text>
+            <View style={styles.equationAdjustControls}>
+              <Pressable
+                style={({ pressed }) => [styles.optionButton, pressed && styles.optionButtonPressed]}
+                onPress={() => setM((prev) => Math.max(-10, prev - 1))}
+              >
+                <Text style={styles.optionButtonText}>-</Text>
+              </Pressable>
+              <Text style={styles.equationAdjustValue}>{m}</Text>
+              <Pressable
+                style={({ pressed }) => [styles.optionButton, pressed && styles.optionButtonPressed]}
+                onPress={() => setM((prev) => Math.min(10, prev + 1))}
+              >
+                <Text style={styles.optionButtonText}>+</Text>
+              </Pressable>
+            </View>
+          </View>
+
+          <View style={styles.equationAdjustCard}>
+            <Text style={styles.equationAdjustLabel}>Intercepto b</Text>
+            <View style={styles.equationAdjustControls}>
+              <Pressable
+                style={({ pressed }) => [styles.optionButton, pressed && styles.optionButtonPressed]}
+                onPress={() => setB((prev) => Math.max(-10, prev - 1))}
+              >
+                <Text style={styles.optionButtonText}>-</Text>
+              </Pressable>
+              <Text style={styles.equationAdjustValue}>{b}</Text>
+              <Pressable
+                style={({ pressed }) => [styles.optionButton, pressed && styles.optionButtonPressed]}
+                onPress={() => setB((prev) => Math.min(10, prev + 1))}
+              >
+                <Text style={styles.optionButtonText}>+</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.equationStatusWrap}>
+          <Text style={[styles.equationStatusText, pointAOk && styles.equationStatusTextOk]}>
+            Teste em A: {m} x 1 + {b} = {m + b} {pointAOk ? 'OK' : '(alvo 3)'}
+          </Text>
+          <Text style={[styles.equationStatusText, pointBOk && styles.equationStatusTextOk]}>
+            Teste em B: {m} x 3 + {b} = {3 * m + b} {pointBOk ? 'OK' : '(alvo 7)'}
+          </Text>
+          <Text style={[styles.equationStatusText, forecastOk && styles.equationStatusTextOk]}>
+            Previsão x=5: y = {5 * m + b} {forecastOk ? 'OK' : '(alvo 11)'}
+          </Text>
+        </View>
+
+        {solved && (
+          <>
+            <View style={styles.successCard}>
+              <Text style={styles.successTitle}>Rota validada!</Text>
+              <Text style={styles.successText}>A função y = {m}x + {b} atende todos os pontos e previsão.</Text>
+            </View>
+            <MissionCompletionAction
+              alreadyCompleted={alreadyCompleted}
+              nextMissionId={nextMissionId}
+              onComplete={onComplete}
+              onNext={onNext}
+            />
+          </>
+        )}
+      </View>
+    </View>
+  );
+}
+
+function SystemBlueprintMission(props: {
+  onComplete: () => void;
+  alreadyCompleted: boolean;
+  nextMissionId?: string | null;
+  onNext?: () => void;
+}) {
+  const questions: QuizQuestion[] = [
+    {
+      id: 'sb1',
+      prompt: 'Para um retângulo com perímetro 34 e diferença entre lados 3, qual sistema representa o problema?',
+      options: [
+        '2x + 2y = 34 e x - y = 3',
+        'x + y = 34 e x + y = 3',
+        '2x + y = 34 e x + y = 3',
+        'xy = 34 e x - y = 3',
+      ],
+      answer: '2x + 2y = 34 e x - y = 3',
+      explanation: 'Perímetro gera 2x + 2y = 34 e a diferença gera x - y = 3.',
+    },
+    {
+      id: 'sb2',
+      prompt: 'Resolvendo o sistema, quais são os lados do retângulo?',
+      options: ['10 e 7', '11 e 8', '12 e 9', '13 e 10'],
+      answer: '10 e 7',
+      explanation: 'De x - y = 3, x = y + 3. Substituindo no perímetro: 2(y+3) + 2y = 34, então y = 7 e x = 10.',
+    },
+    {
+      id: 'sb3',
+      prompt: 'Com lados 10 e 7, qual a area final?',
+      options: ['60', '70', '80', '90'],
+      answer: '70',
+      explanation: 'Área de retângulo: A = x × y = 10 × 7 = 70.',
+    },
+  ];
+
+  return (
+    <MissionQuizFlow
+      {...props}
+      title="Projeto por Sistema"
+      subtitle="Modele cenários geométricos com duas equações e valide o resultado."
+      questions={questions}
+    />
   );
 }
 
@@ -2233,6 +3082,94 @@ export default function MissionPlayScreen() {
             nextMissionId={nextMissionId}
           />
         )}
+        {mission.id === 'fase4_m1' && (
+          <EquationVaultMission
+            onComplete={handleCompleteMission}
+            onNext={handleNextMission}
+            alreadyCompleted={missionAlreadyCompleted}
+            nextMissionId={nextMissionId}
+          />
+        )}
+        {mission.id === 'fase4_m2' && (
+          <TriangleBalanceMission
+            onComplete={handleCompleteMission}
+            onNext={handleNextMission}
+            alreadyCompleted={missionAlreadyCompleted}
+            nextMissionId={nextMissionId}
+          />
+        )}
+        {mission.id === 'fase4_m3' && (
+          <CartesianRouteMission
+            onComplete={handleCompleteMission}
+            onNext={handleNextMission}
+            alreadyCompleted={missionAlreadyCompleted}
+            nextMissionId={nextMissionId}
+          />
+        )}
+        {mission.id === 'fase4_m4' && (
+          <SystemBlueprintMission
+            onComplete={handleCompleteMission}
+            onNext={handleNextMission}
+            alreadyCompleted={missionAlreadyCompleted}
+            nextMissionId={nextMissionId}
+          />
+        )}
+        {mission.id === 'fase5_m1' && (
+          <TriangleAreaPractice
+            onComplete={handleCompleteMission}
+            onNext={handleNextMission}
+            alreadyCompleted={missionAlreadyCompleted}
+            nextMissionId={nextMissionId}
+          />
+        )}
+        {mission.id === 'fase5_m2' && (
+          <PolygonTriangulationPractice
+            onComplete={handleCompleteMission}
+            onNext={handleNextMission}
+            alreadyCompleted={missionAlreadyCompleted}
+            nextMissionId={nextMissionId}
+          />
+        )}
+        {mission.id === 'fase5_m3' && (
+          <ApothemPractice
+            onComplete={handleCompleteMission}
+            onNext={handleNextMission}
+            alreadyCompleted={missionAlreadyCompleted}
+            nextMissionId={nextMissionId}
+          />
+        )}
+        {mission.id === 'fase6_m1' && (
+          <LinearWorkshop
+            onComplete={handleCompleteMission}
+            onNext={handleNextMission}
+            alreadyCompleted={missionAlreadyCompleted}
+            nextMissionId={nextMissionId}
+          />
+        )}
+        {mission.id === 'fase6_m2' && (
+          <SystemSolver
+            onComplete={handleCompleteMission}
+            onNext={handleNextMission}
+            alreadyCompleted={missionAlreadyCompleted}
+            nextMissionId={nextMissionId}
+          />
+        )}
+        {mission.id === 'fase6_m3' && (
+          <PitagorasScale
+            onComplete={handleCompleteMission}
+            onNext={handleNextMission}
+            alreadyCompleted={missionAlreadyCompleted}
+            nextMissionId={nextMissionId}
+          />
+        )}
+        {mission.id === 'fase6_m4' && (
+          <OptimizationChallenge
+            onComplete={handleCompleteMission}
+            onNext={handleNextMission}
+            alreadyCompleted={missionAlreadyCompleted}
+            nextMissionId={nextMissionId}
+          />
+        )}
         {![
           'fase1_m1',
           'fase1_m2',
@@ -2244,6 +3181,20 @@ export default function MissionPlayScreen() {
           'fase2_m3',
           'fase2_m4',
           'fase2_m5',
+          'fase3_m1',
+          'fase3_m2',
+          'fase3_m3',
+          'fase4_m1',
+          'fase4_m2',
+          'fase4_m3',
+          'fase4_m4',
+          'fase5_m1',
+          'fase5_m2',
+          'fase5_m3',
+          'fase6_m1',
+          'fase6_m2',
+          'fase6_m3',
+          'fase6_m4',
         ].includes(mission.id) && (
           <GenericMission
             mission={mission}
@@ -2443,6 +3394,57 @@ const styles = StyleSheet.create({
     color: '#0D3D66',
     fontSize: 14,
     fontWeight: '800',
+  },
+  textInput: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#D3E1EE',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    fontSize: 14,
+    color: '#0D3D66',
+  },
+  equationAdjustGrid: {
+    gap: 8,
+  },
+  equationAdjustCard: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#D3E1EE',
+    borderRadius: 10,
+    padding: 10,
+    gap: 8,
+  },
+  equationAdjustLabel: {
+    color: '#0B5F8F',
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  equationAdjustControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  equationAdjustValue: {
+    color: '#0D3D66',
+    fontSize: 20,
+    fontWeight: '900',
+    minWidth: 34,
+    textAlign: 'center',
+  },
+  equationStatusWrap: {
+    gap: 6,
+    marginTop: 2,
+  },
+  equationStatusText: {
+    color: '#4A6078',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  equationStatusTextOk: {
+    color: '#166534',
   },
   areaPreviewWrap: {
     flexDirection: 'row',

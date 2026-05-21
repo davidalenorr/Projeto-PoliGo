@@ -15,7 +15,7 @@ export const missions: Mission[] = [
     id: 'fase1_m1',
     phaseId: 'fase1',
     title: 'Detetive Guiado',
-    description: 'Aprenda a identificar vértices, lados e o nome da forma',
+    description: 'Aprenda a identificar vértices, lados e o nome de uma forma',
     difficulty: 'fácil',
     points: 10,
     objective:
@@ -29,8 +29,8 @@ export const missions: Mission[] = [
   {
     id: 'fase1_m2',
     phaseId: 'fase1',
-    title: 'Classificação Relâmpago',
-    description: 'Classifique formas convexas e não convexas em poucos movimentos',
+    title: 'Convexo ou Côncavo?',
+    description: 'Classifique formas convexas e côncavas em poucos movimentos',
     difficulty: 'médio',
     points: 15,
     objective:
@@ -46,7 +46,7 @@ export const missions: Mission[] = [
     phaseId: 'fase1',
     title: 'Batizando as Formas',
     description: 'Conte os lados e escolha o nome correto do polígono',
-    difficulty: 'fácil',
+    difficulty: 'médio',
     points: 20,
     objective:
       'Toque nos lados de contornos inspirados em praças e prédios e selecione o nome correto (Heptágono, Eneágono e outros).',
@@ -60,7 +60,7 @@ export const missions: Mission[] = [
     id: 'fase1_m4',
     phaseId: 'fase1',
     title: 'Convexo ou Não? (Toque Rápido)',
-    description: 'Classifique formas convexas e não convexas sem arrastar',
+    description: 'Reforce a classificação de formas convexas e côncavas apenas com toques',
     difficulty: 'médio',
     points: 20,
     objective:
@@ -107,7 +107,7 @@ export const missions: Mission[] = [
     id: 'fase2_m2',
     phaseId: 'fase2',
     title: 'Mestre da Área',
-    description: 'Calcule área de quadrado, retângulo e triângulo',
+    description: 'Calcule áreas de quadrado, retângulo e triângulo',
     difficulty: 'médio',
     points: 15,
     objective:
@@ -122,7 +122,7 @@ export const missions: Mission[] = [
     id: 'fase2_m3',
     phaseId: 'fase2',
     title: 'Segredo do Apótema',
-    description: 'Use apótema em polígonos regulares',
+    description: 'Use o apótema para encontrar áreas de polígonos regulares',
     difficulty: 'médio',
     points: 20,
     objective:
@@ -152,7 +152,7 @@ export const missions: Mission[] = [
     id: 'fase2_m5',
     phaseId: 'fase2',
     title: 'Engenheiro Supremo',
-    description: 'Integre todos os conceitos da trilha',
+    description: 'Integre perímetro, área e apótema em um desafio final',
     difficulty: 'difícil',
     points: 30,
     objective:
@@ -168,8 +168,8 @@ export const missions: Mission[] = [
   {
     id: 'fase3_m1',
     phaseId: 'fase3',
-    title: 'Ângulos em Polígonos Regulares',
-    description: 'Calcule ângulos individuais em polígonos regulares',
+    title: 'Ângulo Interno Regular',
+    description: 'Calcule ângulos internos em polígonos regulares',
     difficulty: 'médio',
     points: 15,
     objective:
@@ -198,8 +198,8 @@ export const missions: Mission[] = [
   {
     id: 'fase3_m3',
     phaseId: 'fase3',
-    title: 'Simetria em Polígonos Regulares',
-    description: 'Explore as simetrias dos polígonos regulares',
+    title: 'Mapa da Simetria',
+    description: 'Explore a simetria dos polígonos regulares',
     difficulty: 'difícil',
     points: 20,
     objective:
@@ -215,47 +215,61 @@ export const missions: Mission[] = [
   {
     id: 'fase4_m1',
     phaseId: 'fase4',
-    title: 'Regra do Vértice',
-    description: 'Aprenda quando polígonos formam mosaicos',
+    title: 'Cofre Geométrico',
+    description: 'Resolva duas equações ao mesmo tempo para abrir o cofre',
     difficulty: 'médio',
-    points: 15,
+    points: 20,
     objective:
-      'Compreenda que em um mosaico, a soma dos ângulos no vértice deve ser 360°. Teste com diferentes polígonos.',
+      'Ajuste as medidas de dois lados para satisfazer simultaneamente as equações de perímetro e área de um retângulo.',
     tips: [
-      'A soma dos ângulos no vértice = 360°',
-      'Hexágono regular: 3 × 120° = 360°',
-      'Quadrado: 4 × 90° = 360°',
+      'As duas condições precisam ser verdadeiras ao mesmo tempo',
+      'Perímetro do retângulo: 2x + 2y',
+      'Área do retângulo: x × y',
     ],
   },
   {
     id: 'fase4_m2',
     phaseId: 'fase4',
-    title: 'Quais Polígonos Formam Mosaicos',
-    description: 'Identifique polígonos regulares que formam mosaicos',
-    difficulty: 'médio',
-    points: 15,
+    title: 'Triângulo em Equilíbrio',
+    description: 'Use equações para descobrir medidas faltantes em triângulos',
+    difficulty: 'difícil',
+    points: 25,
     objective:
-      'Descubra que apenas 3 polígonos regulares formam mosaicos: triângulo, quadrado e hexágono. Prove com cálculos.',
+      'Resolva equações envolvendo Pitágoras e soma dos ângulos internos para completar estruturas triangulares.',
     tips: [
-      'Só 3 polígonos regulares funcionam',
-      'Triângulo: 6 × 60° = 360°',
-      'Quadrado: 4 × 90° = 360°',
-      'Hexágono: 3 × 120° = 360°',
+      'Em triângulo retângulo: a² + b² = c²',
+      'Todo triângulo soma 180°',
+      'Isole a incógnita com cuidado antes de substituir valores',
     ],
   },
   {
     id: 'fase4_m3',
     phaseId: 'fase4',
-    title: 'Criando Mosaicos',
-    description: 'Design e construa seus próprios mosaicos',
+    title: 'Rota no Plano Cartesiano',
+    description: 'Encontre a função da rota usando dois pontos',
     difficulty: 'difícil',
-    points: 25,
+    points: 30,
     objective:
-      'Crie 2 mosaicos diferentes: um com um único polígono regular e outro combinando dois tipos diferentes.',
+      'Ajuste coeficientes da equação da reta para que ela passe pelos pontos dados e permita prever novas posições.',
     tips: [
-      'Use a regra do vértice para verificar',
-      'Mosaicos semirregulares combinam polígonos',
-      'Sketche sua ideia antes de desenhar',
+      'Equação da reta: y = mx + b',
+      'Teste a reta em cada ponto conhecido',
+      'Após encontrar m e b, preveja novos pontos da rota',
+    ],
+  },
+  {
+    id: 'fase4_m4',
+    phaseId: 'fase4',
+    title: 'Projeto por Sistema',
+    description: 'Modele e resolva sistemas com duas incógnitas',
+    difficulty: 'difícil',
+    points: 35,
+    objective:
+      'Monte e resolva sistemas de equações a partir de situações geométricas para validar medidas de construção.',
+    tips: [
+      'Duas incógnitas pedem duas equações independentes',
+      'Substituição e adição são estratégias válidas',
+      'Sempre valide o resultado no contexto geométrico',
     ],
   },
 
@@ -264,46 +278,92 @@ export const missions: Mission[] = [
     id: 'fase5_m1',
     phaseId: 'fase5',
     title: 'Área de Triângulos',
-    description: 'Calcule a área de triângulos usando base e altura',
+    description: 'Pratique preenchendo áreas a partir de base e altura (entrada numérica).',
     difficulty: 'fácil',
-    points: 10,
+    points: 15,
     objective:
-      'Use A = (base × altura) / 2 para calcular a área de 5 triângulos diferentes com medidas dadas.',
+      'Calcule áreas em 5 problemas onde você fornece a resposta numérica para cada triângulo (A = (base × altura) / 2).',
     tips: [
       'A fórmula é A = (base × altura) / 2',
-      'Base e altura devem ser perpendiculares',
-      'A altura pode estar fora do triângulo em triângulos obtusângulos',
+      'Digite apenas o valor numérico (sem unidade)',
+      'Use arredondamento quando indicado',
     ],
   },
   {
     id: 'fase5_m2',
     phaseId: 'fase5',
-    title: 'Triangulação de Polígonos',
-    description: 'Divida polígonos em triângulos e calcule área',
+    title: 'Triangulação Interativa',
+    description: 'Resolva polígonos dividindo em triângulos e somando áreas (entrada numérica).',
     difficulty: 'médio',
-    points: 20,
+    points: 25,
     objective:
-      'Divida 3 polígonos irregulares em triângulos e calcule a área total usando triangulação.',
+      'Calcule a área total a partir de 3 polígonos apresentados como conjuntos de triângulos (forneça as somas corretas).',
     tips: [
-      'Todos os polígonos podem ser divididos em triângulos',
-      'Escolha um vértice e trace linhas para todos os outros',
-      'Some as áreas dos triângulos',
+      'Separe em triângulos cujas áreas você consegue calcular',
+      'Some os resultados com atenção às unidades',
+      'Verifique os passos antes de submeter',
     ],
   },
   {
     id: 'fase5_m3',
     phaseId: 'fase5',
-    title: 'Área com Apótema',
-    description: 'Calcule área de polígonos regulares usando apótema',
+    title: 'Apótema na Prática',
+    description: 'Calcule áreas de polígonos regulares a partir de perímetro e apótema (entrada numérica).',
     difficulty: 'difícil',
-    points: 25,
+    points: 30,
     objective:
-      'Use A = (Perímetro × Apótema) / 2 para calcular áreas de polígonos regulares. Resolva 4 problemas.',
+      'Resolva 4 problemas de polígonos regulares usando A = (P × a) / 2, digitando o resultado correto.',
     tips: [
-      'A = (Perímetro × Apótema) / 2',
-      'Apótema é a distância do centro ao meio de um lado',
-      'Funciona para qualquer polígono regular',
+      'Confira se P e a estão nas mesmas unidades',
+      'Multiplique antes de dividir por 2',
+      'Arredonde quando solicitado',
     ],
+  },
+
+  // Fase 6: Álgebra Aplicada
+  {
+    id: 'fase6_m1',
+    phaseId: 'fase6',
+    title: 'Oficina Linear',
+    description: 'Modele e resolva equações do 1º grau a partir de cenários geométricos',
+    difficulty: 'médio',
+    points: 20,
+    objective:
+      'Resolva 5 equações do 1º grau geradas por situações geométricas (entrada numérica para x).',
+    tips: ['Isole x, faça operações inversas e valide substituindo'],
+  },
+  {
+    id: 'fase6_m2',
+    phaseId: 'fase6',
+    title: 'Sistema 2×2',
+    description: 'Monte e resolva sistemas lineares simples a partir de pistas',
+    difficulty: 'difícil',
+    points: 30,
+    objective:
+      'Resolva 3 sistemas com duas incógnitas usando substituição ou adição (forneça as duas respostas).',
+    tips: ['Procure por equações independentes e valide no contexto'],
+  },
+  {
+    id: 'fase6_m3',
+    phaseId: 'fase6',
+    title: 'Pitágoras em Escala',
+    description: 'Use o Teorema de Pitágoras com medidas em escala',
+    difficulty: 'médio',
+    points: 20,
+    objective:
+      'Resolva 4 problemas com triângulos em escalas e calcule a hipotenusa ou catetos ausentes.',
+    tips: ['Lembre-se de ajustar pela razão de escala quando necessário'],
+  },
+  {
+    id: 'fase6_m4',
+    phaseId: 'fase6',
+    title: 'Desafio de Otimização',
+    description: 'Escolha dimensões que maximizem área sob restrição de perímetro',
+    difficulty: 'difícil',
+    points: 40,
+    objective:
+      'Dada uma restrição de perímetro, escolha entre opções qual configuração fornece maior área (quizzes e explicação).',
+    tips: ['Para retângulos com perímetro fixo, o quadrado maximiza a área'],
   },
 ];
 
