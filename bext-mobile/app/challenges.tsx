@@ -63,7 +63,7 @@ export default function ChallengesHubScreen() {
 
         <View style={styles.header}>
           <Text style={styles.mainTitle}>Hub de Desafios</Text>
-          <Text style={styles.subtitle}>Trilha de Missões - As 5 Fases do Jogo</Text>
+          <Text style={styles.subtitle}>Trilha de Missões - As 7 Fases do Jogo</Text>
         </View>
 
         <Text style={styles.sectionLabel}>PROGRESSO DE {selectedDetective?.name ?? 'DETETIVE'}</Text>

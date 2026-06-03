@@ -85,7 +85,9 @@ export async function completeMissionForDetective(
       ? Math.round((completedInCurrentPhase / missionsInCurrentPhase.length) * 100)
       : detective.progress;
 
-    const shouldAdvance = progressValue >= 100 && currentPhaseNumber < phases.length;
+    // Advance when all missions in the current phase are completed (robust to rounding)
+    const allCompletedInPhase = missionsInCurrentPhase.length > 0 && completedInCurrentPhase >= missionsInCurrentPhase.length;
+    const shouldAdvance = allCompletedInPhase && currentPhaseNumber < phases.length;
     const nextPhase = phases.find((phaseItem) => phaseItem.number === currentPhaseNumber + 1);
 
     return {

@@ -365,6 +365,68 @@ export const missions: Mission[] = [
       'Dada uma restrição de perímetro, escolha entre opções qual configuração fornece maior área (quizzes e explicação).',
     tips: ['Para retângulos com perímetro fixo, o quadrado maximiza a área'],
   },
+
+  // Fase 7: Oficina das Equações
+  {
+    id: 'fase7_m1',
+    phaseId: 'fase7',
+    title: 'Sprint Algébrico',
+    description: 'Resolva equações lineares diretas em sequência',
+    difficulty: 'fácil',
+    points: 15,
+    objective:
+      'Resolva 3 equações do 1º grau em ordem, digitando apenas o valor de x em cada etapa.',
+    tips: [
+      'Isole x passo a passo',
+      'Verifique cada resposta antes de avançar',
+      'As três equações são independentes',
+    ],
+  },
+  {
+    id: 'fase7_m2',
+    phaseId: 'fase7',
+    title: 'Balanceando Expressões',
+    description: 'Aplique distributiva e simplifique expressões algébricas',
+    difficulty: 'médio',
+    points: 25,
+    objective:
+      'Resolva 3 desafios que misturam distribuição, simplificação e isolamento de incógnitas.',
+    tips: [
+      'Distribua antes de somar ou subtrair',
+      'Observe sinais negativos com atenção',
+      'Teste o resultado substituindo na expressão original',
+    ],
+  },
+  {
+    id: 'fase7_m3',
+    phaseId: 'fase7',
+    title: 'Sistemas em Dupla',
+    description: 'Reconheça e resolva sistemas de equações simples',
+    difficulty: 'difícil',
+    points: 30,
+    objective:
+      'Analise 3 sistemas e identifique o par de valores correto em cada caso.',
+    tips: [
+      'Some as equações quando os sinais forem opostos',
+      'Substituição também é uma boa estratégia',
+      'Confira o par final em ambas as equações',
+    ],
+  },
+  {
+    id: 'fase7_m4',
+    phaseId: 'fase7',
+    title: 'Desafio Final das Equações',
+    description: 'Feche a fase resolvendo equações e validando respostas',
+    difficulty: 'difícil',
+    points: 35,
+    objective:
+      'Resolva 3 equações finais e confirme que domina a leitura algébrica sem apoio visual.',
+    tips: [
+      'Cada equação pode ser resolvida isolando o termo desconhecido',
+      'Não avance sem entender o passo atual',
+      'Relembre as regras de equivalência entre os lados',
+    ],
+  },
 ];
 
 export const getMissionsByPhaseId = (phaseId: string): Mission[] => {

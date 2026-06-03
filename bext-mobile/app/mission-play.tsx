@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Mission, getMissionById } from '@/src/data/missions';
+import { parseFlexibleNumber, numbersEqual, parsePairInput } from '@/src/utils/equationValidation';
 import { getDetectives } from '@/src/storage/detectives';
 import { getSelectedDetectiveId } from '@/src/storage/detectiveSelection';
 import {
@@ -592,6 +593,126 @@ function PitagorasScale({ onComplete, alreadyCompleted, nextMissionId, onNext }:
           </Pressable>
         )}
       </View>
+    </View>
+  );
+}
+
+// Componente genérico para missões de equações numéricas (sequência de passos)
+function GenericEquationMission({
+  title,
+  subtitle,
+  steps,
+  onComplete,
+  alreadyCompleted,
+  nextMissionId,
+  onNext,
+}: {
+  title: string;
+  subtitle?: string;
+  steps: Array<{
+    id: string;
+    prompt: string;
+    type: 'number' | 'pair';
+    expected: number | { x: number; y: number };
+  }>;
+  onComplete: () => void;
+  alreadyCompleted: boolean;
+  nextMissionId?: string | null;
+  onNext?: () => void;
+}) {
+  const [index, setIndex] = useState(0);
+  const [input, setInput] = useState('');
+  const [inputY, setInputY] = useState('');
+  const [checked, setChecked] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
+
+  const step = steps[index];
+
+  const handleCheck = () => {
+    setChecked(true);
+    if (step.type === 'number') {
+      const parsed = parseFlexibleNumber(input);
+      if (parsed === null) {
+        setFeedback('Insira um número válido.');
+        return;
+      }
+
+      const expected = step.expected as number;
+      if (numbersEqual(parsed, expected, 1e-2)) {
+        setFeedback('Correto!');
+        return;
+      }
+
+      setFeedback(`Incorreto. Tente revisar os passos.`);
+      return;
+    }
+
+    // pair
+    const parsedPair = parsePairInput(input, inputY);
+    if (!parsedPair) {
+      setFeedback('Insira números válidos para x e y.');
+      return;
+    }
+
+    const exp = step.expected as { x: number; y: number };
+    if (numbersEqual(parsedPair.x, exp.x, 1e-2) && numbersEqual(parsedPair.y, exp.y, 1e-2)) {
+      setFeedback('Solução correta!');
+      return;
+    }
+
+    setFeedback('Solução incorreta. Verifique suas operações.');
+  };
+
+  const handleNext = () => {
+    setChecked(false);
+    setFeedback(null);
+    setInput('');
+    setInputY('');
+
+    if (index + 1 >= steps.length) {
+      onComplete();
+      return;
+    }
+
+    setIndex((i) => i + 1);
+  };
+
+  return (
+    <View style={styles.missionCard}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      {!!subtitle && <Text style={styles.sectionSubtitle}>{subtitle}</Text>}
+
+      <View style={styles.trainingCard}>
+        <Text style={styles.trainingTitle}>{`Problema ${index + 1} de ${steps.length}`}</Text>
+        <Text style={styles.caseContext}>{step.prompt}</Text>
+
+        {step.type === 'number' ? (
+          <TextInput style={styles.textInput} keyboardType="numeric" value={input} onChangeText={(v) => { setInput(v); setChecked(false); setFeedback(null); }} />
+        ) : (
+          <>
+            <Text style={styles.caseContext}>x</Text>
+            <TextInput style={styles.textInput} keyboardType="numeric" value={input} onChangeText={(v) => { setInput(v); setChecked(false); setFeedback(null); }} />
+            <Text style={styles.caseContext}>y</Text>
+            <TextInput style={styles.textInput} keyboardType="numeric" value={inputY} onChangeText={(v) => { setInputY(v); setChecked(false); setFeedback(null); }} />
+          </>
+        )}
+
+        {!!feedback && <Text style={[styles.feedbackText, { marginTop: 8 }]}>{feedback}</Text>}
+
+        {!checked ? (
+          <Pressable style={styles.nextCaseButton} onPress={handleCheck}>
+            <Text style={styles.nextCaseButtonText}>Verificar</Text>
+          </Pressable>
+        ) : (
+          <Pressable style={styles.nextCaseButton} onPress={handleNext}>
+            <Text style={styles.nextCaseButtonText}>{index + 1 >= steps.length ? 'Concluir missão' : 'Próximo problema'}</Text>
+          </Pressable>
+        )}
+      </View>
+
+      {checked && !feedback?.startsWith('Incorreto') && (
+        <MissionCompletionAction alreadyCompleted={alreadyCompleted} nextMissionId={nextMissionId} onComplete={onComplete} onNext={onNext} />
+      )}
     </View>
   );
 }
@@ -3168,6 +3289,66 @@ export default function MissionPlayScreen() {
             onNext={handleNextMission}
             alreadyCompleted={missionAlreadyCompleted}
             nextMissionId={nextMissionId}
+          />
+        )}
+        {mission.id === 'fase7_m1' && (
+          <GenericEquationMission
+            title="Sprint Algébrico"
+            subtitle="Isolando incógnitas"
+            steps={[
+              { id: 's1', prompt: 'x + 7 = 12', type: 'number', expected: 5 },
+              { id: 's2', prompt: '3x = 21', type: 'number', expected: 7 },
+              { id: 's3', prompt: '2x - 5 = 9', type: 'number', expected: 7 },
+            ]}
+            onComplete={handleCompleteMission}
+            alreadyCompleted={missionAlreadyCompleted}
+            nextMissionId={nextMissionId}
+            onNext={handleNextMission}
+          />
+        )}
+        {mission.id === 'fase7_m2' && (
+          <GenericEquationMission
+            title="Balanceando Expressões"
+            subtitle="Distribuição e frações"
+            steps={[
+              { id: 'd1', prompt: '2(x + 3) = 14', type: 'number', expected: 4 },
+              { id: 'd2', prompt: '(3/2)x = 9', type: 'number', expected: 6 },
+              { id: 'd3', prompt: '4x + 3 = 3x + 11', type: 'number', expected: 8 },
+            ]}
+            onComplete={handleCompleteMission}
+            alreadyCompleted={missionAlreadyCompleted}
+            nextMissionId={nextMissionId}
+            onNext={handleNextMission}
+          />
+        )}
+        {mission.id === 'fase7_m3' && (
+          <GenericEquationMission
+            title="Sistemas em Dupla"
+            subtitle="Resolva pares (x,y)"
+            steps={[
+              { id: 'p1', prompt: 'x + y = 7; x - y = 1 (responda x)', type: 'pair', expected: { x: 4, y: 3 } },
+              { id: 'p2', prompt: '2x + y = 10; x - 2y = -1', type: 'pair', expected: { x: 3, y: 4 } },
+              { id: 'p3', prompt: '3x - y = 5; x + y = 4', type: 'pair', expected: { x: 3, y: 1 } },
+            ]}
+            onComplete={handleCompleteMission}
+            alreadyCompleted={missionAlreadyCompleted}
+            nextMissionId={nextMissionId}
+            onNext={handleNextMission}
+          />
+        )}
+        {mission.id === 'fase7_m4' && (
+          <GenericEquationMission
+            title="Desafio Final das Equações"
+            subtitle="Modelagem e sprint"
+            steps={[
+              { id: 'm1', prompt: 'Ana tem o dobro que Bia; juntas têm 30. Quanto Bia tem?', type: 'number', expected: 10 },
+              { id: 'm2', prompt: 'x+5=12', type: 'number', expected: 7 },
+              { id: 'm3', prompt: '2(x-3)=8', type: 'number', expected: 7 },
+            ]}
+            onComplete={handleCompleteMission}
+            alreadyCompleted={missionAlreadyCompleted}
+            nextMissionId={nextMissionId}
+            onNext={handleNextMission}
           />
         )}
         {![

@@ -31,6 +31,8 @@ const phaseTrail = [
   'Fase 3: Mestre dos Ângulos',
   'Fase 4: Laboratório de Equações',
   'Fase 5: Triunfo Final',
+  'Fase 6: Álgebra Aplicada',
+  'Fase 7: Oficina das Equações',
 ];
 
 export default function MissionsScreen() {
@@ -194,7 +196,7 @@ export default function MissionsScreen() {
                 </View>
                 <View style={styles.navigationCopy}>
                   <Text style={styles.navigationButtonTitle}>Hub de Desafios</Text>
-                  <Text style={styles.navigationButtonSub}>Veja as 5 fases e o progresso geral.</Text>
+                  <Text style={styles.navigationButtonSub}>Veja as 7 fases e o progresso geral.</Text>
                 </View>
               </View>
             </Pressable>
@@ -216,7 +218,7 @@ export default function MissionsScreen() {
           </View>
         </View>
 
-        <Text style={styles.quickAccessTitle}>Mapa das 5 Fases</Text>
+        <Text style={styles.quickAccessTitle}>Mapa das 7 Fases</Text>
         <View style={styles.phaseGrid}>
           {phaseSummary.map((phase, index) => {
             const isCurrent = index === currentPhaseIndex;

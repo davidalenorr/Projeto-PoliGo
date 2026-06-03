@@ -1,6 +1,6 @@
 import { Mission } from '@/src/data/missions';
 
-export function getCurrentPhaseNumber(phaseLabel?: string, maxPhases = 5): number {
+export function getCurrentPhaseNumber(phaseLabel?: string, maxPhases = Number.POSITIVE_INFINITY): number {
   if (!phaseLabel) {
     return 1;
   }
