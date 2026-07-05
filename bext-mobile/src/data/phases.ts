@@ -356,6 +356,131 @@ export const phases: Phase[] = [
       'Compare soluções de sistemas e valide o resultado final',
     ],
   },
+  {
+    id: 'fase8',
+    number: 8,
+    title: 'Explorador Espacial',
+    subtitle: 'Volume e Área de Sólidos Geométricos',
+    description:
+      'Nesta fase de geometria espacial, você aprenderá a calcular o espaço tridimensional ocupado por sólidos geométricos (volume) e a área de suas superfícies. Domine o cálculo em cubos, paralelepípedos e prismas simples.',
+    objectives: [
+      'Calcular o volume de cubos e paralelepípedos',
+      'Determinar a área de superfície de sólidos geométricos',
+      'Resolver problemas práticos envolvendo capacidade e embalagens',
+      'Compreender a diferença entre área (2D) e volume (3D)',
+    ],
+    formulas: [
+      {
+        title: 'Volume do Cubo',
+        formula: 'V = a³',
+        explanation: 'O volume do cubo é a sua aresta elevada ao cubo (comprimento × largura × altura, que são todos iguais).',
+        example: 'Um cubo com aresta de 3cm: V = 3³ = 27 cm³.',
+      },
+      {
+        title: 'Volume do Paralelepípedo (Bloco Retangular)',
+        formula: 'V = a × b × c',
+        explanation: 'O volume é obtido multiplicando as três dimensões: comprimento (a), largura (b) e altura (c).',
+        example: 'Uma caixa com dimensões 5m, 4m e 3m: V = 5 × 4 × 3 = 60 m³.',
+      },
+      {
+        title: 'Área Total de Superfície do Paralelepípedo',
+        formula: 'A_total = 2(ab + ac + bc)',
+        explanation: 'Soma das áreas de todas as 6 faces retangulares do bloco.',
+        example: 'Para lados 5, 4 e 3: A = 2(5×4 + 5×3 + 4×3) = 2(20 + 15 + 12) = 94 m².',
+      },
+    ],
+    concepts: [
+      'Aresta: segmento de reta comum a duas faces de um sólido',
+      'Face: superfície plana que delimita o sólido',
+      'Volume: quantidade de espaço tridimensional ocupado',
+      'Área de Superfície: soma das áreas de todas as faces externas',
+    ],
+    challenges: [
+      'Calcule a quantidade de água necessária para encher uma piscina retangular',
+      'Determine o papel de presente necessário para cobrir uma caixa (área de superfície)',
+      'Compare capacidades e otimize dimensões de caixas de armazenamento',
+    ],
+  },
+  {
+    id: 'fase9',
+    number: 9,
+    title: 'Trigonometria Aplicada',
+    subtitle: 'Razões Trigonométricas e Semelhança',
+    description: 'Aprenda a desvendar alturas e distâncias inacessíveis usando as relações métricas e trigonométricas básicas no triângulo retângulo.',
+    objectives: [
+      'Identificar cateto oposto, cateto adjacente e hipotenusa',
+      'Calcular Seno, Cosseno e Tangente de ângulos notáveis',
+      'Aplicar o Teorema de Tales em semelhança de triângulos',
+    ],
+    formulas: [
+      {
+        title: 'Seno (sen θ)',
+        formula: 'sen θ = Cateto Oposto / Hipotenusa',
+        explanation: 'Razão entre o cateto oposto ao ângulo e a hipotenusa.',
+        example: 'sen 30° = 1/2 = 0.5.',
+      },
+      {
+        title: 'Cosseno (cos θ)',
+        formula: 'cos θ = Cateto Adjacente / Hipotenusa',
+        explanation: 'Razão entre o cateto adjacente ao ângulo e a hipotenusa.',
+        example: 'cos 60° = 1/2 = 0.5.',
+      },
+      {
+        title: 'Tangente (tg θ)',
+        formula: 'tg θ = Cateto Oposto / Cateto Adjacente',
+        explanation: 'Razão entre o cateto oposto e o cateto adjacente.',
+        example: 'tg 45° = 1.',
+      },
+    ],
+    concepts: [
+      'Hipotenusa: o maior lado do triângulo retângulo, oposto ao ângulo reto',
+      'Cateto Oposto: o lado que fica em frente ao ângulo de referência',
+      'Cateto Adjacente: o lado que ajuda a formar o ângulo de referência',
+      'Semelhança: figuras com a mesma forma, mas tamanhos proporcionais',
+    ],
+    challenges: [
+      'Calcule a altura de um prédio histórico baseando-se na sombra e no ângulo solar',
+      'Determine o cosseno de um triângulo retângulo conhecendo seus catetos',
+      'Use a relação de semelhança para encontrar a largura de um rio',
+    ],
+  },
+  {
+    id: 'fase10',
+    number: 10,
+    title: 'O Cartógrafo',
+    subtitle: 'Escalas, Mapas e Probabilidade',
+    description: 'Trabalhe com escalas cartográficas para converter medidas de mapas para o mundo real e explore a probabilidade aplicada a áreas geométricas.',
+    objectives: [
+      'Compreender escalas de ampliação e redução em mapas',
+      'Converter medidas lineares e de área em escalas reais',
+      'Calcular probabilidade baseando-se em razões de áreas geométricas',
+    ],
+    formulas: [
+      {
+        title: 'Fórmula da Escala',
+        formula: 'E = d / D',
+        explanation: 'A escala (E) é a razão entre a distância no mapa (d) e a distância real (D).',
+        example: 'Um mapa 1:100.000 onde 1cm = 100.000cm (1km) na realidade.',
+      },
+      {
+        title: 'Probabilidade Geométrica',
+        formula: 'P = Área Favorável / Área Total',
+        explanation: 'Chance de um ponto aleatório cair em uma região específica.',
+        example: 'Região circular de 10m² dentro de um terreno de 100m²: P = 10/100 = 10%.',
+      },
+    ],
+    concepts: [
+      'Escala Cartográfica: proporção de redução do mundo real no mapa',
+      'Distância no Mapa (d): comprimento medido diretamente com régua',
+      'Distância Real (D): comprimento no mundo real',
+      'Probabilidade em Áreas: razão entre a área do alvo e a área total',
+    ],
+    challenges: [
+      'Encontre a distância real entre duas cidades em um mapa com escala de 1:200.000',
+      'Calcule a probabilidade de um dardo acertar a zona central de um alvo geométrico',
+      'Determine a área real de uma plantação a partir de um desenho em escala',
+    ],
+  },
 ];
 
 export const getPhaseById = (id: string): Phase | undefined => {

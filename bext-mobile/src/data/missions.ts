@@ -427,6 +427,153 @@ export const missions: Mission[] = [
       'Relembre as regras de equivalência entre os lados',
     ],
   },
+  // Fase 8: Explorador Espacial
+  {
+    id: 'fase8_m1',
+    phaseId: 'fase8',
+    title: 'O Espaço do Cubo',
+    description: 'Calcule volumes de cubos a partir de suas arestas',
+    difficulty: 'fácil',
+    points: 15,
+    objective:
+      'Calcule o volume tridimensional de cubos de diferentes tamanhos a partir da medida de suas arestas (V = a³).',
+    tips: [
+      'Todas as arestas do cubo têm a mesma medida',
+      'Eleve a aresta ao cubo: multiplique ela por ela mesma três vezes',
+      'Volume é dado em unidades cúbicas (ex: cm³)',
+    ],
+  },
+  {
+    id: 'fase8_m2',
+    phaseId: 'fase8',
+    title: 'Carregando o Bloco',
+    description: 'Calcule o volume de blocos retangulares',
+    difficulty: 'médio',
+    points: 20,
+    objective:
+      'Determine o volume (capacidade) de caixas e reservatórios retangulares multiplicando comprimento, largura e altura.',
+    tips: [
+      'A fórmula é V = comprimento × largura × altura',
+      'Certifique-se de que todas as medidas estão na mesma unidade',
+      'Problemas práticos de piscina e caixas de papelão usam essa fórmula',
+    ],
+  },
+  {
+    id: 'fase8_m3',
+    phaseId: 'fase8',
+    title: 'Superfície de Embrulho',
+    description: 'Calcule a área de superfície total de blocos retangulares',
+    difficulty: 'difícil',
+    points: 25,
+    objective:
+      'Calcule a área total do revestimento de caixas somando a área de suas 6 faces retangulares.',
+    tips: [
+      'A fórmula é A = 2 × (ab + ac + bc)',
+      'Representa a quantidade de papel de presente ou tinta necessária para cobrir o sólido',
+      'Não confunda área de superfície (2D) com volume (3D)',
+    ],
+  },
+  {
+    id: 'fase8_m4',
+    phaseId: 'fase8',
+    title: 'Desafio das Embalagens',
+    description: 'Resolva problemas aplicados de Geometria Espacial',
+    difficulty: 'difícil',
+    points: 30,
+    objective:
+      'Analise cenários práticos envolvendo armazenamento e determine a melhor embalagem com base em volume e área.',
+    tips: [
+      'Caixas diferentes podem ter o mesmo volume mas áreas de superfície diferentes',
+      'Otimizar a embalagem significa reduzir a área de superfície mantendo o volume',
+      'Pense no custo do material de fabricação',
+    ],
+  },
+  // Fase 9: Trigonometria Aplicada
+  {
+    id: 'fase9_m1',
+    phaseId: 'fase9',
+    title: 'Teorema de Tales',
+    description: 'Use semelhança de triângulos para resolver proporções',
+    difficulty: 'fácil',
+    points: 15,
+    objective:
+      'Determine valores desconhecidos usando a proporcionalidade entre segmentos paralelos cortados por transversais.',
+    tips: [
+      'Se duas retas paralelas são cortadas por transversais, os segmentos correspondentes são proporcionais',
+      'Escreva a fração de proporção e multiplique cruzado',
+    ],
+  },
+  {
+    id: 'fase9_m2',
+    phaseId: 'fase9',
+    title: 'Seno e Cosseno',
+    description: 'Calcule as razões trigonométricas fundamentais',
+    difficulty: 'médio',
+    points: 20,
+    objective:
+      'Encontre os valores de seno e cosseno para ângulos específicos em triângulos retângulos.',
+    tips: [
+      'Seno é a razão entre o cateto oposto e a hipotenusa',
+      'Cosseno é a razão entre o cateto adjacente e a hipotenusa',
+    ],
+  },
+  {
+    id: 'fase9_m3',
+    phaseId: 'fase9',
+    title: 'A Sombra da Torre',
+    description: 'Calcule a altura de objetos inacessíveis',
+    difficulty: 'difícil',
+    points: 25,
+    objective:
+      'Use a tangente do ângulo solar e a sombra medida para determinar a altura real de uma torre.',
+    tips: [
+      'A tangente do ângulo é a razão entre a altura (oposto) e a sombra (adjacente)',
+      'Multiplique o comprimento da sombra pela tangente do ângulo',
+    ],
+  },
+  // Fase 10: O Cartógrafo
+  {
+    id: 'fase10_m1',
+    phaseId: 'fase10',
+    title: 'Escalas do Mapa',
+    description: 'Converta distâncias do mapa para a realidade',
+    difficulty: 'fácil',
+    points: 15,
+    objective:
+      'Calcule distâncias reais a partir de medições feitas com régua em mapas com escalas dadas.',
+    tips: [
+      'Escala 1:100.000 significa que 1cm no mapa equivale a 100.000cm (1km) no mundo real',
+      'Multiplique a medida do mapa pelo denominador da escala',
+    ],
+  },
+  {
+    id: 'fase10_m2',
+    phaseId: 'fase10',
+    title: 'Alvo Probabilístico',
+    description: 'Calcule a probabilidade em áreas geométricas',
+    difficulty: 'médio',
+    points: 20,
+    objective:
+      'Determine a probabilidade de um objeto cair em uma área específica de um alvo dividindo a área favorável pela total.',
+    tips: [
+      'A probabilidade é a razão entre a área menor (alvo) e a área maior (total)',
+      'Dê a resposta em porcentagem ou decimal simples',
+    ],
+  },
+  {
+    id: 'fase10_m3',
+    phaseId: 'fase10',
+    title: 'Gráfico da Horta',
+    description: 'Analise divisões proporcionais em gráficos de pizza',
+    difficulty: 'difícil',
+    points: 25,
+    objective:
+      'Determine a área de plantio de hortaliças baseando-se nas frações/porcentagens de um gráfico de setores.',
+    tips: [
+      'Gráficos de setores dividem uma área circular proporcionalmente',
+      'Multiplique a área total do terreno pela porcentagem ou ângulo correspondente',
+    ],
+  },
 ];
 
 export const getMissionsByPhaseId = (phaseId: string): Mission[] => {

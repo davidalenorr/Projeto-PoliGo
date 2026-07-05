@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView, ScrollView, StyleSheet, Text, View, Image } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { Detective } from '@/src/data/detectives';
 import { getDetectives } from '@/src/storage/detectives';
@@ -88,17 +88,41 @@ export default function AchievementsScreen() {
       {
         id: 'b5',
         title: 'Lenda da Geometria',
-        description: 'Concluir toda a jornada até a Fase 5.',
-        unlocked: currentPhaseIndex >= 4 && progress >= 100,
+        description: 'Alcançar a Fase 5: Triunfo Final.',
+        unlocked: currentPhaseIndex >= 4,
       },
       {
         id: 'b6',
+        title: 'Mestre da Álgebra',
+        description: 'Alcançar a Fase 6: Álgebra Aplicada.',
+        unlocked: currentPhaseIndex >= 5,
+      },
+      {
+        id: 'b7',
+        title: 'Líder das Equações',
+        description: 'Alcançar a Fase 7: Oficina das Equações.',
+        unlocked: currentPhaseIndex >= 6,
+      },
+      {
+        id: 'b8',
+        title: 'Explorador Espacial',
+        description: 'Alcançar a Fase 8: Explorador Espacial.',
+        unlocked: currentPhaseIndex >= 7,
+      },
+      {
+        id: 'b9',
         title: 'Acumulador de Pontos',
         description: 'Somar pelo menos 100 pontos.',
         unlocked: points >= 100,
       },
+      {
+        id: 'b10',
+        title: 'Detetive de Elite',
+        description: 'Somar pelo menos 250 pontos.',
+        unlocked: points >= 250,
+      },
     ];
-  }, [currentPhaseIndex, points, progress]);
+  }, [currentPhaseIndex, points]);
 
   const unlockedCount = badges.filter((badge) => badge.unlocked).length;
 
@@ -109,10 +133,11 @@ export default function AchievementsScreen() {
         <Text style={styles.subtitle}>Medalhas e progresso do seu detetive</Text>
 
         <View style={styles.profileCard}>
-          <View style={[styles.avatar, { backgroundColor: selectedDetective?.avatarBg ?? '#2F84B0' }]}>
-            <Text style={[styles.avatarText, selectedDetective?.avatarColor ? { color: selectedDetective.avatarColor } : null]}>
-              {selectedDetective?.avatar ?? 'D'}
-            </Text>
+          <View style={[styles.avatar, { backgroundColor: selectedDetective?.avatarBg ?? '#2F84B0', alignItems: 'center', justifyContent: 'center' }]}>
+            <Image
+              source={require('../../icons/screens/procurar.png')}
+              style={{ width: 22, height: 22, resizeMode: 'contain', tintColor: selectedDetective?.avatarColor ?? '#FFFFFF' }}
+            />
           </View>
           <View style={styles.profileInfo}>
             <Text style={styles.profileName}>{selectedDetective?.name ?? 'Detetive'}</Text>
@@ -139,7 +164,10 @@ export default function AchievementsScreen() {
         <View style={styles.badgesList}>
           {badges.map((badge) => (
             <View key={badge.id} style={[styles.badgeCard, !badge.unlocked && styles.badgeCardLocked]}>
-              <Text style={styles.badgeIcon}>{badge.unlocked ? '🏅' : '🔒'}</Text>
+              <Image
+                source={badge.unlocked ? require('../../icons/screens/trofeu-estrela24.png') : require('../../icons/screens/trancar.png')}
+                style={{ width: 28, height: 28, resizeMode: 'contain' }}
+              />
               <View style={styles.badgeContent}>
                 <Text style={[styles.badgeTitle, !badge.unlocked && styles.badgeTitleLocked]}>{badge.title}</Text>
                 <Text style={[styles.badgeDescription, !badge.unlocked && styles.badgeDescriptionLocked]}>

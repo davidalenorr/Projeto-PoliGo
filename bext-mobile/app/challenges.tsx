@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, View, Pressable, TouchableOpacity } from 'react-native';
+import { SafeAreaView, ScrollView, StyleSheet, Text, View, Pressable, TouchableOpacity, Image } from 'react-native';
 import { router } from 'expo-router';
 import { useIsFocused } from '@react-navigation/native';
 import { Detective } from '@/src/data/detectives';
-import { getDetectives } from '@/src/storage/detectives';
 import { getSelectedDetectiveId } from '@/src/storage/detectiveSelection';
+import { syncDetectiveProgress } from '@/src/storage/missionProgress';
 import { phases } from '@/src/data/phases';
 import { ScreenBackButton } from '@/components/ScreenBackButton';
 
@@ -35,12 +35,13 @@ export default function ChallengesHubScreen() {
     let isMounted = true;
 
     async function syncSelection() {
-      const detectiveList = await getDetectives();
       const selectedDetectiveId = await getSelectedDetectiveId();
-      const detective =
-        detectiveList.find((item) => item.id === selectedDetectiveId) ?? detectiveList[0];
+      if (!selectedDetectiveId) {
+        return;
+      }
+      const detective = await syncDetectiveProgress(selectedDetectiveId);
 
-      if (isMounted) {
+      if (isMounted && detective) {
         setSelectedDetective(detective);
       }
     }
@@ -63,7 +64,7 @@ export default function ChallengesHubScreen() {
 
         <View style={styles.header}>
           <Text style={styles.mainTitle}>Hub de Desafios</Text>
-          <Text style={styles.subtitle}>Trilha de Missões - As 7 Fases do Jogo</Text>
+          <Text style={styles.subtitle}>Trilha de Missões - As 8 Fases do Jogo</Text>
         </View>
 
         <Text style={styles.sectionLabel}>PROGRESSO DE {selectedDetective?.name ?? 'DETETIVE'}</Text>
@@ -92,9 +93,16 @@ export default function ChallengesHubScreen() {
             >
               <View style={styles.phaseCardHeader}>
                 <View style={styles.phaseNumberBadge}>
-                  <Text style={styles.phaseNumberText}>
-                    {isCurrent ? '▸' : isUnlocked ? '✓' : '🔒'}
-                  </Text>
+                  <Image
+                    source={
+                      isCurrent
+                        ? require('../icons/screens/desbloquear.png')
+                        : isUnlocked
+                        ? require('../icons/screens/verificar.png')
+                        : require('../icons/screens/trancar.png')
+                    }
+                    style={{ width: 14, height: 14, resizeMode: 'contain', tintColor: '#FFFFFF' }}
+                  />
                 </View>
                 <View style={styles.phaseCardTitles}>
                   <Text style={styles.phaseCardTitle}>{phase.title}</Text>

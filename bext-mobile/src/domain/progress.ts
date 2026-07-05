@@ -15,7 +15,7 @@ export function getCurrentPhaseNumber(phaseLabel?: string, maxPhases = Number.PO
   return Math.min(parsed, maxPhases);
 }
 
-export function getCurrentPhaseIndex(phaseLabel?: string, maxPhases = 5): number {
+export function getCurrentPhaseIndex(phaseLabel?: string, maxPhases = Number.POSITIVE_INFINITY): number {
   return getCurrentPhaseNumber(phaseLabel, maxPhases) - 1;
 }
 

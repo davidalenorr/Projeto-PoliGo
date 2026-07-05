@@ -8,8 +8,11 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Image,
+  Vibration,
 } from 'react-native';
 import { router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useIsFocused } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors } from '../../src/theme/colors';
@@ -23,7 +26,7 @@ import {
   getCurrentPhaseNumber,
   getPhaseIdFromNumber,
 } from '@/src/domain/progress';
-import { getNextMissionIdForDetectivePhase } from '@/src/storage/missionProgress';
+import { getNextMissionIdForDetectivePhase, syncDetectiveProgress } from '@/src/storage/missionProgress';
 
 const phaseTrail = [
   'Fase 1: Detetive das Formas',
@@ -33,11 +36,61 @@ const phaseTrail = [
   'Fase 5: Triunfo Final',
   'Fase 6: Álgebra Aplicada',
   'Fase 7: Oficina das Equações',
+  'Fase 8: Explorador Espacial',
+  'Fase 9: Trigonometria Aplicada',
+  'Fase 10: O Cartógrafo',
 ];
 
 export default function MissionsScreen() {
   const [selectedDetective, setSelectedDetective] = useState<Detective | undefined>(undefined);
   const isFocused = useIsFocused();
+  const [theme, setTheme] = useState<'classic' | 'cyberpunk' | 'space'>('classic');
+
+  useEffect(() => {
+    async function loadTheme() {
+      try {
+        const storedTheme = await AsyncStorage.getItem('@poligo:appTheme:v1');
+        if (storedTheme === 'classic' || storedTheme === 'cyberpunk' || storedTheme === 'space') {
+          setTheme(storedTheme);
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    }
+    loadTheme();
+  }, [isFocused]);
+
+  const handleSelectTheme = async (selectedTheme: 'classic' | 'cyberpunk' | 'space') => {
+    setTheme(selectedTheme);
+    Vibration.vibrate(50);
+    try {
+      await AsyncStorage.setItem('@poligo:appTheme:v1', selectedTheme);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const getThemeBackground = () => {
+    if (theme === 'cyberpunk') return '#0F172A';
+    if (theme === 'space') return '#1E1B4B';
+    return '#D8D8DB';
+  };
+
+  const getThemeCardBg = () => {
+    if (theme === 'cyberpunk') return '#1E293B';
+    if (theme === 'space') return '#312E81';
+    return '#FFFFFF';
+  };
+
+  const getThemeText = () => {
+    if (theme === 'cyberpunk' || theme === 'space') return '#F8FAFC';
+    return '#1F3E66';
+  };
+
+  const getThemeSubText = () => {
+    if (theme === 'cyberpunk' || theme === 'space') return '#94A3B8';
+    return '#607287';
+  };
 
   useEffect(() => {
     if (!isFocused) {
@@ -47,12 +100,13 @@ export default function MissionsScreen() {
     let isMounted = true;
 
     async function syncSelection() {
-      const detectiveList = await getDetectives();
       const selectedDetectiveId = await getSelectedDetectiveId();
-      const detective =
-        detectiveList.find((item) => item.id === selectedDetectiveId) ?? detectiveList[0];
+      if (!selectedDetectiveId) {
+        return;
+      }
+      const detective = await syncDetectiveProgress(selectedDetectiveId);
 
-      if (isMounted) {
+      if (isMounted && detective) {
         setSelectedDetective(detective);
       }
     }
@@ -117,59 +171,66 @@ export default function MissionsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: getThemeBackground() }]}>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.headerRow}>
           <Pressable
             onPress={handleAvatarPress}
             style={({ pressed }) => [
               styles.avatar,
-              { backgroundColor: selectedDetective?.avatarBg ?? '#2F84B0' },
+              { backgroundColor: selectedDetective?.avatarBg ?? '#2F84B0', alignItems: 'center', justifyContent: 'center' },
               pressed && styles.avatarPressed,
             ]}
           >
-            <Text style={[styles.avatarText, selectedDetective?.avatarColor ? { color: selectedDetective.avatarColor } : null]}>
-              {selectedDetective?.avatar ?? 'D'}
-            </Text>
+            <Image
+              source={require('../../icons/screens/procurar.png')}
+              style={{ width: 22, height: 22, resizeMode: 'contain', tintColor: selectedDetective?.avatarColor ?? '#FFFFFF' }}
+            />
           </Pressable>
           <View style={styles.headerCopy}>
-            <Text style={styles.welcome}>Olá, {firstName}!</Text>
-            <Text style={styles.points}>{selectedDetective?.points ?? 0} Pts</Text>
-            <Text style={styles.profileHint}>Toque no avatar para trocar</Text>
+            <Text style={[styles.welcome, { color: getThemeText() }]}>Olá, {firstName}!</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
+              <Image
+                source={require('../../icons/screens/estrela.png')}
+                style={{ width: 14, height: 14, resizeMode: 'contain' }}
+              />
+              <Text style={[styles.points, { color: getThemeSubText() }]}>{selectedDetective?.points ?? 0} Pts</Text>
+            </View>
+            <Text style={[styles.profileHint, { color: getThemeSubText() }]}>Toque no avatar para trocar</Text>
           </View>
         </View>
 
-        <Text style={styles.sectionLabel}>TRILHA DE MISSÕES</Text>
+        <Text style={[styles.sectionLabel, { color: theme === 'classic' ? '#516074' : '#E2E8F0' }]}>TRILHA DE MISSÕES</Text>
 
-        <View style={styles.overviewCard}>
-          <Text style={styles.overviewTitle}>Como a trilha funciona</Text>
-          <Text style={styles.overviewText}>
+        <View style={[styles.overviewCard, { backgroundColor: getThemeCardBg() }]}>
+          <Text style={[styles.overviewTitle, { color: getThemeText() }]}>Como a trilha funciona</Text>
+          <Text style={[styles.overviewText, { color: getThemeSubText() }]}>
             Cada fase reúne missões com dificuldade crescente e objetivos de aprendizagem claros. Progrida resolvendo missões para avançar.
           </Text>
           <View style={styles.overviewSteps}>
-            <View style={styles.overviewStepCard}>
-              <Text style={styles.overviewStepTitle}>Retomar</Text>
-              <Text style={styles.overviewStepText}>Volta para a missão atual do seu progresso.</Text>
+            <View style={[styles.overviewStepCard, { backgroundColor: theme === 'classic' ? '#F8FBFF' : '#475569' }]}>
+              <Text style={[styles.overviewStepTitle, { color: getThemeText() }]}>Retomar</Text>
+              <Text style={[styles.overviewStepText, { color: getThemeSubText() }]}>Volta para a missão atual do seu progresso.</Text>
             </View>
-            <View style={styles.overviewStepCard}>
-              <Text style={styles.overviewStepTitle}>Hub</Text>
-              <Text style={styles.overviewStepText}>Mostra todas as fases e o que já foi concluído.</Text>
+            <View style={[styles.overviewStepCard, { backgroundColor: theme === 'classic' ? '#F8FBFF' : '#475569' }]}>
+              <Text style={[styles.overviewStepTitle, { color: getThemeText() }]}>Hub</Text>
+              <Text style={[styles.overviewStepText, { color: getThemeSubText() }]}>Mostra todas as fases e o que já foi concluído.</Text>
             </View>
-            <View style={styles.overviewStepCard}>
-              <Text style={styles.overviewStepTitle}>Submissões</Text>
-              <Text style={styles.overviewStepText}>Acompanha entregas e resultados já registrados.</Text>
+            <View style={[styles.overviewStepCard, { backgroundColor: theme === 'classic' ? '#F8FBFF' : '#475569' }]}>
+              <Text style={[styles.overviewStepTitle, { color: getThemeText() }]}>Submissões</Text>
+              <Text style={[styles.overviewStepText, { color: getThemeSubText() }]}>Acompanha entregas e resultados já registrados.</Text>
             </View>
           </View>
         </View>
 
-        <View style={styles.phaseCard}>
-          <Text style={styles.phaseSmall}>MISSÃO ATUAL</Text>
-          <Text style={styles.phaseTitle}>{selectedDetective?.phase ?? currentPhaseMeta?.title ?? 'Fase inicial'}</Text>
-          <Text style={styles.phaseDesc}>{currentPhaseMeta?.subtitle ?? 'Soma dos ângulos e diagonais'}</Text>
-          <Text style={styles.phaseMetaText}>
+        <View style={[styles.phaseCard, { backgroundColor: getThemeCardBg() }]}>
+          <Text style={[styles.phaseSmall, { color: getThemeSubText() }]}>MISSÃO ATUAL</Text>
+          <Text style={[styles.phaseTitle, { color: getThemeText() }]}>{selectedDetective?.phase ?? currentPhaseMeta?.title ?? 'Fase inicial'}</Text>
+          <Text style={[styles.phaseDesc, { color: getThemeSubText() }]}>{currentPhaseMeta?.subtitle ?? 'Soma dos ângulos e diagonais'}</Text>
+          <Text style={[styles.phaseMetaText, { color: getThemeSubText() }]}>
             Fase {currentPhaseNumber} de {phaseTrail.length} · {phaseSummary[currentPhaseIndex]?.missionCount ?? 0} missões nesta fase
           </Text>
-          <Text style={styles.phaseProgressText}>Progresso da fase: {selectedDetective?.progress ?? 0}%</Text>
+          <Text style={[styles.phaseProgressText, { color: getThemeText() }]}>Progresso da fase: {selectedDetective?.progress ?? 0}%</Text>
 
           <View style={styles.progressBase}>
             <View style={[styles.progressFill, { width: `${selectedDetective?.progress ?? 0}%` }]} />
@@ -183,8 +244,8 @@ export default function MissionsScreen() {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.navigationCard}>
-          <Text style={styles.navigationTitle}>Atalhos principais</Text>
+        <View style={[styles.navigationCard, { backgroundColor: getThemeCardBg() }]}>
+          <Text style={[styles.navigationTitle, { color: getThemeText() }]}>Atalhos principais</Text>
           <View style={styles.navigationList}>
             <Pressable
               style={({ pressed }) => [styles.navigationButton, pressed && styles.navigationButtonPressed]}
@@ -195,8 +256,8 @@ export default function MissionsScreen() {
                   <MaterialIcons name="hub" size={20} color="#1F3E66" />
                 </View>
                 <View style={styles.navigationCopy}>
-                  <Text style={styles.navigationButtonTitle}>Hub de Desafios</Text>
-                  <Text style={styles.navigationButtonSub}>Veja as 7 fases e o progresso geral.</Text>
+                  <Text style={[styles.navigationButtonTitle, { color: getThemeText() }]}>Hub de Desafios</Text>
+                  <Text style={[styles.navigationButtonSub, { color: getThemeSubText() }]}>Veja as 10 fases e o progresso geral.</Text>
                 </View>
               </View>
             </Pressable>
@@ -210,15 +271,42 @@ export default function MissionsScreen() {
                   <MaterialIcons name="receipt" size={20} color="#1F3E66" />
                 </View>
                 <View style={styles.navigationCopy}>
-                  <Text style={styles.navigationButtonTitle}>Submissões</Text>
-                  <Text style={styles.navigationButtonSub}>Acompanhe entregas e resultados já feitos.</Text>
+                  <Text style={[styles.navigationButtonTitle, { color: getThemeText() }]}>Submissões</Text>
+                  <Text style={[styles.navigationButtonSub, { color: getThemeSubText() }]}>Acompanhe entregas e resultados já feitos.</Text>
                 </View>
               </View>
             </Pressable>
           </View>
         </View>
 
-        <Text style={styles.quickAccessTitle}>Mapa das 7 Fases</Text>
+        <View style={[styles.navigationCard, { backgroundColor: getThemeCardBg() }]}>
+          <Text style={[styles.navigationTitle, { color: getThemeText() }]}>Tema do Jogo</Text>
+          <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
+            {(['classic', 'cyberpunk', 'space'] as const).map((t) => (
+              <TouchableOpacity
+                key={t}
+                onPress={() => handleSelectTheme(t)}
+                style={[
+                  styles.themeButton,
+                  theme === t && styles.themeButtonActive,
+                  t === 'cyberpunk' && { borderColor: '#EC4899' },
+                  t === 'space' && { borderColor: '#8B5CF6' }
+                ]}
+              >
+                <Text style={[
+                  styles.themeButtonText,
+                  theme === t && styles.themeButtonTextActive,
+                  t === 'cyberpunk' && theme === t && { color: '#EC4899', fontWeight: '900' },
+                  t === 'space' && theme === t && { color: '#8B5CF6', fontWeight: '900' }
+                ]}>
+                  {t === 'classic' ? 'Clássico' : t === 'cyberpunk' ? 'Cyberpunk' : 'Espacial'}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        <Text style={styles.quickAccessTitle}>Mapa das 10 Fases</Text>
         <View style={styles.phaseGrid}>
           {phaseSummary.map((phase, index) => {
             const isCurrent = index === currentPhaseIndex;
@@ -244,7 +332,19 @@ export default function MissionsScreen() {
                 <Text style={styles.phaseTileNumber}>Fase {phase.number}</Text>
                 <Text style={styles.phaseTileTitle}>{phase.title}</Text>
                 <Text style={styles.phaseTileSub}>{phase.missionCount} missões</Text>
-                <Text style={styles.phaseTileMeta}>{isCurrent ? 'Atual' : isUnlocked ? 'Desbloqueada' : 'Bloqueada'}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 }}>
+                  <Image
+                    source={
+                      isCurrent || isUnlocked
+                        ? require('../../icons/screens/desbloquear.png')
+                        : require('../../icons/screens/trancar.png')
+                    }
+                    style={{ width: 12, height: 12, resizeMode: 'contain' }}
+                  />
+                  <Text style={styles.phaseTileMeta}>
+                    {isCurrent ? 'Atual' : isUnlocked ? 'Desbloqueada' : 'Bloqueada'}
+                  </Text>
+                </View>
               </Pressable>
             );
           })}
@@ -620,5 +720,26 @@ const styles = StyleSheet.create({
   },
   phaseItemLocked: {
     color: '#7A8796',
+  },
+  themeButton: {
+    flex: 1,
+    paddingVertical: 10,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: 'transparent',
+    alignItems: 'center',
+  },
+  themeButtonActive: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#0B5F8F',
+  },
+  themeButtonText: {
+    color: '#4B5563',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  themeButtonTextActive: {
+    color: '#0B5F8F',
   },
 });

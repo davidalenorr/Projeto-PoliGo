@@ -25,7 +25,7 @@ const gettingStartedSteps = [
     details: [
       '• Veja suas informações: pontos acumulados e fase atual',
       '• "Missão Atual" mostra sua fase com barra de progresso',
-      '• "Trilha de Fases" lista todas as 7 fases do jogo',
+      '• "Trilha de Fases" lista todas as 8 fases do jogo',
       '• Botão "Trocar Detetive" retorna à tela inicial',
     ],
   },
@@ -33,7 +33,7 @@ const gettingStartedSteps = [
     number: 3,
     title: 'Entendendo as Fases',
     description:
-      'O jogo possui 7 fases progressivas, cada uma levando você a dominar novos conceitos geométricos.',
+      'O jogo possui 8 fases progressivas, cada uma levando você a dominar novos conceitos geométricos.',
     details: [
       '• Ícone ▸ = Fase atual (você está aqui)',
       '• Ícone ✓ = Fases desbloqueadas (já completadas)',
@@ -112,7 +112,7 @@ export default function TutorialScreen() {
 
         {/* All Phases Overview */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📚 As 7 Fases</Text>
+          <Text style={styles.sectionTitle}>📚 As 8 Fases</Text>
           <Text style={styles.sectionDescription}>
             Conheça cada fase da sua jornada
           </Text>
@@ -211,7 +211,7 @@ export default function TutorialScreen() {
           <View style={styles.objectiveCard}>
             <Text style={styles.objectiveNumber}>1</Text>
             <Text style={styles.objectiveText}>
-              Complete todas as 7 fases e domine a geometria dos polígonos
+              Complete todas as 8 fases e domine a geometria dos polígonos
             </Text>
           </View>
 

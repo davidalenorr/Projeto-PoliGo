@@ -10,6 +10,8 @@ import {
   Text,
   View,
   TextInput,
+  Image,
+  Vibration,
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Mission, getMissionById } from '@/src/data/missions';
@@ -43,75 +45,61 @@ function TriangleAreaPractice({ onComplete, alreadyCompleted, nextMissionId, onN
   nextMissionId?: string | null;
   onNext?: () => void;
 }) {
-  const [base, setBase] = useState('6');
-  const [height, setHeight] = useState('4');
+  const [userArea, setUserArea] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [canComplete, setCanComplete] = useState(false);
-  const area = (parseFloat(base || '0') * parseFloat(height || '0')) / 2;
+
+  const base = 6;
+  const height = 4;
   const expectedArea = 12;
 
   const handleValidate = () => {
-    const parsedBase = Number(base);
-    const parsedHeight = Number(height);
+    const parsedArea = parseFlexibleNumber(userArea);
 
-    if (!Number.isFinite(parsedBase) || !Number.isFinite(parsedHeight) || parsedBase <= 0 || parsedHeight <= 0) {
-      setFeedback('Insira base e altura válidas, maiores que zero.');
+    if (parsedArea === null || parsedArea <= 0) {
+      setFeedback('Insira uma área válida, maior que zero.');
       setSubmitted(true);
       setCanComplete(false);
       return;
     }
 
     setSubmitted(true);
-    if (area === expectedArea) {
-      setFeedback(`Correto! A área é ${expectedArea} m².`);
+    if (numbersEqual(parsedArea, expectedArea, 1e-2)) {
+      setFeedback(`Correto! A área calculada é ${expectedArea} m².`);
       setCanComplete(true);
       return;
     }
 
-    setFeedback(`Resultado incorreto. Para base 6 e altura 4, a área correta é ${expectedArea} m².`);
+    setFeedback(`Resultado incorreto. Para base 6 e altura 4, use A = (b × h) / 2.`);
     setCanComplete(false);
   };
 
   return (
     <View style={styles.missionCard}>
       <Text style={styles.sectionTitle}>Prática: Área de Triângulo</Text>
-      <Text style={styles.sectionSubtitle}>Digite base e altura para calcular a área.</Text>
+      <Text style={styles.sectionSubtitle}>Calcule a área do triângulo dado.</Text>
 
       <View style={styles.trainingCard}>
-        <Text style={styles.trainingTitle}>Valores</Text>
-        <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.caseContext}>Base (b)</Text>
-            <TextInput
-              style={styles.textInput}
-              keyboardType="numeric"
-              value={base}
-              onChangeText={(value) => {
-                setBase(value);
-                setSubmitted(false);
-                setCanComplete(false);
-                setFeedback(null);
-              }}
-            />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.caseContext}>Altura (h)</Text>
-            <TextInput
-              style={styles.textInput}
-              keyboardType="numeric"
-              value={height}
-              onChangeText={(value) => {
-                setHeight(value);
-                setSubmitted(false);
-                setCanComplete(false);
-                setFeedback(null);
-              }}
-            />
-          </View>
+        <Text style={styles.trainingTitle}>Valores do Triângulo</Text>
+        <View style={{ flexDirection: 'row', gap: 16, marginBottom: 12 }}>
+          <Text style={styles.caseContext}>Base (b): <Text style={{ fontWeight: 'bold' }}>{base} m</Text></Text>
+          <Text style={styles.caseContext}>Altura (h): <Text style={{ fontWeight: 'bold' }}>{height} m</Text></Text>
         </View>
 
-        <Text style={[styles.caseContext, { marginTop: 10 }]}>Área atual: {Number.isNaN(area) ? '—' : `${area} m²`}</Text>
+        <Text style={styles.caseContext}>Insira a Área Calculada (m²)</Text>
+        <TextInput
+          style={styles.textInput}
+          keyboardType="numeric"
+          placeholder="Ex: 15"
+          value={userArea}
+          onChangeText={(value) => {
+            setUserArea(value);
+            setSubmitted(false);
+            setCanComplete(false);
+            setFeedback(null);
+          }}
+        />
 
         {!!feedback && <Text style={[styles.feedbackText, !canComplete && { color: '#B91C1C' }]}>{feedback}</Text>}
 
@@ -129,7 +117,7 @@ function TriangleAreaPractice({ onComplete, alreadyCompleted, nextMissionId, onN
               setFeedback(null);
             }}
           >
-            <Text style={styles.nextCaseButtonText}>Corrigir valores</Text>
+            <Text style={styles.nextCaseButtonText}>Tentar novamente</Text>
           </Pressable>
         )}
       </View>
@@ -143,14 +131,14 @@ function PolygonTriangulationPractice({ onComplete, alreadyCompleted, nextMissio
   nextMissionId?: string | null;
   onNext?: () => void;
 }) {
-  const [tri1, setTri1] = useState('12');
-  const [tri2, setTri2] = useState('18');
-  const [tri3, setTri3] = useState('24');
+  const [userTotal, setUserTotal] = useState('');
   const [done, setDone] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [canComplete, setCanComplete] = useState(false);
 
-  const total = (parseFloat(tri1 || '0') + parseFloat(tri2 || '0') + parseFloat(tri3 || '0')) || 0;
+  const tri1 = 12;
+  const tri2 = 18;
+  const tri3 = 24;
   const expectedTotal = 54;
 
   return (
@@ -159,45 +147,26 @@ function PolygonTriangulationPractice({ onComplete, alreadyCompleted, nextMissio
       <Text style={styles.sectionSubtitle}>Some as áreas dos triângulos que compõem o polígono.</Text>
 
       <View style={styles.trainingCard}>
-        <Text style={styles.trainingTitle}>Áreas dos triângulos</Text>
-        <Text style={styles.caseContext}>Triângulo 1</Text>
-        <TextInput
-          style={styles.textInput}
-          keyboardType="numeric"
-          value={tri1}
-          onChangeText={(value) => {
-            setTri1(value);
-            setDone(false);
-            setCanComplete(false);
-            setFeedback(null);
-          }}
-        />
-        <Text style={styles.caseContext}>Triângulo 2</Text>
-        <TextInput
-          style={styles.textInput}
-          keyboardType="numeric"
-          value={tri2}
-          onChangeText={(value) => {
-            setTri2(value);
-            setDone(false);
-            setCanComplete(false);
-            setFeedback(null);
-          }}
-        />
-        <Text style={styles.caseContext}>Triângulo 3</Text>
-        <TextInput
-          style={styles.textInput}
-          keyboardType="numeric"
-          value={tri3}
-          onChangeText={(value) => {
-            setTri3(value);
-            setDone(false);
-            setCanComplete(false);
-            setFeedback(null);
-          }}
-        />
+        <Text style={styles.trainingTitle}>Áreas dos componentes</Text>
+        <View style={{ gap: 4, marginBottom: 12 }}>
+          <Text style={styles.caseContext}>• Triângulo 1: <Text style={{ fontWeight: 'bold' }}>{tri1} m²</Text></Text>
+          <Text style={styles.caseContext}>• Triângulo 2: <Text style={{ fontWeight: 'bold' }}>{tri2} m²</Text></Text>
+          <Text style={styles.caseContext}>• Triângulo 3: <Text style={{ fontWeight: 'bold' }}>{tri3} m²</Text></Text>
+        </View>
 
-        <Text style={[styles.caseContext, { marginTop: 8 }]}>Área total: {total} m²</Text>
+        <Text style={styles.caseContext}>Insira a Área Total (m²)</Text>
+        <TextInput
+          style={styles.textInput}
+          keyboardType="numeric"
+          placeholder="Ex: 50"
+          value={userTotal}
+          onChangeText={(value) => {
+            setUserTotal(value);
+            setDone(false);
+            setCanComplete(false);
+            setFeedback(null);
+          }}
+        />
 
         {!!feedback && <Text style={[styles.feedbackText, !canComplete && { color: '#B91C1C' }]}>{feedback}</Text>}
 
@@ -205,22 +174,22 @@ function PolygonTriangulationPractice({ onComplete, alreadyCompleted, nextMissio
           <Pressable
             style={styles.nextCaseButton}
             onPress={() => {
-              const values = [tri1, tri2, tri3].map((value) => Number(value));
-              if (values.some((value) => !Number.isFinite(value) || value <= 0)) {
-                setFeedback('Preencha as três áreas com números válidos maiores que zero.');
+              const parsedTotal = parseFlexibleNumber(userTotal);
+              if (parsedTotal === null || parsedTotal <= 0) {
+                setFeedback('Preencha a área com um número válido maior que zero.');
                 setDone(true);
                 setCanComplete(false);
                 return;
               }
 
               setDone(true);
-              if (total === expectedTotal) {
-                setFeedback(`Correto! A área total é ${expectedTotal} m².`);
+              if (numbersEqual(parsedTotal, expectedTotal, 1e-2)) {
+                setFeedback(`Correto! A área total do polígono é ${expectedTotal} m².`);
                 setCanComplete(true);
                 return;
               }
 
-              setFeedback(`Soma incorreta. Para os valores dados, o total correto é ${expectedTotal} m².`);
+              setFeedback(`Soma incorreta. Some as áreas dos três triângulos.`);
               setCanComplete(false);
             }}
           >
@@ -236,7 +205,7 @@ function PolygonTriangulationPractice({ onComplete, alreadyCompleted, nextMissio
               setFeedback(null);
             }}
           >
-            <Text style={styles.nextCaseButtonText}>Corrigir</Text>
+            <Text style={styles.nextCaseButtonText}>Tentar novamente</Text>
           </Pressable>
         )}
       </View>
@@ -250,13 +219,13 @@ function ApothemPractice({ onComplete, alreadyCompleted, nextMissionId, onNext }
   nextMissionId?: string | null;
   onNext?: () => void;
 }) {
-  const [perimeter, setPerimeter] = useState('24');
-  const [apothem, setApothem] = useState('4');
+  const [userArea, setUserArea] = useState('');
   const [checked, setChecked] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [canComplete, setCanComplete] = useState(false);
 
-  const area = (parseFloat(perimeter || '0') * parseFloat(apothem || '0')) / 2;
+  const perimeter = 24;
+  const apothem = 4;
   const expectedArea = 48;
 
   return (
@@ -265,32 +234,25 @@ function ApothemPractice({ onComplete, alreadyCompleted, nextMissionId, onNext }
       <Text style={styles.sectionSubtitle}>Use A = (P × a) / 2</Text>
 
       <View style={styles.trainingCard}>
-        <Text style={styles.caseContext}>Perímetro (P)</Text>
-        <TextInput
-          style={styles.textInput}
-          keyboardType="numeric"
-          value={perimeter}
-          onChangeText={(value) => {
-            setPerimeter(value);
-            setChecked(false);
-            setCanComplete(false);
-            setFeedback(null);
-          }}
-        />
-        <Text style={styles.caseContext}>Apótema (a)</Text>
-        <TextInput
-          style={styles.textInput}
-          keyboardType="numeric"
-          value={apothem}
-          onChangeText={(value) => {
-            setApothem(value);
-            setChecked(false);
-            setCanComplete(false);
-            setFeedback(null);
-          }}
-        />
+        <Text style={styles.trainingTitle}>Valores do Polígono</Text>
+        <View style={{ flexDirection: 'row', gap: 16, marginBottom: 12 }}>
+          <Text style={styles.caseContext}>Perímetro (P): <Text style={{ fontWeight: 'bold' }}>{perimeter} m</Text></Text>
+          <Text style={styles.caseContext}>Apótema (a): <Text style={{ fontWeight: 'bold' }}>{apothem} m</Text></Text>
+        </View>
 
-        <Text style={[styles.caseContext, { marginTop: 8 }]}>Área: {Number.isNaN(area) ? '—' : `${area} m²`}</Text>
+        <Text style={styles.caseContext}>Insira a Área Calculada (m²)</Text>
+        <TextInput
+          style={styles.textInput}
+          keyboardType="numeric"
+          placeholder="Ex: 40"
+          value={userArea}
+          onChangeText={(value) => {
+            setUserArea(value);
+            setChecked(false);
+            setCanComplete(false);
+            setFeedback(null);
+          }}
+        />
 
         {!!feedback && <Text style={[styles.feedbackText, !canComplete && { color: '#B91C1C' }]}>{feedback}</Text>}
 
@@ -298,24 +260,23 @@ function ApothemPractice({ onComplete, alreadyCompleted, nextMissionId, onNext }
           <Pressable
             style={styles.nextCaseButton}
             onPress={() => {
-              const parsedPerimeter = Number(perimeter);
-              const parsedApothem = Number(apothem);
+              const parsedArea = parseFlexibleNumber(userArea);
 
-              if (!Number.isFinite(parsedPerimeter) || !Number.isFinite(parsedApothem) || parsedPerimeter <= 0 || parsedApothem <= 0) {
-                setFeedback('Perímetro e apótema devem ser números válidos maiores que zero.');
+              if (parsedArea === null || parsedArea <= 0) {
+                setFeedback('A área deve ser um número válido maior que zero.');
                 setChecked(true);
                 setCanComplete(false);
                 return;
               }
 
               setChecked(true);
-              if (area === expectedArea) {
+              if (numbersEqual(parsedArea, expectedArea, 1e-2)) {
                 setFeedback(`Correto! A área é ${expectedArea} m².`);
                 setCanComplete(true);
                 return;
               }
 
-              setFeedback(`Resultado incorreto. Para P = 24 e a = 4, a área correta é ${expectedArea} m².`);
+              setFeedback(`Resultado incorreto. Aplique a fórmula A = (P × a) / 2.`);
               setCanComplete(false);
             }}
           >
@@ -331,7 +292,7 @@ function ApothemPractice({ onComplete, alreadyCompleted, nextMissionId, onNext }
               setFeedback(null);
             }}
           >
-            <Text style={styles.nextCaseButtonText}>Corrigir</Text>
+            <Text style={styles.nextCaseButtonText}>Tentar novamente</Text>
           </Pressable>
         )}
       </View>
@@ -345,7 +306,7 @@ function LinearWorkshop({ onComplete, alreadyCompleted, nextMissionId, onNext }:
   nextMissionId?: string | null;
   onNext?: () => void;
 }) {
-  const [x, setX] = useState('2');
+  const [x, setX] = useState('');
   const [checked, setChecked] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [canComplete, setCanComplete] = useState(false);
@@ -421,8 +382,8 @@ function SystemSolver({ onComplete, alreadyCompleted, nextMissionId, onNext }: {
   nextMissionId?: string | null;
   onNext?: () => void;
 }) {
-  const [x, setX] = useState('10');
-  const [y, setY] = useState('7');
+  const [x, setX] = useState('');
+  const [y, setY] = useState('');
   const [checked, setChecked] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [canComplete, setCanComplete] = useState(false);
@@ -511,39 +472,35 @@ function PitagorasScale({ onComplete, alreadyCompleted, nextMissionId, onNext }:
   nextMissionId?: string | null;
   onNext?: () => void;
 }) {
-  const [a, setA] = useState('5');
-  const [b, setB] = useState('12');
+  const [userHypotenuse, setUserHypotenuse] = useState('');
   const [checked, setChecked] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [canComplete, setCanComplete] = useState(false);
-  const c = Math.sqrt((parseFloat(a || '0') ** 2) + (parseFloat(b || '0') ** 2));
+
+  const a = 5;
+  const b = 12;
   const expectedHypotenuse = 13;
 
   return (
     <View style={styles.missionCard}>
       <Text style={styles.sectionTitle}>Escala de Pitágoras</Text>
-      <Text style={styles.sectionSubtitle}>Calcule a hipotenusa</Text>
+      <Text style={styles.sectionSubtitle}>Calcule a hipotenusa para os catetos dados.</Text>
 
       <View style={styles.trainingCard}>
-        <Text style={styles.caseContext}>Cateto a</Text>
+        <Text style={styles.trainingTitle}>Valores do Triângulo Retângulo</Text>
+        <View style={{ flexDirection: 'row', gap: 16, marginBottom: 12 }}>
+          <Text style={styles.caseContext}>Cateto a: <Text style={{ fontWeight: 'bold' }}>{a}</Text></Text>
+          <Text style={styles.caseContext}>Cateto b: <Text style={{ fontWeight: 'bold' }}>{b}</Text></Text>
+        </View>
+
+        <Text style={styles.caseContext}>Insira a Hipotenusa (c)</Text>
         <TextInput
           style={styles.textInput}
           keyboardType="numeric"
-          value={a}
+          placeholder="Ex: 10"
+          value={userHypotenuse}
           onChangeText={(value) => {
-            setA(value);
-            setChecked(false);
-            setCanComplete(false);
-            setFeedback(null);
-          }}
-        />
-        <Text style={styles.caseContext}>Cateto b</Text>
-        <TextInput
-          style={styles.textInput}
-          keyboardType="numeric"
-          value={b}
-          onChangeText={(value) => {
-            setB(value);
+            setUserHypotenuse(value);
             setChecked(false);
             setCanComplete(false);
             setFeedback(null);
@@ -556,24 +513,23 @@ function PitagorasScale({ onComplete, alreadyCompleted, nextMissionId, onNext }:
           <Pressable
             style={styles.nextCaseButton}
             onPress={() => {
-              const parsedA = Number(a);
-              const parsedB = Number(b);
+              const parsedHyp = parseFlexibleNumber(userHypotenuse);
 
-              if (!Number.isFinite(parsedA) || !Number.isFinite(parsedB) || parsedA <= 0 || parsedB <= 0) {
-                setFeedback('Os dois catetos precisam ser números válidos maiores que zero.');
+              if (parsedHyp === null || parsedHyp <= 0) {
+                setFeedback('A hipotenusa deve ser um número válido maior que zero.');
                 setChecked(true);
                 setCanComplete(false);
                 return;
               }
 
               setChecked(true);
-              if (Math.round(c * 100) / 100 === expectedHypotenuse) {
+              if (numbersEqual(parsedHyp, expectedHypotenuse, 1e-2)) {
                 setFeedback(`Correto! A hipotenusa é ${expectedHypotenuse}.`);
                 setCanComplete(true);
                 return;
               }
 
-              setFeedback(`Resultado incorreto. Para 5 e 12, a hipotenusa correta é ${expectedHypotenuse}.`);
+              setFeedback(`Resultado incorreto. Aplique a² + b² = c².`);
               setCanComplete(false);
             }}
           >
@@ -726,15 +682,334 @@ function OptimizationChallenge({ onComplete, alreadyCompleted, nextMissionId, on
   const questions: QuizQuestion[] = [
     {
       id: 'opt1',
-      prompt: 'Você tem duas caixas: A consome 3m de material por unidade e B consome 5m. Se tem 30m, qual combinação maximiza unidades totais?',
-      options: ['10 A', '6 A + 3 B', '5 B', '2 A + 4 B'],
-      answer: '6 A + 3 B',
-      explanation: '6×3 + 3×5 = 18 + 12 = 30, soma 9 unidades que é máxima.',
+      prompt: 'Você tem 40 metros de cerca para construir um cercado retangular. Qual configuração de lados proporcionará a maior área útil?',
+      options: [
+        'Lados de 12m e 8m (Área = 96m²)',
+        'Lados de 10m e 10m (Área = 100m²)',
+        'Lados de 15m e 5m (Área = 75m²)',
+        'Lados de 14m e 6m (Área = 84m²)',
+      ],
+      answer: 'Lados de 10m e 10m (Área = 100m²)',
+      explanation: 'Para um perímetro fixo, a área de um retângulo é máxima quando ele é um quadrado (todos os lados iguais). Portanto, lados de 10m e 10m (perímetro 10+10+10+10 = 40m) dão a maior área (100m²).',
+    },
+    {
+      id: 'opt2',
+      prompt: 'Você quer cercar uma horta retangular encostada em um muro de pedra (não precisando de cerca no lado do muro). Se possui 20 metros de cerca no total, quais dimensões maximizam a área?',
+      options: [
+        'Lados de 5m (perpendicular) e 10m (paralelo ao muro)',
+        'Lados de 4m (perpendicular) e 12m (paralelo ao muro)',
+        'Lados de 6m (perpendicular) e 8m (paralelo ao muro)',
+        'Lados de 5m (perpendicular) e 5m (paralelo ao muro)',
+      ],
+      answer: 'Lados de 5m (perpendicular) e 10m (paralelo ao muro)',
+      explanation: 'Com o muro servindo como um dos lados, o perímetro da cerca é 2x + y = 20, logo y = 20 - 2x. A área é A = x * y = x(20 - 2x) = 20x - 2x². Essa função quadrática atinge seu valor máximo em x = 5 (largura), dando y = 10 (comprimento), resultando em 50m².',
     },
   ];
 
   return (
-    <MissionQuizFlow title="Desafio de Otimização" subtitle="Escolha a melhor alocação" questions={questions} onComplete={onComplete} alreadyCompleted={alreadyCompleted} nextMissionId={nextMissionId} onNext={onNext} />
+    <MissionQuizFlow
+      title="Desafio de Otimização"
+      subtitle="Escolha a configuração que maximiza a área"
+      questions={questions}
+      onComplete={onComplete}
+      alreadyCompleted={alreadyCompleted}
+      nextMissionId={nextMissionId}
+      onNext={onNext}
+    />
+  );
+}
+
+function VolumeCubePractice({ onComplete, alreadyCompleted, nextMissionId, onNext }: {
+  onComplete: () => void;
+  alreadyCompleted: boolean;
+  nextMissionId?: string | null;
+  onNext?: () => void;
+}) {
+  const [userVolume, setUserVolume] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const [canComplete, setCanComplete] = useState(false);
+
+  const edge = 4;
+  const expectedVolume = 64; // 4³ = 64
+
+  const handleValidate = () => {
+    const parsedVol = parseFlexibleNumber(userVolume);
+
+    if (parsedVol === null || parsedVol <= 0) {
+      setFeedback('Insira um volume válido, maior que zero.');
+      setSubmitted(true);
+      setCanComplete(false);
+      return;
+    }
+
+    setSubmitted(true);
+    if (numbersEqual(parsedVol, expectedVolume, 1e-2)) {
+      setFeedback(`Correto! O volume do cubo é ${expectedVolume} cm³.`);
+      setCanComplete(true);
+      return;
+    }
+
+    setFeedback(`Resultado incorreto. Para aresta de 4cm, use a fórmula do volume: V = a³ (aresta × aresta × aresta).`);
+    setCanComplete(false);
+  };
+
+  return (
+    <View style={styles.missionCard}>
+      <Text style={styles.sectionTitle}>Volume do Cubo</Text>
+      <Text style={styles.sectionSubtitle}>Calcule o volume tridimensional do cubo dado.</Text>
+
+      <View style={styles.trainingCard}>
+        <Text style={styles.trainingTitle}>Valores do Cubo</Text>
+        <View style={{ marginBottom: 12 }}>
+          <Text style={styles.caseContext}>Aresta (a): <Text style={{ fontWeight: 'bold' }}>{edge} cm</Text></Text>
+        </View>
+
+        <Text style={styles.caseContext}>Insira o Volume Calculado (cm³)</Text>
+        <TextInput
+          style={styles.textInput}
+          keyboardType="numeric"
+          placeholder="Ex: 50"
+          value={userVolume}
+          onChangeText={(value) => {
+            setUserVolume(value);
+            setSubmitted(false);
+            setCanComplete(false);
+            setFeedback(null);
+          }}
+        />
+
+        {!!feedback && <Text style={[styles.feedbackText, !canComplete && { color: '#B91C1C' }]}>{feedback}</Text>}
+
+        {!submitted ? (
+          <Pressable style={styles.nextCaseButton} onPress={handleValidate}>
+            <Text style={styles.nextCaseButtonText}>Validar resposta</Text>
+          </Pressable>
+        ) : canComplete ? (
+          <MissionCompletionAction alreadyCompleted={alreadyCompleted} nextMissionId={nextMissionId} onComplete={onComplete} onNext={onNext} />
+        ) : (
+          <Pressable
+            style={styles.nextCaseButton}
+            onPress={() => {
+              setSubmitted(false);
+              setFeedback(null);
+            }}
+          >
+            <Text style={styles.nextCaseButtonText}>Tentar novamente</Text>
+          </Pressable>
+        )}
+      </View>
+    </View>
+  );
+}
+
+function VolumePrismPractice({ onComplete, alreadyCompleted, nextMissionId, onNext }: {
+  onComplete: () => void;
+  alreadyCompleted: boolean;
+  nextMissionId?: string | null;
+  onNext?: () => void;
+}) {
+  const [userVolume, setUserVolume] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const [canComplete, setCanComplete] = useState(false);
+
+  const length = 5;
+  const width = 4;
+  const height = 3;
+  const expectedVolume = 60; // 5 * 4 * 3 = 60
+
+  const handleValidate = () => {
+    const parsedVol = parseFlexibleNumber(userVolume);
+
+    if (parsedVol === null || parsedVol <= 0) {
+      setFeedback('Insira um volume válido, maior que zero.');
+      setSubmitted(true);
+      setCanComplete(false);
+      return;
+    }
+
+    setSubmitted(true);
+    if (numbersEqual(parsedVol, expectedVolume, 1e-2)) {
+      setFeedback(`Correto! O volume do bloco é ${expectedVolume} m³.`);
+      setCanComplete(true);
+      return;
+    }
+
+    setFeedback(`Resultado incorreto. Multiplique as três dimensões: V = comprimento × largura × altura.`);
+    setCanComplete(false);
+  };
+
+  return (
+    <View style={styles.missionCard}>
+      <Text style={styles.sectionTitle}>Volume de Bloco Retangular</Text>
+      <Text style={styles.sectionSubtitle}>Calcule o volume do paralelepípedo retangular.</Text>
+
+      <View style={styles.trainingCard}>
+        <Text style={styles.trainingTitle}>Dimensões da Caixa</Text>
+        <View style={{ gap: 4, marginBottom: 12 }}>
+          <Text style={styles.caseContext}>• Comprimento: <Text style={{ fontWeight: 'bold' }}>{length} m</Text></Text>
+          <Text style={styles.caseContext}>• Largura: <Text style={{ fontWeight: 'bold' }}>{width} m</Text></Text>
+          <Text style={styles.caseContext}>• Altura: <Text style={{ fontWeight: 'bold' }}>{height} m</Text></Text>
+        </View>
+
+        <Text style={styles.caseContext}>Insira o Volume Calculado (m³)</Text>
+        <TextInput
+          style={styles.textInput}
+          keyboardType="numeric"
+          placeholder="Ex: 50"
+          value={userVolume}
+          onChangeText={(value) => {
+            setUserVolume(value);
+            setSubmitted(false);
+            setCanComplete(false);
+            setFeedback(null);
+          }}
+        />
+
+        {!!feedback && <Text style={[styles.feedbackText, !canComplete && { color: '#B91C1C' }]}>{feedback}</Text>}
+
+        {!submitted ? (
+          <Pressable style={styles.nextCaseButton} onPress={handleValidate}>
+            <Text style={styles.nextCaseButtonText}>Validar resposta</Text>
+          </Pressable>
+        ) : canComplete ? (
+          <MissionCompletionAction alreadyCompleted={alreadyCompleted} nextMissionId={nextMissionId} onComplete={onComplete} onNext={onNext} />
+        ) : (
+          <Pressable
+            style={styles.nextCaseButton}
+            onPress={() => {
+              setSubmitted(false);
+              setFeedback(null);
+            }}
+          >
+            <Text style={styles.nextCaseButtonText}>Tentar novamente</Text>
+          </Pressable>
+        )}
+      </View>
+    </View>
+  );
+}
+
+function SurfaceAreaPractice({ onComplete, alreadyCompleted, nextMissionId, onNext }: {
+  onComplete: () => void;
+  alreadyCompleted: boolean;
+  nextMissionId?: string | null;
+  onNext?: () => void;
+}) {
+  const [userArea, setUserArea] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const [canComplete, setCanComplete] = useState(false);
+
+  const length = 5;
+  const width = 4;
+  const height = 3;
+  const expectedArea = 94; // 2*(5*4 + 5*3 + 4*3) = 2*(20+15+12) = 2*47 = 94
+
+  const handleValidate = () => {
+    const parsedArea = parseFlexibleNumber(userArea);
+
+    if (parsedArea === null || parsedArea <= 0) {
+      setFeedback('Insira uma área válida, maior que zero.');
+      setSubmitted(true);
+      setCanComplete(false);
+      return;
+    }
+
+    setSubmitted(true);
+    if (numbersEqual(parsedArea, expectedArea, 1e-2)) {
+      setFeedback(`Correto! A área total de superfície é ${expectedArea} m².`);
+      setCanComplete(true);
+      return;
+    }
+
+    setFeedback(`Resultado incorreto. Use a fórmula: A = 2 × (ab + ac + bc) para somar as 6 faces.`);
+    setCanComplete(false);
+  };
+
+  return (
+    <View style={styles.missionCard}>
+      <Text style={styles.sectionTitle}>Área de Superfície</Text>
+      <Text style={styles.sectionSubtitle}>Calcule a área total das faces do bloco retangular.</Text>
+
+      <View style={styles.trainingCard}>
+        <Text style={styles.trainingTitle}>Dimensões da Caixa</Text>
+        <View style={{ gap: 4, marginBottom: 12 }}>
+          <Text style={styles.caseContext}>• Lado a: <Text style={{ fontWeight: 'bold' }}>{length} m</Text></Text>
+          <Text style={styles.caseContext}>• Lado b: <Text style={{ fontWeight: 'bold' }}>{width} m</Text></Text>
+          <Text style={styles.caseContext}>• Lado c: <Text style={{ fontWeight: 'bold' }}>{height} m</Text></Text>
+        </View>
+
+        <Text style={styles.caseContext}>Insira a Área de Superfície (m²)</Text>
+        <TextInput
+          style={styles.textInput}
+          keyboardType="numeric"
+          placeholder="Ex: 80"
+          value={userArea}
+          onChangeText={(value) => {
+            setUserArea(value);
+            setSubmitted(false);
+            setCanComplete(false);
+            setFeedback(null);
+          }}
+        />
+
+        {!!feedback && <Text style={[styles.feedbackText, !canComplete && { color: '#B91C1C' }]}>{feedback}</Text>}
+
+        {!submitted ? (
+          <Pressable style={styles.nextCaseButton} onPress={handleValidate}>
+            <Text style={styles.nextCaseButtonText}>Validar resposta</Text>
+          </Pressable>
+        ) : canComplete ? (
+          <MissionCompletionAction alreadyCompleted={alreadyCompleted} nextMissionId={nextMissionId} onComplete={onComplete} onNext={onNext} />
+        ) : (
+          <Pressable
+            style={styles.nextCaseButton}
+            onPress={() => {
+              setSubmitted(false);
+              setFeedback(null);
+            }}
+          >
+            <Text style={styles.nextCaseButtonText}>Tentar novamente</Text>
+          </Pressable>
+        )}
+      </View>
+    </View>
+  );
+}
+
+function PackagingOptimizationChallenge({ onComplete, alreadyCompleted, nextMissionId, onNext }: {
+  onComplete: () => void;
+  alreadyCompleted: boolean;
+  nextMissionId?: string | null;
+  onNext?: () => void;
+}) {
+  const questions: QuizQuestion[] = [
+    {
+      id: 'sp1',
+      prompt: 'Duas caixas têm o mesmo volume de 24 m³. Caixa A tem dimensões 2m x 3m x 4m. Caixa B tem dimensões 1m x 2m x 12m. Qual caixa gasta menos papelão para ser fabricada (menor área de superfície)?',
+      options: [
+        'Caixa A (Área = 52 m²)',
+        'Caixa B (Área = 76 m²)',
+        'Ambas gastam o mesmo papelão (mesma área)',
+        'Incomparável sem saber o peso',
+      ],
+      answer: 'Caixa A (Área = 52 m²)',
+      explanation: 'Para Caixa A: A = 2(2x3 + 2x4 + 3x4) = 2(6+8+12) = 52 m². Para Caixa B: A = 2(1x2 + 1x12 + 2x12) = 2(2+12+24) = 76 m². A Caixa A consome menos papelão, sendo mais econômica.',
+    },
+  ];
+
+  return (
+    <MissionQuizFlow
+      title="Desafio das Embalagens"
+      subtitle="Otimização de volume e superfície"
+      questions={questions}
+      onComplete={onComplete}
+      alreadyCompleted={alreadyCompleted}
+      nextMissionId={nextMissionId}
+      onNext={onNext}
+    />
   );
 }
 
@@ -752,7 +1027,10 @@ function MissionHints({ tips }: { tips: string[] }) {
         onPress={() => setIsOpen((prev) => !prev)}
       >
         <View style={styles.hintBubble}>
-          <Text style={styles.hintBubbleText}>?</Text>
+          <Image
+            source={require('../icons/screens/interrogatorio.png')}
+            style={{ width: 14, height: 14, resizeMode: 'contain', tintColor: '#FFFFFF' }}
+          />
         </View>
         <Text style={styles.hintTriggerText}>{isOpen ? 'Ocultar dicas' : 'Ver dicas da missão'}</Text>
       </Pressable>
@@ -782,11 +1060,32 @@ function MissionCompletionAction({
   onComplete: () => void;
   onNext?: () => void;
 }) {
-  if (alreadyCompleted) {
+  const [clicked, setClicked] = useState(false);
+
+  const handlePress = () => {
+    setClicked(true);
+    onComplete();
+  };
+
+  if (alreadyCompleted || clicked) {
     return (
       <View style={styles.afterCompleteWrap}>
-        <View style={styles.alreadyDoneBadge}>
-          <Text style={styles.alreadyDoneText}>Missão já concluída para este detetive.</Text>
+        <View style={[
+          styles.alreadyDoneBadge,
+          { flexDirection: 'row', alignItems: 'center', gap: 6 },
+          clicked && { backgroundColor: '#DEF7EC', borderColor: '#31C48D' }
+        ]}>
+          <Image
+            source={require('../icons/screens/verificar.png')}
+            style={{ width: 14, height: 14, resizeMode: 'contain' }}
+          />
+          <Text style={[
+            styles.alreadyDoneText,
+            clicked && { color: '#03543F' },
+            { flexShrink: 1 }
+          ]}>
+            {clicked ? 'Missão concluída com sucesso!' : 'Missão já concluída para este detetive.'}
+          </Text>
         </View>
 
         {nextMissionId && onNext ? (
@@ -799,7 +1098,7 @@ function MissionCompletionAction({
   }
 
   return (
-    <Pressable style={({ pressed }) => [styles.completeButton, pressed && styles.completeButtonPressed]} onPress={onComplete}>
+    <Pressable style={({ pressed }) => [styles.completeButton, pressed && styles.completeButtonPressed]} onPress={handlePress}>
       <Text style={styles.completeButtonText}>Concluir missão e continuar</Text>
     </Pressable>
   );
@@ -3012,6 +3311,7 @@ export default function MissionPlayScreen() {
     }
 
     const result = await completeMissionForDetective(selectedDetectiveId, mission.id);
+    Vibration.vibrate(80);
     setMissionAlreadyCompleted(true);
 
       if (mission.phaseId) {
@@ -3326,7 +3626,7 @@ export default function MissionPlayScreen() {
             title="Sistemas em Dupla"
             subtitle="Resolva pares (x,y)"
             steps={[
-              { id: 'p1', prompt: 'x + y = 7; x - y = 1 (responda x)', type: 'pair', expected: { x: 4, y: 3 } },
+              { id: 'p1', prompt: 'x + y = 7; x - y = 1', type: 'pair', expected: { x: 4, y: 3 } },
               { id: 'p2', prompt: '2x + y = 10; x - 2y = -1', type: 'pair', expected: { x: 3, y: 4 } },
               { id: 'p3', prompt: '3x - y = 5; x + y = 4', type: 'pair', expected: { x: 3, y: 1 } },
             ]}
@@ -3344,6 +3644,128 @@ export default function MissionPlayScreen() {
               { id: 'm1', prompt: 'Ana tem o dobro que Bia; juntas têm 30. Quanto Bia tem?', type: 'number', expected: 10 },
               { id: 'm2', prompt: 'x+5=12', type: 'number', expected: 7 },
               { id: 'm3', prompt: '2(x-3)=8', type: 'number', expected: 7 },
+            ]}
+            onComplete={handleCompleteMission}
+            alreadyCompleted={missionAlreadyCompleted}
+            nextMissionId={nextMissionId}
+            onNext={handleNextMission}
+          />
+        )}
+        {mission.id === 'fase8_m1' && (
+          <VolumeCubePractice
+            onComplete={handleCompleteMission}
+            onNext={handleNextMission}
+            alreadyCompleted={missionAlreadyCompleted}
+            nextMissionId={nextMissionId}
+          />
+        )}
+        {mission.id === 'fase8_m2' && (
+          <VolumePrismPractice
+            onComplete={handleCompleteMission}
+            onNext={handleNextMission}
+            alreadyCompleted={missionAlreadyCompleted}
+            nextMissionId={nextMissionId}
+          />
+        )}
+        {mission.id === 'fase8_m3' && (
+          <SurfaceAreaPractice
+            onComplete={handleCompleteMission}
+            onNext={handleNextMission}
+            alreadyCompleted={missionAlreadyCompleted}
+            nextMissionId={nextMissionId}
+          />
+        )}
+        {mission.id === 'fase8_m4' && (
+          <PackagingOptimizationChallenge
+            onComplete={handleCompleteMission}
+            onNext={handleNextMission}
+            alreadyCompleted={missionAlreadyCompleted}
+            nextMissionId={nextMissionId}
+          />
+        )}
+        {mission.id === 'fase9_m1' && (
+          <GenericEquationMission
+            title="Teorema de Tales"
+            subtitle="Proporções e semelhança"
+            steps={[
+              { id: 't1', prompt: '3/x = 9/12. Qual o valor de x?', type: 'number', expected: 4 },
+              { id: 't2', prompt: 'x/5 = 8/10. Qual o valor de x?', type: 'number', expected: 4 },
+              { id: 't3', prompt: '2/3 = x/9. Qual o valor de x?', type: 'number', expected: 6 },
+            ]}
+            onComplete={handleCompleteMission}
+            alreadyCompleted={missionAlreadyCompleted}
+            nextMissionId={nextMissionId}
+            onNext={handleNextMission}
+          />
+        )}
+        {mission.id === 'fase9_m2' && (
+          <GenericEquationMission
+            title="Seno e Cosseno"
+            subtitle="Razões trigonométricas básicas"
+            steps={[
+              { id: 's1', prompt: 'Hipotenusa = 10, Cateto Oposto = 6. Qual o valor do Seno (sen θ)?', type: 'number', expected: 0.6 },
+              { id: 's2', prompt: 'Hipotenusa = 13, Cateto Adjacente = 5. Qual o Cosseno (cos θ) em fração (ex: 5/13)?', type: 'number', expected: 5/13 },
+              { id: 's3', prompt: 'Se o cos(θ) = 0.8 e a Hipotenusa = 15, qual a medida do Cateto Adjacente?', type: 'number', expected: 12 },
+            ]}
+            onComplete={handleCompleteMission}
+            alreadyCompleted={missionAlreadyCompleted}
+            nextMissionId={nextMissionId}
+            onNext={handleNextMission}
+          />
+        )}
+        {mission.id === 'fase9_m3' && (
+          <GenericEquationMission
+            title="A Sombra da Torre"
+            subtitle="Calculando alturas com Tangente"
+            steps={[
+              { id: 'tg1', prompt: 'Uma torre projeta sombra de 30m. O ângulo solar tem tg(θ) = 1.5. Qual a altura da torre (m)?', type: 'number', expected: 45 },
+              { id: 'tg2', prompt: 'Um mastro de 12m projeta uma sombra de 12m. Qual a tangente do ângulo solar (tg θ)?', type: 'number', expected: 1 },
+              { id: 'tg3', prompt: 'Se tg(θ) = 2.5 e a sombra da árvore mede 4m, qual a altura da árvore (m)?', type: 'number', expected: 10 },
+            ]}
+            onComplete={handleCompleteMission}
+            alreadyCompleted={missionAlreadyCompleted}
+            nextMissionId={nextMissionId}
+            onNext={handleNextMission}
+          />
+        )}
+        {mission.id === 'fase10_m1' && (
+          <GenericEquationMission
+            title="Escalas do Mapa"
+            subtitle="Distâncias no mundo real"
+            steps={[
+              { id: 'e1', prompt: 'No mapa 1:100.000, a distância medida é 5cm. Qual a distância real correspondente em km?', type: 'number', expected: 5 },
+              { id: 'e2', prompt: 'Escala 1:200.000 e distância real de 16km. Qual a distância medida no mapa em cm?', type: 'number', expected: 8 },
+              { id: 'e3', prompt: 'Terreno de 30m. No desenho em escala 1:50, qual o comprimento no desenho em cm?', type: 'number', expected: 60 },
+            ]}
+            onComplete={handleCompleteMission}
+            alreadyCompleted={missionAlreadyCompleted}
+            nextMissionId={nextMissionId}
+            onNext={handleNextMission}
+          />
+        )}
+        {mission.id === 'fase10_m2' && (
+          <GenericEquationMission
+            title="Alvo Probabilístico"
+            subtitle="Probabilidade geométrica em alvos"
+            steps={[
+              { id: 'p1', prompt: 'Um alvo quadrado de 100m² tem uma zona central de 25m². Qual a probabilidade (%) de acertar a zona central?', type: 'number', expected: 25 },
+              { id: 'p2', prompt: 'Uma horta circular de 12m² está num terreno de 60m². Qual a probabilidade (%) de cair na horta?', type: 'number', expected: 20 },
+              { id: 'p3', prompt: 'Se a área de um lago é 10% da área de um parque de 500m², qual a área do lago em m²?', type: 'number', expected: 50 },
+            ]}
+            onComplete={handleCompleteMission}
+            alreadyCompleted={missionAlreadyCompleted}
+            nextMissionId={nextMissionId}
+            onNext={handleNextMission}
+          />
+        )}
+        {mission.id === 'fase10_m3' && (
+          <GenericEquationMission
+            title="Gráfico da Horta"
+            subtitle="Divisões proporcionais em gráfico de setores"
+            steps={[
+              { id: 'g1', prompt: 'Um terreno de 1000m² destina 40% para tomate. Qual a área destinada ao tomate em m²?', type: 'number', expected: 400 },
+              { id: 'g2', prompt: 'Se o plantio de alface ocupa 25% da horta de 1000m², qual a área do alface em m²?', type: 'number', expected: 250 },
+              { id: 'g3', prompt: 'Fatia de batata representa 15% de uma horta de 200m². Qual a área de batatas em m²?', type: 'number', expected: 30 },
             ]}
             onComplete={handleCompleteMission}
             alreadyCompleted={missionAlreadyCompleted}
@@ -3376,6 +3798,20 @@ export default function MissionPlayScreen() {
           'fase6_m2',
           'fase6_m3',
           'fase6_m4',
+          'fase7_m1',
+          'fase7_m2',
+          'fase7_m3',
+          'fase7_m4',
+          'fase8_m1',
+          'fase8_m2',
+          'fase8_m3',
+          'fase8_m4',
+          'fase9_m1',
+          'fase9_m2',
+          'fase9_m3',
+          'fase10_m1',
+          'fase10_m2',
+          'fase10_m3',
         ].includes(mission.id) && (
           <GenericMission
             mission={mission}

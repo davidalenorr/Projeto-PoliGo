@@ -10,7 +10,7 @@ import {
   getCurrentPhaseNumber,
   getPhaseIdFromNumber,
 } from '@/src/domain/progress';
-import { getNextMissionIdForDetectivePhase, isMissionCompletedForDetective } from '@/src/storage/missionProgress';
+import { getNextMissionIdForDetectivePhase, isMissionCompletedForDetective, syncDetectiveProgress } from '@/src/storage/missionProgress';
 
 export default function SubmissionsScreen() {
   const [selectedDetective, setSelectedDetective] = useState<Detective | undefined>(undefined);
@@ -25,11 +25,13 @@ export default function SubmissionsScreen() {
     let isMounted = true;
 
     async function syncSelection() {
-      const detectiveList = await getDetectives();
       const selectedDetectiveId = await getSelectedDetectiveId();
-      const detective = detectiveList.find((item) => item.id === selectedDetectiveId) ?? detectiveList[0];
+      if (!selectedDetectiveId) {
+        return;
+      }
+      const detective = await syncDetectiveProgress(selectedDetectiveId);
 
-      if (isMounted) {
+      if (isMounted && detective) {
         setSelectedDetective(detective);
       }
     }

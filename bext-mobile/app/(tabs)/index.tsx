@@ -9,6 +9,7 @@ import {
   Text,
   TextInput,
   View,
+  Image,
 } from 'react-native';
 import { router } from 'expo-router';
 import { Detective } from '@/src/data/detectives';
@@ -98,10 +99,11 @@ export default function InitialScreen() {
                 onPress={() => handleSelectDetective(detective.id)}
                 style={({ pressed }) => [styles.playerCard, pressed && styles.playerCardPressed]}
               >
-                <View style={[styles.avatar, { backgroundColor: detective.avatarBg }]}>
-                  <Text style={[styles.avatarText, detective.avatarColor ? { color: detective.avatarColor } : null]}>
-                    {detective.avatar}
-                  </Text>
+                <View style={[styles.avatar, { backgroundColor: detective.avatarBg, alignItems: 'center', justifyContent: 'center' }]}>
+                  <Image
+                    source={require('../../icons/screens/procurar.png')}
+                    style={{ width: 22, height: 22, resizeMode: 'contain', tintColor: detective.avatarColor ?? '#FFFFFF' }}
+                  />
                 </View>
 
                 <View style={styles.playerText}>

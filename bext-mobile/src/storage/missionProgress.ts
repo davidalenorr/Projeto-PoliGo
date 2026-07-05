@@ -3,6 +3,7 @@ import { missions, getMissionById, getMissionsByPhaseId } from '@/src/data/missi
 import { phases } from '@/src/data/phases';
 import { getDetectives, saveDetectives } from '@/src/storage/detectives';
 import { getCurrentPhaseNumber, getPhaseIdFromNumber } from '@/src/domain/progress';
+import { Detective } from '@/src/data/detectives';
 
 type MissionProgressMap = Record<string, string[]>;
 
@@ -104,4 +105,67 @@ export async function completeMissionForDetective(
   await saveDetectives(updatedList);
 
   return { newlyCompleted: true };
+}
+
+export async function syncDetectiveProgress(detectiveId: string): Promise<Detective | undefined> {
+  const detectiveList = await getDetectives();
+  const detective = detectiveList.find((d) => d.id === detectiveId);
+  if (!detective) return undefined;
+
+  const completed = await getCompletedMissionIdsForDetective(detectiveId);
+  let currentPhaseNumber = getCurrentPhaseNumber(detective.phase, phases.length);
+  let changed = false;
+  let updatedPhase = detective.phase;
+  let updatedProgress = detective.progress;
+
+  while (currentPhaseNumber < phases.length) {
+    const currentPhaseId = getPhaseIdFromNumber(currentPhaseNumber);
+    const missionsInCurrentPhase = getMissionsByPhaseId(currentPhaseId);
+    
+    if (missionsInCurrentPhase.length === 0) {
+      break;
+    }
+
+    const completedInCurrentPhase = completed.filter((id) =>
+      missionsInCurrentPhase.some((m) => m.id === id)
+    ).length;
+
+    const allCompletedInPhase = completedInCurrentPhase >= missionsInCurrentPhase.length;
+
+    if (allCompletedInPhase) {
+      const nextPhase = phases.find((p) => p.number === currentPhaseNumber + 1);
+      if (nextPhase) {
+        currentPhaseNumber = nextPhase.number;
+        updatedPhase = `Fase ${nextPhase.number}: ${nextPhase.title}`;
+        updatedProgress = 0;
+        changed = true;
+      } else {
+        break;
+      }
+    } else {
+      const progressValue = Math.round((completedInCurrentPhase / missionsInCurrentPhase.length) * 100);
+      if (progressValue !== detective.progress) {
+        updatedProgress = progressValue;
+        changed = true;
+      }
+      break;
+    }
+  }
+
+  if (changed) {
+    const updatedList = detectiveList.map((d) => {
+      if (d.id === detectiveId) {
+        return {
+          ...d,
+          phase: updatedPhase,
+          progress: updatedProgress,
+        };
+      }
+      return d;
+    });
+    await saveDetectives(updatedList);
+    return updatedList.find((d) => d.id === detectiveId);
+  }
+
+  return detective;
 }
