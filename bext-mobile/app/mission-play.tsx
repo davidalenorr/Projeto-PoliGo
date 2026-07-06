@@ -472,35 +472,70 @@ function PitagorasScale({ onComplete, alreadyCompleted, nextMissionId, onNext }:
   nextMissionId?: string | null;
   onNext?: () => void;
 }) {
-  const [userHypotenuse, setUserHypotenuse] = useState('');
+  const [currentStep, setCurrentStep] = useState(0);
+  const [userInput, setUserInput] = useState('');
   const [checked, setChecked] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [canComplete, setCanComplete] = useState(false);
 
-  const a = 5;
-  const b = 12;
-  const expectedHypotenuse = 13;
+  const cases = [
+    { a: 3, b: 4, expected: 5, prompt: 'Cateto a: 3, Cateto b: 4. Calcule a Hipotenusa (c).' },
+    { a: 6, c: 10, expected: 8, prompt: 'Cateto a: 6, Hipotenusa c: 10. Calcule o outro Cateto (b).' },
+    { a: 5, b: 12, expected: 13, prompt: 'Cateto a: 5, Cateto b: 12. Calcule a Hipotenusa (c).' },
+    { a: 8, c: 17, expected: 15, prompt: 'Cateto a: 8, Hipotenusa c: 17. Calcule o outro Cateto (b).' },
+  ];
+
+  const currentCase = cases[currentStep];
+
+  const handleVerify = () => {
+    const parsed = parseFlexibleNumber(userInput);
+    if (parsed === null || parsed <= 0) {
+      setFeedback('Insira um número válido maior que zero.');
+      setChecked(true);
+      setCanComplete(false);
+      return;
+    }
+
+    setChecked(true);
+    if (numbersEqual(parsed, currentCase.expected, 1e-2)) {
+      setFeedback(`Correto! A resposta é ${currentCase.expected}.`);
+      setCanComplete(true);
+      Vibration.vibrate(80);
+    } else {
+      setFeedback(`Resultado incorreto. Lembre-se: a² + b² = c².`);
+      setCanComplete(false);
+      Vibration.vibrate([0, 100, 50, 100]);
+    }
+  };
+
+  const handleNextStep = () => {
+    if (currentStep < cases.length - 1) {
+      setCurrentStep(prev => prev + 1);
+      setUserInput('');
+      setChecked(false);
+      setFeedback(null);
+      setCanComplete(false);
+    } else {
+      onComplete();
+    }
+  };
 
   return (
     <View style={styles.missionCard}>
       <Text style={styles.sectionTitle}>Escala de Pitágoras</Text>
-      <Text style={styles.sectionSubtitle}>Calcule a hipotenusa para os catetos dados.</Text>
+      <Text style={styles.sectionSubtitle}>Passo {currentStep + 1} de {cases.length}</Text>
 
       <View style={styles.trainingCard}>
-        <Text style={styles.trainingTitle}>Valores do Triângulo Retângulo</Text>
-        <View style={{ flexDirection: 'row', gap: 16, marginBottom: 12 }}>
-          <Text style={styles.caseContext}>Cateto a: <Text style={{ fontWeight: 'bold' }}>{a}</Text></Text>
-          <Text style={styles.caseContext}>Cateto b: <Text style={{ fontWeight: 'bold' }}>{b}</Text></Text>
-        </View>
+        <Text style={styles.trainingTitle}>Caso Prático</Text>
+        <Text style={[styles.caseContext, { marginBottom: 12, fontSize: 16 }]}>{currentCase.prompt}</Text>
 
-        <Text style={styles.caseContext}>Insira a Hipotenusa (c)</Text>
         <TextInput
           style={styles.textInput}
           keyboardType="numeric"
-          placeholder="Ex: 10"
-          value={userHypotenuse}
+          placeholder="Insira sua resposta..."
+          value={userInput}
           onChangeText={(value) => {
-            setUserHypotenuse(value);
+            setUserInput(value);
             setChecked(false);
             setCanComplete(false);
             setFeedback(null);
@@ -510,33 +545,17 @@ function PitagorasScale({ onComplete, alreadyCompleted, nextMissionId, onNext }:
         {!!feedback && <Text style={[styles.feedbackText, !canComplete && { color: '#B91C1C' }]}>{feedback}</Text>}
 
         {!checked ? (
-          <Pressable
-            style={styles.nextCaseButton}
-            onPress={() => {
-              const parsedHyp = parseFlexibleNumber(userHypotenuse);
-
-              if (parsedHyp === null || parsedHyp <= 0) {
-                setFeedback('A hipotenusa deve ser um número válido maior que zero.');
-                setChecked(true);
-                setCanComplete(false);
-                return;
-              }
-
-              setChecked(true);
-              if (numbersEqual(parsedHyp, expectedHypotenuse, 1e-2)) {
-                setFeedback(`Correto! A hipotenusa é ${expectedHypotenuse}.`);
-                setCanComplete(true);
-                return;
-              }
-
-              setFeedback(`Resultado incorreto. Aplique a² + b² = c².`);
-              setCanComplete(false);
-            }}
-          >
+          <Pressable style={styles.nextCaseButton} onPress={handleVerify}>
             <Text style={styles.nextCaseButtonText}>Calcular</Text>
           </Pressable>
         ) : canComplete ? (
-          <MissionCompletionAction alreadyCompleted={alreadyCompleted} nextMissionId={nextMissionId} onComplete={onComplete} onNext={onNext} />
+          currentStep < cases.length - 1 ? (
+            <Pressable style={styles.nextCaseButton} onPress={handleNextStep}>
+              <Text style={styles.nextCaseButtonText}>Próximo Passo</Text>
+            </Pressable>
+          ) : (
+            <MissionCompletionAction alreadyCompleted={alreadyCompleted} nextMissionId={nextMissionId} onComplete={onComplete} onNext={onNext} />
+          )
         ) : (
           <Pressable
             style={styles.nextCaseButton}
@@ -3683,6 +3702,21 @@ export default function MissionPlayScreen() {
             nextMissionId={nextMissionId}
           />
         )}
+        {mission.id === 'fase8_m5' && (
+          <GenericEquationMission
+            title="Volume do Cilindro"
+            subtitle="Calculando a capacidade de sólidos redondos"
+            steps={[
+              { id: 'c1', prompt: 'Uma lata de refrigerante tem raio r = 3cm e altura h = 10cm. Usando π = 3.14, qual a área da base da lata em cm²?', type: 'number', expected: 28.26 },
+              { id: 'c2', prompt: 'Usando a área da base anterior (28.26 cm²), qual o volume total da lata em cm³?', type: 'number', expected: 282.6 },
+              { id: 'c3', prompt: 'Um silo tem raio r = 2m e altura h = 5m. Usando π = 3.14, qual o volume total do silo em m³?', type: 'number', expected: 62.8 },
+            ]}
+            onComplete={handleCompleteMission}
+            alreadyCompleted={missionAlreadyCompleted}
+            nextMissionId={nextMissionId}
+            onNext={handleNextMission}
+          />
+        )}
         {mission.id === 'fase9_m1' && (
           <GenericEquationMission
             title="Teorema de Tales"
@@ -3806,6 +3840,7 @@ export default function MissionPlayScreen() {
           'fase8_m2',
           'fase8_m3',
           'fase8_m4',
+          'fase8_m5',
           'fase9_m1',
           'fase9_m2',
           'fase9_m3',

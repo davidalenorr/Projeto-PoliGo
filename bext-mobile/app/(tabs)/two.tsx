@@ -41,6 +41,15 @@ const phaseTrail = [
   'Fase 10: O Cartógrafo',
 ];
 
+function getInitials(name?: string): string {
+  if (!name) return 'D';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) {
+    return parts[0].substring(0, 1).toUpperCase();
+  }
+  return (parts[0].substring(0, 1) + parts[1].substring(0, 1)).toUpperCase();
+}
+
 export default function MissionsScreen() {
   const [selectedDetective, setSelectedDetective] = useState<Detective | undefined>(undefined);
   const isFocused = useIsFocused();
@@ -182,10 +191,13 @@ export default function MissionsScreen() {
               pressed && styles.avatarPressed,
             ]}
           >
-            <Image
-              source={require('../../icons/screens/procurar.png')}
-              style={{ width: 22, height: 22, resizeMode: 'contain', tintColor: selectedDetective?.avatarColor ?? '#FFFFFF' }}
-            />
+            <Text style={{
+              color: selectedDetective?.avatarColor ?? '#FFFFFF',
+              fontSize: 16,
+              fontWeight: '900',
+            }}>
+              {getInitials(selectedDetective?.name)}
+            </Text>
           </Pressable>
           <View style={styles.headerCopy}>
             <Text style={[styles.welcome, { color: getThemeText() }]}>Olá, {firstName}!</Text>

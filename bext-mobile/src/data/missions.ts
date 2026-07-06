@@ -488,6 +488,21 @@ export const missions: Mission[] = [
       'Pense no custo do material de fabricação',
     ],
   },
+  {
+    id: 'fase8_m5',
+    phaseId: 'fase8',
+    title: 'Volume do Cilindro',
+    description: 'Determine a capacidade de latas e silos redondos',
+    difficulty: 'difícil',
+    points: 25,
+    objective:
+      'Calcule o volume de cilindros multiplicando a área da base circular pela altura (V = π × r² × h).',
+    tips: [
+      'A área da base é circular: A_base = π × r²',
+      'Multiplique a área da base pela altura do cilindro',
+      'Considere π ≈ 3.14 para os cálculos',
+    ],
+  },
   // Fase 9: Trigonometria Aplicada
   {
     id: 'fase9_m1',

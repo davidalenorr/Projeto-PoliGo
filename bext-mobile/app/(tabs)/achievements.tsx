@@ -12,6 +12,15 @@ type Badge = {
   unlocked: boolean;
 };
 
+function getInitials(name?: string): string {
+  if (!name) return 'D';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) {
+    return parts[0].substring(0, 1).toUpperCase();
+  }
+  return (parts[0].substring(0, 1) + parts[1].substring(0, 1)).toUpperCase();
+}
+
 function getCurrentPhaseIndex(phase?: string): number {
   if (!phase) {
     return 0;
@@ -134,10 +143,13 @@ export default function AchievementsScreen() {
 
         <View style={styles.profileCard}>
           <View style={[styles.avatar, { backgroundColor: selectedDetective?.avatarBg ?? '#2F84B0', alignItems: 'center', justifyContent: 'center' }]}>
-            <Image
-              source={require('../../icons/screens/procurar.png')}
-              style={{ width: 22, height: 22, resizeMode: 'contain', tintColor: selectedDetective?.avatarColor ?? '#FFFFFF' }}
-            />
+            <Text style={{
+              color: selectedDetective?.avatarColor ?? '#FFFFFF',
+              fontSize: 16,
+              fontWeight: '900',
+            }}>
+              {getInitials(selectedDetective?.name)}
+            </Text>
           </View>
           <View style={styles.profileInfo}>
             <Text style={styles.profileName}>{selectedDetective?.name ?? 'Detetive'}</Text>
