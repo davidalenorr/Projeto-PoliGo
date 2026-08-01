@@ -27,6 +27,7 @@ import {
   getPhaseIdFromNumber,
 } from '@/src/domain/progress';
 import { getNextMissionIdForDetectivePhase, syncDetectiveProgress } from '@/src/storage/missionProgress';
+import { recordDetectiveActivity, DetectiveStreak } from '@/src/storage/streaks';
 
 const phaseTrail = [
   'Fase 1: Detetive das Formas',
@@ -52,6 +53,7 @@ function getInitials(name?: string): string {
 
 export default function MissionsScreen() {
   const [selectedDetective, setSelectedDetective] = useState<Detective | undefined>(undefined);
+  const [streak, setStreak] = useState<DetectiveStreak | undefined>(undefined);
   const isFocused = useIsFocused();
   const [theme, setTheme] = useState<'classic' | 'cyberpunk' | 'space'>('classic');
 
@@ -114,9 +116,11 @@ export default function MissionsScreen() {
         return;
       }
       const detective = await syncDetectiveProgress(selectedDetectiveId);
+      const streakResult = await recordDetectiveActivity(selectedDetectiveId);
 
-      if (isMounted && detective) {
-        setSelectedDetective(detective);
+      if (isMounted) {
+        if (detective) setSelectedDetective(detective);
+        setStreak(streakResult.streak);
       }
     }
 
@@ -199,17 +203,35 @@ export default function MissionsScreen() {
               {getInitials(selectedDetective?.name)}
             </Text>
           </Pressable>
+
           <View style={styles.headerCopy}>
             <Text style={[styles.welcome, { color: getThemeText() }]}>Olá, {firstName}!</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
-              <Image
-                source={require('../../icons/screens/estrela.png')}
-                style={{ width: 14, height: 14, resizeMode: 'contain' }}
-              />
-              <Text style={[styles.points, { color: getThemeSubText() }]}>{selectedDetective?.points ?? 0} Pts</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <Image
+                  source={require('../../icons/screens/estrela.png')}
+                  style={{ width: 14, height: 14, resizeMode: 'contain' }}
+                />
+                <Text style={[styles.points, { color: getThemeSubText() }]}>{selectedDetective?.points ?? 0} Pts</Text>
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#FEF3C7', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12, borderWidth: 1, borderColor: '#F59E0B' }}>
+                <MaterialIcons name="local-fire-department" size={14} color="#D97706" />
+                <Text style={{ fontSize: 11, fontWeight: '800', color: '#D97706' }}>
+                  {streak?.currentStreak ?? 1} {streak?.currentStreak === 1 ? 'dia' : 'dias'}
+                </Text>
+              </View>
             </View>
             <Text style={[styles.profileHint, { color: getThemeSubText() }]}>Toque no avatar para trocar</Text>
           </View>
+          <Pressable
+            onPress={() => router.push('/settings')}
+            style={({ pressed }) => [
+              styles.settingsHeaderBtn,
+              pressed && { opacity: 0.75, transform: [{ scale: 0.95 }] },
+            ]}
+          >
+            <MaterialIcons name="settings" size={24} color={getThemeText()} />
+          </Pressable>
         </View>
 
         <Text style={[styles.sectionLabel, { color: theme === 'classic' ? '#516074' : '#E2E8F0' }]}>TRILHA DE MISSÕES</Text>
@@ -261,6 +283,21 @@ export default function MissionsScreen() {
           <View style={styles.navigationList}>
             <Pressable
               style={({ pressed }) => [styles.navigationButton, pressed && styles.navigationButtonPressed]}
+              onPress={() => router.push('/shop')}
+            >
+              <View style={styles.navigationButtonHeader}>
+                <View style={[styles.navigationIconWrap, { backgroundColor: '#FEF3C7', borderColor: '#F59E0B' }]}>
+                  <MaterialIcons name="storefront" size={20} color="#D97706" />
+                </View>
+                <View style={styles.navigationCopy}>
+                  <Text style={[styles.navigationButtonTitle, { color: getThemeText() }]}>Loja de Recompensas</Text>
+                  <Text style={[styles.navigationButtonSub, { color: getThemeSubText() }]}>Desbloqueie avatares e molduras com seus Pts.</Text>
+                </View>
+              </View>
+            </Pressable>
+
+            <Pressable
+              style={({ pressed }) => [styles.navigationButton, pressed && styles.navigationButtonPressed]}
               onPress={() => router.push('/challenges')}
             >
               <View style={styles.navigationButtonHeader}>
@@ -285,6 +322,51 @@ export default function MissionsScreen() {
                 <View style={styles.navigationCopy}>
                   <Text style={[styles.navigationButtonTitle, { color: getThemeText() }]}>Submissões</Text>
                   <Text style={[styles.navigationButtonSub, { color: getThemeSubText() }]}>Acompanhe entregas e resultados já feitos.</Text>
+                </View>
+              </View>
+            </Pressable>
+
+            <Pressable
+              style={({ pressed }) => [styles.navigationButton, pressed && styles.navigationButtonPressed]}
+              onPress={() => router.push('/quick-quiz')}
+            >
+              <View style={styles.navigationButtonHeader}>
+                <View style={[styles.navigationIconWrap, { backgroundColor: '#EEF6FF', borderColor: '#0B5F8F' }]}>
+                  <MaterialIcons name="flash-on" size={20} color="#0B5F8F" />
+                </View>
+                <View style={styles.navigationCopy}>
+                  <Text style={[styles.navigationButtonTitle, { color: getThemeText() }]}>Modo Treino Livre</Text>
+                  <Text style={[styles.navigationButtonSub, { color: getThemeSubText() }]}>Perguntas rápidas aleatórias + 5 Pts bônus.</Text>
+                </View>
+              </View>
+            </Pressable>
+
+            <Pressable
+              style={({ pressed }) => [styles.navigationButton, pressed && styles.navigationButtonPressed]}
+              onPress={() => router.push('/stats')}
+            >
+              <View style={styles.navigationButtonHeader}>
+                <View style={[styles.navigationIconWrap, { backgroundColor: '#ECFDF5', borderColor: '#059669' }]}>
+                  <MaterialIcons name="insights" size={20} color="#059669" />
+                </View>
+                <View style={styles.navigationCopy}>
+                  <Text style={[styles.navigationButtonTitle, { color: getThemeText() }]}>Painel de Desempenho</Text>
+                  <Text style={[styles.navigationButtonSub, { color: getThemeSubText() }]}>Estatísticas pedagógicas para pais e professores.</Text>
+                </View>
+              </View>
+            </Pressable>
+
+            <Pressable
+              style={({ pressed }) => [styles.navigationButton, pressed && styles.navigationButtonPressed]}
+              onPress={() => router.push('/settings')}
+            >
+              <View style={styles.navigationButtonHeader}>
+                <View style={styles.navigationIconWrap}>
+                  <MaterialIcons name="settings" size={20} color="#1F3E66" />
+                </View>
+                <View style={styles.navigationCopy}>
+                  <Text style={[styles.navigationButtonTitle, { color: getThemeText() }]}>Configurações</Text>
+                  <Text style={[styles.navigationButtonSub, { color: getThemeSubText() }]}>Altere nome, zere progresso e ajuste preferências.</Text>
                 </View>
               </View>
             </Pressable>
@@ -401,6 +483,14 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'flex-start',
     paddingTop: 2,
+  },
+  settingsHeaderBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
   },
   avatar: {
     width: 56,

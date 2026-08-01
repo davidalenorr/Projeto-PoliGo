@@ -14,6 +14,7 @@ import {
   Vibration,
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
+import { MaterialIcons } from '@expo/vector-icons';
 import { Mission, getMissionById } from '@/src/data/missions';
 import { parseFlexibleNumber, numbersEqual, parsePairInput } from '@/src/utils/equationValidation';
 import { getDetectives } from '@/src/storage/detectives';
@@ -23,6 +24,7 @@ import {
   getNextMissionIdForDetectivePhase,
   isMissionCompletedForDetective,
 } from '@/src/storage/missionProgress';
+import { recordDetectiveActivity } from '@/src/storage/streaks';
 import { getCurrentPhaseNumber, getPhaseIdFromNumber } from '@/src/domain/progress';
 import { phases } from '@/src/data/phases';
 
@@ -1033,35 +1035,87 @@ function PackagingOptimizationChallenge({ onComplete, alreadyCompleted, nextMiss
 }
 
 function MissionHints({ tips }: { tips: string[] }) {
+  const [revealedLevel, setRevealedLevel] = useState<number>(0);
   const [isOpen, setIsOpen] = useState(false);
 
-  if (!tips.length) {
+  if (!tips || !tips.length) {
     return null;
   }
+
+  const handleRevealNext = () => {
+    Vibration.vibrate(40);
+    if (revealedLevel < tips.length) {
+      setRevealedLevel((prev) => prev + 1);
+    }
+  };
 
   return (
     <View style={styles.hintsWrap}>
       <Pressable
         style={({ pressed }) => [styles.hintTrigger, pressed && styles.hintTriggerPressed]}
-        onPress={() => setIsOpen((prev) => !prev)}
+        onPress={() => {
+          Vibration.vibrate(30);
+          setIsOpen((prev) => !prev);
+          if (revealedLevel === 0) setRevealedLevel(1);
+        }}
       >
         <View style={styles.hintBubble}>
-          <Image
-            source={require('../icons/screens/interrogatorio.png')}
-            style={{ width: 14, height: 14, resizeMode: 'contain', tintColor: '#FFFFFF' }}
-          />
+          <MaterialIcons name="lightbulb" size={16} color="#FFFFFF" />
         </View>
-        <Text style={styles.hintTriggerText}>{isOpen ? 'Ocultar dicas' : 'Ver dicas da missão'}</Text>
+        <Text style={styles.hintTriggerText}>
+          {isOpen ? 'Ocultar Dicas' : `💡 Dicas Graduais (${revealedLevel > 0 ? `Nível ${revealedLevel}/3` : 'Pedir Dica'})`}
+        </Text>
       </Pressable>
 
       {isOpen && (
         <View style={styles.hintsCard}>
-          <Text style={styles.hintsTitle}>Dicas</Text>
-          {tips.map((tip) => (
-            <Text key={tip} style={styles.hintItem}>
-              • {tip}
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <Text style={styles.hintsTitle}>Dicas da Missão</Text>
+            <Text style={{ fontSize: 12, fontWeight: '800', color: '#0B5F8F' }}>
+              Nível {revealedLevel} de {tips.length}
             </Text>
+          </View>
+
+          {tips.slice(0, revealedLevel).map((tip, idx) => (
+            <View
+              key={tip}
+              style={{
+                backgroundColor: '#F8FBFF',
+                borderRadius: 12,
+                padding: 10,
+                marginBottom: 6,
+                borderWidth: 1,
+                borderColor: '#D0DFEE',
+              }}
+            >
+              <Text style={{ fontSize: 11, fontWeight: '800', color: '#0B5F8F', marginBottom: 2 }}>
+                {idx === 0 ? '🔍 Pista Inicial' : idx === 1 ? '📐 Fórmula / Conceito' : '📝 Passo a Passo Explicativo'}
+              </Text>
+              <Text style={{ fontSize: 13, color: '#334155', lineHeight: 18 }}>{tip}</Text>
+            </View>
           ))}
+
+          {revealedLevel < tips.length && (
+            <Pressable
+              style={({ pressed }) => [
+                {
+                  marginTop: 4,
+                  backgroundColor: '#EEF6FF',
+                  borderWidth: 1,
+                  borderColor: '#0B5F8F',
+                  borderRadius: 12,
+                  paddingVertical: 8,
+                  alignItems: 'center',
+                },
+                pressed && { opacity: 0.8 },
+              ]}
+              onPress={handleRevealNext}
+            >
+              <Text style={{ color: '#0B5F8F', fontSize: 12, fontWeight: '800' }}>
+                + Revelar Dica Nível {revealedLevel + 1}
+              </Text>
+            </Pressable>
+          )}
         </View>
       )}
     </View>
@@ -3330,18 +3384,22 @@ export default function MissionPlayScreen() {
     }
 
     const result = await completeMissionForDetective(selectedDetectiveId, mission.id);
-    Vibration.vibrate(80);
+    const streakRes = await recordDetectiveActivity(selectedDetectiveId);
+
+    Vibration.vibrate([0, 80, 100, 120]);
     setMissionAlreadyCompleted(true);
 
-      if (mission.phaseId) {
-        const nextId = await resolveNextMissionId(selectedDetectiveId, mission.phaseId);
-        setNextMissionId(nextId ?? null);
+    if (mission.phaseId) {
+      const nextId = await resolveNextMissionId(selectedDetectiveId, mission.phaseId);
+      setNextMissionId(nextId ?? null);
     }
+
+    const streakText = streakRes.streak.currentStreak > 0 ? ` 🔥 Offensiva: ${streakRes.streak.currentStreak} ${streakRes.streak.currentStreak === 1 ? 'dia' : 'dias'}!` : '';
 
     setCompletionFeedback(
       result.newlyCompleted
-        ? `Missão registrada com sucesso! +${mission.points} pts`
-        : 'Esta missão já estava concluída para este detetive.'
+        ? `🎉 Missão registrada com sucesso! +${mission.points} Pts!${streakText}`
+        : `Esta missão já estava concluída para este detetive.${streakText}`
     );
   };
 

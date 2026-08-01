@@ -117,3 +117,78 @@ export async function createDetective(nameInput: string): Promise<Detective> {
 
   return detective;
 }
+
+export async function updateDetectiveName(detectiveId: string, newNameInput: string): Promise<Detective> {
+  const name = sanitizeName(newNameInput);
+
+  if (name.length < 3) {
+    throw new Error('Nome inválido (mínimo de 3 caracteres)');
+  }
+
+  const currentList = await getDetectives();
+  let updatedDetective: Detective | undefined;
+
+  const updatedList = currentList.map((detective) => {
+    if (detective.id === detectiveId) {
+      updatedDetective = {
+        ...detective,
+        name,
+        avatar: buildAvatar(name),
+      };
+      return updatedDetective;
+    }
+    return detective;
+  });
+
+  if (!updatedDetective) {
+    throw new Error('Detetive não encontrado');
+  }
+
+  await saveDetectives(updatedList);
+  return updatedDetective;
+}
+
+export async function resetDetectiveProgressInStorage(detectiveId: string): Promise<Detective> {
+  const currentList = await getDetectives();
+  let resetDetectiveObj: Detective | undefined;
+
+  const updatedList = currentList.map((detective) => {
+    if (detective.id === detectiveId) {
+      resetDetectiveObj = {
+        ...detective,
+        points: 0,
+        progress: 0,
+        phase: 'Fase 1: Detetive das Formas',
+      };
+      return resetDetectiveObj;
+    }
+    return detective;
+  });
+
+  if (!resetDetectiveObj) {
+    throw new Error('Detetive não encontrado');
+  }
+
+  await saveDetectives(updatedList);
+  return resetDetectiveObj;
+}
+
+export async function deleteDetective(detectiveId: string): Promise<void> {
+  const currentList = await getDetectives();
+  const updatedList = currentList.filter((detective) => detective.id !== detectiveId);
+  await saveDetectives(updatedList);
+}
+
+export async function resetAllPoliGoData(): Promise<void> {
+  const keys = [
+    DETECTIVES_KEY,
+    MIGRATION_ONLY_DAVID_V1_KEY,
+    '@poligo:missionProgress:v1',
+    '@poligo:selectedDetective',
+    '@poligo:appTheme:v1',
+    '@poligo:haptics:v1',
+  ];
+  await AsyncStorage.multiRemove(keys);
+}
+
+

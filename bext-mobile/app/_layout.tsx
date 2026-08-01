@@ -56,6 +56,10 @@ function RootLayoutNav() {
         <Stack.Screen name="submissions" options={{ headerShown: false }} />
         <Stack.Screen name="phase-missions" options={{ headerShown: false }} />
         <Stack.Screen name="mission-play" options={{ headerShown: false }} />
+        <Stack.Screen name="settings" options={{ headerShown: false }} />
+        <Stack.Screen name="shop" options={{ headerShown: false }} />
+        <Stack.Screen name="quick-quiz" options={{ headerShown: false }} />
+        <Stack.Screen name="stats" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
       </Stack>
     </ThemeProvider>

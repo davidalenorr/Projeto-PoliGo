@@ -169,3 +169,10 @@ export async function syncDetectiveProgress(detectiveId: string): Promise<Detect
 
   return detective;
 }
+
+export async function clearDetectiveMissionProgress(detectiveId: string): Promise<void> {
+  const map = await readProgressMap();
+  delete map[detectiveId];
+  await writeProgressMap(map);
+}
+
