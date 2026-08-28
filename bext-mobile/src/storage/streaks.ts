@@ -1,4 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  advanceStreak,
+  dateStringDaysAgo,
+  viewStreak,
+  type StreakState,
+} from '@/src/domain/streak';
 
 export type DetectiveStreak = {
   detectiveId: string;
@@ -24,21 +30,16 @@ async function writeStreakMap(map: Record<string, DetectiveStreak>): Promise<voi
   await AsyncStorage.setItem(STREAK_STORAGE_KEY, JSON.stringify(map));
 }
 
-function getTodayString(): string {
-  const date = new Date();
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+function emptyStreak(detectiveId: string): DetectiveStreak {
+  return { detectiveId, currentStreak: 0, bestStreak: 0, lastActiveDate: '' };
 }
 
-function getYesterdayString(): string {
-  const date = new Date();
-  date.setDate(date.getDate() - 1);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+function toState(streak: DetectiveStreak): StreakState {
+  return {
+    currentStreak: streak.currentStreak,
+    bestStreak: streak.bestStreak,
+    lastActiveDate: streak.lastActiveDate,
+  };
 }
 
 export async function getDetectiveStreak(detectiveId: string): Promise<DetectiveStreak> {
@@ -46,26 +47,11 @@ export async function getDetectiveStreak(detectiveId: string): Promise<Detective
   const existing = map[detectiveId];
 
   if (!existing) {
-    return {
-      detectiveId,
-      currentStreak: 0,
-      bestStreak: 0,
-      lastActiveDate: '',
-    };
+    return emptyStreak(detectiveId);
   }
 
-  const today = getTodayString();
-  const yesterday = getYesterdayString();
-
-  // If last active was before yesterday, the active streak has reset to 0 (until they complete an action today)
-  if (existing.lastActiveDate !== today && existing.lastActiveDate !== yesterday) {
-    return {
-      ...existing,
-      currentStreak: 0,
-    };
-  }
-
-  return existing;
+  const next = viewStreak(toState(existing), dateStringDaysAgo(0), dateStringDaysAgo(1));
+  return { ...existing, detectiveId, ...next };
 }
 
 export async function recordDetectiveActivity(detectiveId: string): Promise<{
@@ -73,34 +59,19 @@ export async function recordDetectiveActivity(detectiveId: string): Promise<{
   streakIncreased: boolean;
 }> {
   const map = await readStreakMap();
-  const today = getTodayString();
-  const yesterday = getYesterdayString();
+  const existing = map[detectiveId] ?? emptyStreak(detectiveId);
 
-  const existing = map[detectiveId] || {
-    detectiveId,
-    currentStreak: 0,
-    bestStreak: 0,
-    lastActiveDate: '',
-  };
+  const { state, streakIncreased } = advanceStreak(
+    toState(existing),
+    dateStringDaysAgo(0),
+    dateStringDaysAgo(1),
+  );
 
-  if (existing.lastActiveDate === today) {
-    // Already active today, streak doesn't increase further today
-    return { streak: existing, streakIncreased: false };
+  const updatedStreak: DetectiveStreak = { detectiveId, ...state };
+
+  if (!streakIncreased) {
+    return { streak: { ...existing, detectiveId }, streakIncreased: false };
   }
-
-  let newCurrentStreak = 1;
-  if (existing.lastActiveDate === yesterday) {
-    newCurrentStreak = existing.currentStreak + 1;
-  }
-
-  const newBestStreak = Math.max(existing.bestStreak, newCurrentStreak);
-
-  const updatedStreak: DetectiveStreak = {
-    detectiveId,
-    currentStreak: newCurrentStreak,
-    bestStreak: newBestStreak,
-    lastActiveDate: today,
-  };
 
   map[detectiveId] = updatedStreak;
   await writeStreakMap(map);

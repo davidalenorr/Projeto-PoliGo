@@ -1,6 +1,7 @@
 export const parseFlexibleNumber = (input: string): number | null => {
   if (!input || typeof input !== 'string') return null;
   const trimmed = input.trim();
+  if (trimmed === '') return null;
 
   // Accept fraction like 23/5
   if (/^[-+]?\d+\s*\/\s*\d+$/.test(trimmed)) {

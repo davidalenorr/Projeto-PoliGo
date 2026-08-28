@@ -3,6 +3,13 @@ import { missions, getMissionById, getMissionsByPhaseId } from '@/src/data/missi
 import { phases } from '@/src/data/phases';
 import { getDetectives, saveDetectives } from '@/src/storage/detectives';
 import { getCurrentPhaseNumber, getPhaseIdFromNumber } from '@/src/domain/progress';
+import {
+  countCompletedInPhase,
+  findNextIncompleteMissionId,
+  isPhaseComplete,
+  orderedPhaseMissionIds,
+  phaseCompletionPercent,
+} from '@/src/domain/missionRouting';
 import { Detective } from '@/src/data/detectives';
 
 type MissionProgressMap = Record<string, string[]>;
@@ -44,9 +51,7 @@ export async function isMissionCompletedForDetective(detectiveId: string, missio
 
 export async function getNextMissionIdForDetectivePhase(detectiveId: string, phaseId: string): Promise<string | undefined> {
   const completed = await getCompletedMissionIdsForDetective(detectiveId);
-  const phaseMissionIds = missions.filter((mission) => mission.phaseId === phaseId).map((mission) => mission.id);
-
-  return phaseMissionIds.find((missionId) => !completed.includes(missionId));
+  return findNextIncompleteMissionId(orderedPhaseMissionIds(missions, phaseId), completed);
 }
 
 export async function completeMissionForDetective(
@@ -78,16 +83,15 @@ export async function completeMissionForDetective(
     const currentPhaseNumber = getCurrentPhaseNumber(detective.phase, phases.length);
     const currentPhaseId = getPhaseIdFromNumber(currentPhaseNumber);
     const missionsInCurrentPhase = getMissionsByPhaseId(currentPhaseId);
-    const completedInCurrentPhase = completed.filter((id) =>
-      missionsInCurrentPhase.some((phaseMission) => phaseMission.id === id)
-    ).length;
+    const phaseMissionIds = missionsInCurrentPhase.map((phaseMission) => phaseMission.id);
+    const completedInCurrentPhase = countCompletedInPhase(phaseMissionIds, completed);
 
     const progressValue = missionsInCurrentPhase.length
-      ? Math.round((completedInCurrentPhase / missionsInCurrentPhase.length) * 100)
+      ? phaseCompletionPercent(completedInCurrentPhase, missionsInCurrentPhase.length)
       : detective.progress;
 
     // Advance when all missions in the current phase are completed (robust to rounding)
-    const allCompletedInPhase = missionsInCurrentPhase.length > 0 && completedInCurrentPhase >= missionsInCurrentPhase.length;
+    const allCompletedInPhase = isPhaseComplete(completedInCurrentPhase, missionsInCurrentPhase.length);
     const shouldAdvance = allCompletedInPhase && currentPhaseNumber < phases.length;
     const nextPhase = phases.find((phaseItem) => phaseItem.number === currentPhaseNumber + 1);
 
@@ -126,11 +130,12 @@ export async function syncDetectiveProgress(detectiveId: string): Promise<Detect
       break;
     }
 
-    const completedInCurrentPhase = completed.filter((id) =>
-      missionsInCurrentPhase.some((m) => m.id === id)
-    ).length;
+    const completedInCurrentPhase = countCompletedInPhase(
+      missionsInCurrentPhase.map((m) => m.id),
+      completed,
+    );
 
-    const allCompletedInPhase = completedInCurrentPhase >= missionsInCurrentPhase.length;
+    const allCompletedInPhase = isPhaseComplete(completedInCurrentPhase, missionsInCurrentPhase.length);
 
     if (allCompletedInPhase) {
       const nextPhase = phases.find((p) => p.number === currentPhaseNumber + 1);

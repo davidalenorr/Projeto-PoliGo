@@ -5,10 +5,13 @@ Um aplicativo para aprender geometria e álgebra de forma prática, por missões
 
 Como o projeto foi pensado (arquitetura)
 - App principal: pasta `bext-mobile/` — um app React Native usando Expo e `expo-router`.
-- Dados dirigidos por conteúdo: `src/data/phases.ts` e `src/data/missions.ts` descrevem fases e missões; isso torna simples adicionar novas missões sem tocar em muita lógica.
-- Execução de missões: `app/mission-play.tsx` contém o fluxo que carrega a missão correta e renderiza um componente específico ou um componente genérico (ex.: `GenericEquationMission`).
+- Dados dirigidos por conteúdo: `src/data/phases.ts`, `src/data/missions.ts` e `src/data/equationMissions.ts` descrevem fases, missões e missões algébricas; adicionar conteúdo não exige mexer na tela.
+- Execução de missões: `app/mission-play.tsx` só orquestra (progresso, streak, navegação). O catálogo de componentes de missão vive em `src/missions/` (`practice.tsx`, `quiz.tsx`, `interactive.tsx`, `shared.tsx`), com o mapa id→componente em `src/missions/registry.tsx`.
+- Geração procedural: `src/missions/procedural.ts` sorteia os números das missões de cálculo (sem decoreba).
+- Retorno sensorial: `src/missions/feedback.ts` (haptics + animações de acerto/erro).
+- Regras puras e testáveis: `src/domain/` (`progress.ts`, `streak.ts`, `missionRouting.ts`).
 - Armazenamento local: `src/storage/*` guarda progresso, detectives e seleção usando `AsyncStorage`.
-- Utilitários: `src/utils/` para validação e helpers (ex.: `equationValidation.ts` contém parsing tolerante para respostas numéricas).
+- Utilitários: `src/utils/equationValidation.ts` — parsing tolerante para respostas numéricas.
 
 Como rodar (desenvolvimento)
 
@@ -33,11 +36,15 @@ npx expo run:android
 ```
 
 Testes e checagens locais
-- Verificação rápida da validação numérica:
+
+- Suíte de testes unitários (validação numérica, progressão de fase, streaks, roteamento de missões, geradores procedurais e integridade dos dados). Usa o runner nativo do Node (`node --test`), sem dependências extras:
 
 ```bash
-node ./scripts/test-equation-validation.js
+cd bext-mobile
+npm test
 ```
+
+Os testes ficam em `bext-mobile/tests/*.test.ts` e cobrem as funções puras de `src/domain/`, `src/utils/` e `src/missions/procedural.ts`.
 
 - Checagem TypeScript:
 
