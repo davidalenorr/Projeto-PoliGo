@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, View, Image, Pressable, ScrollView, TouchableOpacity, Vibration } from 'react-native';
+import { StyleSheet, Text, View, Image, Pressable, ScrollView, TouchableOpacity, Vibration } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useIsFocused } from '@react-navigation/native';
 import { Detective } from '@/src/data/detectives';
 import { getDetectives } from '@/src/storage/detectives';

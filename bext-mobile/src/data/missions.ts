@@ -210,6 +210,21 @@ export const missions: Mission[] = [
       'Visualize girar a figura',
     ],
   },
+  {
+    id: 'fase3_m4',
+    phaseId: 'fase3',
+    title: 'Revisão dos Ângulos',
+    description: 'Combine ângulo interno, externo e eixos de simetria de polígonos regulares.',
+    difficulty: 'difícil',
+    points: 25,
+    objective:
+      'Responda a um quiz que sorteia polígonos regulares e cobra ângulo interno, ângulo externo e número de eixos de simetria.',
+    tips: [
+      'Ângulo externo: a_e = 360° / n',
+      'Ângulo interno: a_i = (n − 2) × 180° / n',
+      'Eixos de simetria de um polígono regular = n',
+    ],
+  },
 
   // Fase 4: O Mosaico
   {
@@ -317,6 +332,21 @@ export const missions: Mission[] = [
       'Confira se P e a estão nas mesmas unidades',
       'Multiplique antes de dividir por 2',
       'Arredonde quando solicitado',
+    ],
+  },
+  {
+    id: 'fase5_m4',
+    phaseId: 'fase5',
+    title: 'Revisão de Áreas',
+    description: 'Área de triângulo, de retângulo e por triangulação, com valores sorteados.',
+    difficulty: 'difícil',
+    points: 25,
+    objective:
+      'Resolva 3 problemas: área de um triângulo, área de um retângulo e área total de um polígono dividido em triângulos.',
+    tips: [
+      'Triângulo: A = (b × h) / 2',
+      'Retângulo: A = b × h',
+      'Triangulação: some as áreas dos triângulos',
     ],
   },
 
@@ -546,6 +576,21 @@ export const missions: Mission[] = [
       'Multiplique o comprimento da sombra pela tangente do ângulo',
     ],
   },
+  {
+    id: 'fase9_m4',
+    phaseId: 'fase9',
+    title: 'Revisão Trigonométrica',
+    description: 'Seno, tangente e semelhança de triângulos em um único bloco.',
+    difficulty: 'difícil',
+    points: 25,
+    objective:
+      'Resolva 3 problemas sorteados: o seno de um ângulo, a altura por tangente/sombra e um valor por semelhança (Tales).',
+    tips: [
+      'sen θ = cateto oposto ÷ hipotenusa',
+      'altura = tg θ × sombra',
+      'Em proporções, multiplique cruzado para isolar x',
+    ],
+  },
   // Fase 10: O Cartógrafo
   {
     id: 'fase10_m1',
@@ -587,6 +632,21 @@ export const missions: Mission[] = [
     tips: [
       'Gráficos de setores dividem uma área circular proporcionalmente',
       'Multiplique a área total do terreno pela porcentagem ou ângulo correspondente',
+    ],
+  },
+  {
+    id: 'fase10_m4',
+    phaseId: 'fase10',
+    title: 'Revisão do Cartógrafo',
+    description: 'Escala, probabilidade geométrica e porcentagem de área juntas.',
+    difficulty: 'difícil',
+    points: 25,
+    objective:
+      'Resolva 3 problemas sorteados: uma conversão de escala, uma probabilidade geométrica e a área correspondente a uma porcentagem.',
+    tips: [
+      'Escala: real = medida × denominador da escala',
+      'Probabilidade geométrica = área favorável ÷ área total',
+      'Porcentagem de área = (porcentagem ÷ 100) × área total',
     ],
   },
 ];

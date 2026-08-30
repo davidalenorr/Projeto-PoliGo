@@ -3,6 +3,7 @@ import { missions, getMissionById, getMissionsByPhaseId } from '@/src/data/missi
 import { phases } from '@/src/data/phases';
 import { getDetectives, saveDetectives } from '@/src/storage/detectives';
 import { getCurrentPhaseNumber, getPhaseIdFromNumber } from '@/src/domain/progress';
+import { bossReward, isBossId, phaseIdForBoss } from '@/src/domain/rank';
 import {
   countCompletedInPhase,
   findNextIncompleteMissionId,
@@ -57,7 +58,7 @@ export async function getNextMissionIdForDetectivePhase(detectiveId: string, pha
 export async function completeMissionForDetective(
   detectiveId: string,
   missionId: string
-): Promise<{ newlyCompleted: boolean }> {
+): Promise<{ newlyCompleted: boolean; pointsAwarded?: number }> {
   const map = await readProgressMap();
   const completed = Array.from(new Set(map[detectiveId] ?? []));
 
@@ -68,6 +69,20 @@ export async function completeMissionForDetective(
   completed.push(missionId);
   map[detectiveId] = completed;
   await writeProgressMap(map);
+
+  // Chefão de fase: não está em missions.ts. Concede Pts fixos por fase e não
+  // mexe na fase atual (ela já avançou ao concluir as missões normais).
+  if (isBossId(missionId)) {
+    const phaseNumber = Number(phaseIdForBoss(missionId).replace('fase', '')) || 1;
+    const reward = bossReward(phaseNumber);
+    const detectiveList = await getDetectives();
+    await saveDetectives(
+      detectiveList.map((detective) =>
+        detective.id === detectiveId ? { ...detective, points: detective.points + reward } : detective,
+      ),
+    );
+    return { newlyCompleted: true, pointsAwarded: reward };
+  }
 
   const mission = getMissionById(missionId);
   if (!mission) {

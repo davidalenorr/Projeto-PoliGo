@@ -1,17 +1,20 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   View,
   Pressable,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useIsFocused } from '@react-navigation/native';
-import { Feather } from '@expo/vector-icons';
+import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { phases, getPhaseById } from '@/src/data/phases';
 import { getMissionsByPhaseId, Mission } from '@/src/data/missions';
+import { getPhaseNarrative } from '@/src/data/narrative';
+import { getBossConfig } from '@/src/data/bossMissions';
+import { bossIdForPhase } from '@/src/domain/rank';
 import { getSelectedDetectiveId } from '@/src/storage/detectiveSelection';
 import { isMissionCompletedForDetective } from '@/src/storage/missionProgress';
 
@@ -49,6 +52,10 @@ export default function PhaseMissionsScreen() {
   const missions = useMemo(() => (phaseId ? getMissionsByPhaseId(phaseId) : []), [phaseId]);
 
   const [completedMap, setCompletedMap] = useState<Record<string, boolean>>({});
+  const [bossDefeated, setBossDefeated] = useState(false);
+
+  const narrative = useMemo(() => (phaseId ? getPhaseNarrative(phaseId) : undefined), [phaseId]);
+  const bossConfig = useMemo(() => (phaseId ? getBossConfig(phaseId) : undefined), [phaseId]);
 
   useEffect(() => {
     if (!isFocused) {
@@ -66,18 +73,23 @@ export default function PhaseMissionsScreen() {
 
       if (!detectiveId || missions.length === 0) {
         setCompletedMap({});
+        setBossDefeated(false);
         return;
       }
 
-      const entries = await Promise.all(
-        missions.map(async (mission) => {
-          const completed = await isMissionCompletedForDetective(detectiveId, mission.id);
-          return [mission.id, completed] as const;
-        })
-      );
+      const [entries, defeated] = await Promise.all([
+        Promise.all(
+          missions.map(async (mission) => {
+            const completed = await isMissionCompletedForDetective(detectiveId, mission.id);
+            return [mission.id, completed] as const;
+          })
+        ),
+        phaseId ? isMissionCompletedForDetective(detectiveId, bossIdForPhase(phaseId)) : Promise.resolve(false),
+      ]);
 
       if (isMounted) {
         setCompletedMap(Object.fromEntries(entries));
+        setBossDefeated(defeated);
       }
     }
 
@@ -145,6 +157,15 @@ export default function PhaseMissionsScreen() {
             <Text style={styles.phaseHeaderSubtitle}>{phase.subtitle}</Text>
           </View>
         </View>
+
+        {narrative ? (
+          <View style={storyStyles.card}>
+            <View style={storyStyles.pill}>
+              <Text style={storyStyles.pillText}>OPERAÇÃO CIDADE NÍTIDA · {narrative.district.toUpperCase()}</Text>
+            </View>
+            <Text style={storyStyles.text}>{narrative.intro}</Text>
+          </View>
+        ) : null}
 
         <View style={styles.phaseDescBox}>
           <Text style={styles.phaseDescTitle}>Sobre esta fase</Text>
@@ -274,11 +295,126 @@ export default function PhaseMissionsScreen() {
           ))}
         </View>
 
+        {narrative && bossConfig ? (
+          (() => {
+            const allMissionsDone = missions.length > 0 && missions.every((m) => completedMap[m.id]);
+            const canFight = allMissionsDone || bossDefeated;
+            return (
+              <View style={[bossCardStyles.card, bossDefeated && bossCardStyles.cardDone]}>
+                <View style={bossCardStyles.pill}>
+                  <Text style={bossCardStyles.pillText}>CHEFÃO DA FASE · {narrative.district.toUpperCase()}</Text>
+                </View>
+                <View style={bossCardStyles.nameRow}>
+                  <MaterialCommunityIcons name="skull-outline" size={20} color="#1E1B4B" />
+                  <Text style={bossCardStyles.name}>{narrative.bossName}</Text>
+                </View>
+                <Text style={bossCardStyles.desc}>
+                  {bossDefeated
+                    ? `Derrotado. Medalha "${narrative.medal.name}" conquistada.`
+                    : allMissionsDone
+                      ? `Todas as missões concluídas — enfrente ${narrative.bossName} para fechar o distrito.`
+                      : `Conclua as ${missions.length} missões da fase para desbloquear o duelo.`}
+                </Text>
+                <Pressable
+                  style={({ pressed }) => [
+                    bossCardStyles.btn,
+                    !canFight && bossCardStyles.btnLocked,
+                    pressed && canFight && { opacity: 0.85 },
+                  ]}
+                  disabled={!canFight}
+                  onPress={() => router.push({ pathname: '/boss', params: { phaseId: phaseId! } })}
+                >
+                  <Text style={bossCardStyles.btnText}>
+                    {bossDefeated ? 'Rever duelo' : allMissionsDone ? 'Desafiar chefão →' : 'Bloqueado'}
+                  </Text>
+                </Pressable>
+              </View>
+            );
+          })()
+        ) : null}
+
         <View style={{ height: 40 }} />
       </ScrollView>
     </SafeAreaView>
   );
 }
+
+const storyStyles = StyleSheet.create({
+  card: {
+    backgroundColor: '#F8FBFF',
+    borderWidth: 1,
+    borderColor: '#D5E2ED',
+    borderRadius: 14,
+    padding: 14,
+    gap: 8,
+    marginBottom: 12,
+  },
+  pill: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#1E1B4B',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  pillText: { color: '#EEF2FF', fontSize: 9, fontWeight: '900', letterSpacing: 0.6 },
+  text: { color: '#334155', fontSize: 13, lineHeight: 19, fontStyle: 'italic' },
+});
+
+const bossCardStyles = StyleSheet.create({
+  card: {
+    marginTop: 18,
+    backgroundColor: '#F8FBFF',
+    borderWidth: 1,
+    borderColor: '#D5E2ED',
+    borderRadius: 16,
+    padding: 16,
+    gap: 8,
+  },
+  cardDone: {
+    backgroundColor: '#EAF9EE',
+    borderColor: '#A8E0BA',
+  },
+  pill: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#1E1B4B',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  pillText: {
+    color: '#EEF2FF',
+    fontSize: 9,
+    fontWeight: '900',
+    letterSpacing: 0.8,
+  },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  name: {
+    color: '#0D3D66',
+    fontSize: 20,
+    fontWeight: '900',
+  },
+  desc: {
+    color: '#475A6F',
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  btn: {
+    marginTop: 4,
+    alignSelf: 'flex-start',
+    backgroundColor: '#1E1B4B',
+    borderRadius: 999,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+  },
+  btnLocked: {
+    backgroundColor: '#94A3B8',
+  },
+  btnText: {
+    color: '#FFFFFF',
+    fontWeight: '900',
+    fontSize: 14,
+  },
+});
 
 const styles = StyleSheet.create({
   safe: {

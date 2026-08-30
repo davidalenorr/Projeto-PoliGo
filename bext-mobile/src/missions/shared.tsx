@@ -94,7 +94,10 @@ export function RegenerateButton({ onPress, label }: { onPress: () => void; labe
         pressed && { opacity: 0.8 },
       ]}
     >
-      <Text style={{ color: '#0B5F8F', fontSize: 12, fontWeight: '800' }}>{label ?? '🔄 Trocar números'}</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+        <MaterialIcons name="autorenew" size={13} color="#0B5F8F" />
+        <Text style={{ color: '#0B5F8F', fontSize: 12, fontWeight: '800' }}>{label ?? 'Trocar números'}</Text>
+      </View>
     </Pressable>
   );
 }
@@ -377,7 +380,7 @@ export function MissionQuizFlow({
       <Text style={styles.sectionSubtitle}>{subtitle}</Text>
 
       {generateQuestions && index === 0 && !locked && selected === null && (
-        <RegenerateButton onPress={handleRegenerate} label="🔄 Trocar questões" />
+        <RegenerateButton onPress={handleRegenerate} label="Trocar questões" />
       )}
 
       <Animated.View style={[styles.trainingCard, shakeStyle]}>

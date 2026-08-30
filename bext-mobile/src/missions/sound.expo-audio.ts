@@ -40,11 +40,13 @@ if (expoAudio) {
     complete: require('../../assets/sounds/complete.wav'),
   };
 
+  // Ajustado para loudness percebido parecido entre os 4 (o "wrong" e o
+  // "complete" sintetizados têm RMS mais alto, então entram mais baixos).
   const VOLUME: Record<SoundEvent, number> = {
-    tap: 0.35,
-    correct: 0.7,
-    wrong: 0.7,
-    complete: 0.8,
+    tap: 0.32,
+    correct: 0.62,
+    wrong: 0.48,
+    complete: 0.72,
   };
 
   try {

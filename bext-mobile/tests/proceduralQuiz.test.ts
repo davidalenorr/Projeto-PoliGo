@@ -10,6 +10,7 @@ import {
   makeApothemaSecretQuizQuestions,
   makeSupremeEngineerQuizQuestions,
   makeTriangleBalanceQuizQuestions,
+  makeAngleMasteryQuizQuestions,
   makeShapeAreaCase,
   makeShapeAreaCases,
   type GeneratedQuizQuestion,
@@ -45,6 +46,15 @@ test('todos os geradores de quiz respeitam o formato de questão', () => {
   assertGeneratorBasics('makeApothemaSecretQuizQuestions', makeApothemaSecretQuizQuestions);
   assertGeneratorBasics('makeSupremeEngineerQuizQuestions', makeSupremeEngineerQuizQuestions);
   assertGeneratorBasics('makeTriangleBalanceQuizQuestions', makeTriangleBalanceQuizQuestions);
+  assertGeneratorBasics('makeAngleMasteryQuizQuestions', makeAngleMasteryQuizQuestions);
+});
+
+test('makeAngleMasteryQuizQuestions: ângulo interno = (n−2)·180/n', () => {
+  for (let i = 0; i < ITER; i++) {
+    const [, internal] = makeAngleMasteryQuizQuestions();
+    const n = Number(internal.prompt.match(/de (\d+) lados/)![1]);
+    assert.equal(internal.answer, `${((n - 2) * 180) / n}°`);
+  }
 });
 
 test('makeExternalAngleQuizQuestions: resposta = 360°/n', () => {

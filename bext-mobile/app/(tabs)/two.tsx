@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   Pressable,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
@@ -11,6 +10,7 @@ import {
   Image,
   Vibration,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useIsFocused } from '@react-navigation/native';
@@ -26,7 +26,13 @@ import {
   getCurrentPhaseNumber,
   getPhaseIdFromNumber,
 } from '@/src/domain/progress';
-import { getNextMissionIdForDetectivePhase, syncDetectiveProgress } from '@/src/storage/missionProgress';
+import {
+  getNextMissionIdForDetectivePhase,
+  isMissionCompletedForDetective,
+  syncDetectiveProgress,
+} from '@/src/storage/missionProgress';
+import { bossIdForPhase } from '@/src/domain/rank';
+import { getPhaseNarrative } from '@/src/data/narrative';
 import { recordDetectiveActivity, DetectiveStreak } from '@/src/storage/streaks';
 
 const phaseTrail = [
@@ -161,7 +167,28 @@ export default function MissionsScreen() {
     const nextMissionId = await getNextMissionIdForDetectivePhase(selectedDetective.id, currentPhaseId);
 
     if (!nextMissionId) {
-      Alert.alert('Fase concluída', 'Você já concluiu as missões desta fase. Veja os desafios da próxima fase.');
+      const bossDefeated = await isMissionCompletedForDetective(
+        selectedDetective.id,
+        bossIdForPhase(currentPhaseId),
+      );
+      const bossName = getPhaseNarrative(currentPhaseId)?.bossName ?? 'o chefão';
+
+      if (!bossDefeated) {
+        Alert.alert(
+          'Missões concluídas!',
+          `Todas as missões da ${currentPhaseMeta?.title ?? 'fase'} foram concluídas. Enfrente ${bossName} para restaurar o distrito.`,
+          [
+            { text: 'Agora não', style: 'cancel' },
+            {
+              text: 'Enfrentar chefão',
+              onPress: () => router.push({ pathname: '/boss', params: { phaseId: currentPhaseId } }),
+            },
+          ],
+        );
+        return;
+      }
+
+      Alert.alert('Fase concluída', 'Você já concluiu esta fase e derrotou o chefão. Siga para a próxima na trilha.');
       return;
     }
 
@@ -281,6 +308,21 @@ export default function MissionsScreen() {
         <View style={[styles.navigationCard, { backgroundColor: getThemeCardBg() }]}>
           <Text style={[styles.navigationTitle, { color: getThemeText() }]}>Atalhos principais</Text>
           <View style={styles.navigationList}>
+            <Pressable
+              style={({ pressed }) => [styles.navigationButton, pressed && styles.navigationButtonPressed]}
+              onPress={() => router.push('/trail')}
+            >
+              <View style={styles.navigationButtonHeader}>
+                <View style={[styles.navigationIconWrap, { backgroundColor: '#EDE9FE', borderColor: '#8B5CF6' }]}>
+                  <MaterialIcons name="map" size={20} color="#7C3AED" />
+                </View>
+                <View style={styles.navigationCopy}>
+                  <Text style={[styles.navigationButtonTitle, { color: getThemeText() }]}>Operação Cidade Nítida</Text>
+                  <Text style={[styles.navigationButtonSub, { color: getThemeSubText() }]}>Distritos, chefões, patente e medalhas em um só mapa.</Text>
+                </View>
+              </View>
+            </Pressable>
+
             <Pressable
               style={({ pressed }) => [styles.navigationButton, pressed && styles.navigationButtonPressed]}
               onPress={() => router.push('/shop')}

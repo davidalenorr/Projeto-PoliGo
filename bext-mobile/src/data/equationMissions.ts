@@ -11,6 +11,8 @@
 // Import relativo com extensão .ts: funciona no Metro/tsc e também no runner
 // nativo do Node usado pelos testes (que não resolve o alias @/*).
 import {
+  makeAreaReviewSteps,
+  makeCartographyReviewSteps,
   makeGeoProbSteps,
   makeIsolateXSteps,
   makePercentAreaSteps,
@@ -19,6 +21,7 @@ import {
   makeTalesSteps,
   makeTangentSteps,
   makeTrigRatioSteps,
+  makeTrigReviewSteps,
 } from '../missions/procedural.ts';
 
 export type EquationStep = {
@@ -339,6 +342,90 @@ export const equationMissionConfigs: Record<string, EquationMissionConfig> = {
         type: 'number',
         expected: 30,
         explanation: '15% de 200 = 0,15 × 200 = 30 m².',
+      },
+    ],
+  },
+  fase5_m4: {
+    title: 'Revisão de Áreas',
+    subtitle: 'Triângulo, retângulo e triangulação',
+    generate: makeAreaReviewSteps,
+    steps: [
+      {
+        id: 'ar1',
+        prompt: 'Um triângulo tem base 12 e altura 5. Qual é a área?',
+        type: 'number',
+        expected: 30,
+        explanation: 'A = (b × h) / 2 = (12 × 5) / 2 = 30.',
+      },
+      {
+        id: 'ar2',
+        prompt: 'Um retângulo tem base 8 e altura 6. Qual é a área?',
+        type: 'number',
+        expected: 48,
+        explanation: 'A = b × h = 8 × 6 = 48.',
+      },
+      {
+        id: 'ar3',
+        prompt: 'Um polígono foi dividido em 3 triângulos de áreas 10, 12, 8. Qual a área total?',
+        type: 'number',
+        expected: 30,
+        explanation: 'Triangulação: 10 + 12 + 8 = 30.',
+      },
+    ],
+  },
+  fase9_m4: {
+    title: 'Revisão Trigonométrica',
+    subtitle: 'Seno, tangente e semelhança',
+    generate: makeTrigReviewSteps,
+    steps: [
+      {
+        id: 'tr1',
+        prompt: 'Hipotenusa 10, cateto oposto 6. Qual o valor de sen θ?',
+        type: 'number',
+        expected: 0.6,
+        explanation: 'sen θ = cateto oposto ÷ hipotenusa = 6 ÷ 10 = 0,6.',
+      },
+      {
+        id: 'tr2',
+        prompt: 'Uma árvore projeta sombra de 8 m com tg(θ) = 1.5. Qual a altura da árvore (m)?',
+        type: 'number',
+        expected: 12,
+        explanation: 'altura = tg θ × sombra = 1,5 × 8 = 12 m.',
+      },
+      {
+        id: 'tr3',
+        prompt: 'Semelhança (Tales): x/3 = 8/12. Qual o valor de x?',
+        type: 'number',
+        expected: 2,
+        explanation: 'Multiplique cruzado: 12x = 3 × 8 = 24 → x = 2.',
+      },
+    ],
+  },
+  fase10_m4: {
+    title: 'Revisão do Cartógrafo',
+    subtitle: 'Escala, probabilidade e porcentagem de área',
+    generate: makeCartographyReviewSteps,
+    steps: [
+      {
+        id: 'e1',
+        prompt: 'No mapa 1:100.000, a distância medida é 4cm. Qual a distância real em km?',
+        type: 'number',
+        expected: 4,
+        explanation: 'Real = 4 × 100.000 = 400.000 cm = 4 km.',
+      },
+      {
+        id: 'p1',
+        prompt: 'Um alvo quadrado de 100m² tem uma zona central de 25m². Qual a probabilidade (%) de acertar o centro?',
+        type: 'number',
+        expected: 25,
+        explanation: 'P = 25 ÷ 100 = 0,25 = 25%.',
+      },
+      {
+        id: 'g1',
+        prompt: 'Uma horta de 1.000m² destina 40% para tomate. Qual a área destinada em m²?',
+        type: 'number',
+        expected: 400,
+        explanation: '40% de 1.000 = 0,40 × 1.000 = 400 m².',
       },
     ],
   },

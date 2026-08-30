@@ -13,6 +13,7 @@ import {
   VolumePrismPractice,
 } from './practice';
 import {
+  AngleMasteryMission,
   ApothemaSecretMission,
   AreaMasterMission,
   OptimizationChallenge,
@@ -54,6 +55,7 @@ export const customMissionComponents: Record<string, React.ComponentType<Mission
   fase3_m1: PolygonAngleCalculator,
   fase3_m2: ExternalAngleVisualizer,
   fase3_m3: SymmetryExplorer,
+  fase3_m4: AngleMasteryMission,
   fase4_m1: EquationVaultMission,
   fase4_m2: TriangleBalanceMission,
   fase4_m3: CartesianRouteMission,

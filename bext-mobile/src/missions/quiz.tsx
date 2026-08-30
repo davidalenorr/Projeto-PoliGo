@@ -3,6 +3,7 @@ import { Animated, Pressable, Text, View } from 'react-native';
 import { styles } from './styles';
 import { haptics, useAnswerCue } from './feedback';
 import {
+  makeAngleMasteryQuizQuestions,
   makeApothemaSecretQuizQuestions,
   makePerimeterGuardianQuizQuestions,
   makeShapeAreaCases,
@@ -190,7 +191,7 @@ export function AreaMasterMission(props: {
       <Text style={styles.sectionSubtitle}>Leia a figura, escolha a fórmula e calcule a superfície correta.</Text>
 
       {stepIndex === 0 && !locked && !selected && (
-        <RegenerateButton onPress={newRound} label="🔄 Trocar números" />
+        <RegenerateButton onPress={newRound} label="Trocar números" />
       )}
 
       <View style={styles.trainingCard}>
@@ -546,3 +547,15 @@ export function SupremeEngineerMission(props: {
   );
 }
 
+
+export function AngleMasteryMission(props: MissionRenderProps) {
+  return (
+    <MissionQuizFlow
+      {...props}
+      title="Revisão dos Ângulos"
+      subtitle="Ângulo interno, externo e eixos de simetria em polígonos regulares."
+      questions={[]}
+      generateQuestions={makeAngleMasteryQuizQuestions}
+    />
+  );
+}

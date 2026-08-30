@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Pressable, SafeAreaView, ScrollView, Text, View, Vibration } from 'react-native';
+import { Pressable, ScrollView, Text, View, Vibration } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { getMissionById } from '@/src/data/missions';
 import { getSelectedDetectiveId } from '@/src/storage/detectiveSelection';
@@ -109,18 +110,23 @@ export default function MissionPlayScreen() {
       setNextMissionId(nextId ?? null);
     }
 
-    const streakText = streakRes.streak.currentStreak > 0 ? ` 🔥 Offensiva: ${streakRes.streak.currentStreak} ${streakRes.streak.currentStreak === 1 ? 'dia' : 'dias'}!` : '';
+    const streakText = streakRes.streak.currentStreak > 0 ? ` · Ofensiva: ${streakRes.streak.currentStreak} ${streakRes.streak.currentStreak === 1 ? 'dia' : 'dias'}!` : '';
 
     setCompletionFeedback(
       result.newlyCompleted
-        ? `🎉 Missão registrada com sucesso! +${mission.points} Pts!${streakText}`
+        ? `Missão registrada com sucesso! +${mission.points} Pts!${streakText}`
         : `Esta missão já estava concluída para este detetive.${streakText}`
     );
   };
 
   const handleNextMission = () => {
     if (!nextMissionId) {
-      router.replace('/submissions');
+      // Sem próxima missão: volta para a fase, onde o card do chefão aparece
+      // desbloqueado quando todas as missões foram concluídas.
+      router.replace({
+        pathname: '/phase-missions',
+        params: { phaseId: mission?.phaseId ?? phaseId ?? 'fase1', from: 'trilha' },
+      });
       return;
     }
 

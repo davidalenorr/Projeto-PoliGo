@@ -1,16 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, View, Image } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View, Image } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { useIsFocused } from '@react-navigation/native';
 import { Detective } from '@/src/data/detectives';
 import { getDetectives } from '@/src/storage/detectives';
 import { getSelectedDetectiveId } from '@/src/storage/detectiveSelection';
-
-type Badge = {
-  id: string;
-  title: string;
-  description: string;
-  unlocked: boolean;
-};
+import { getCompletedMissionIdsForDetective } from '@/src/storage/missionProgress';
+import { buildTrail, type TrailState } from '@/src/domain/trail';
+import { computeBadges } from '@/src/domain/badges';
 
 function getInitials(name?: string): string {
   if (!name) return 'D';
@@ -21,23 +20,9 @@ function getInitials(name?: string): string {
   return (parts[0].substring(0, 1) + parts[1].substring(0, 1)).toUpperCase();
 }
 
-function getCurrentPhaseIndex(phase?: string): number {
-  if (!phase) {
-    return 0;
-  }
-
-  const match = phase.match(/Fase\s*(\d+)/i);
-  const value = match ? Number(match[1]) : 1;
-
-  if (Number.isNaN(value) || value < 1) {
-    return 0;
-  }
-
-  return Math.max(0, value - 1);
-}
-
 export default function AchievementsScreen() {
   const [selectedDetective, setSelectedDetective] = useState<Detective | undefined>(undefined);
+  const [trail, setTrail] = useState<TrailState>(() => buildTrail([]));
   const isFocused = useIsFocused();
 
   useEffect(() => {
@@ -51,9 +36,11 @@ export default function AchievementsScreen() {
       const detectiveList = await getDetectives();
       const selectedDetectiveId = await getSelectedDetectiveId();
       const detective = detectiveList.find((item) => item.id === selectedDetectiveId) ?? detectiveList[0];
+      const completed = detective ? await getCompletedMissionIdsForDetective(detective.id) : [];
 
       if (isMounted) {
         setSelectedDetective(detective);
+        setTrail(buildTrail(completed));
       }
     }
 
@@ -64,75 +51,9 @@ export default function AchievementsScreen() {
     };
   }, [isFocused]);
 
-  const currentPhaseIndex = useMemo(() => getCurrentPhaseIndex(selectedDetective?.phase), [selectedDetective?.phase]);
   const points = selectedDetective?.points ?? 0;
-  const progress = selectedDetective?.progress ?? 0;
 
-  const badges: Badge[] = useMemo(() => {
-    return [
-      {
-        id: 'b1',
-        title: 'Detetive Iniciante',
-        description: 'Entrar na Trilha e concluir os primeiros passos.',
-        unlocked: true,
-      },
-      {
-        id: 'b2',
-        title: 'Engenheiro de Medidas',
-        description: 'Alcançar a Fase 2: Engenheiro de Medidas.',
-        unlocked: currentPhaseIndex >= 1,
-      },
-      {
-        id: 'b3',
-        title: 'Mestre dos Ângulos',
-        description: 'Alcançar a Fase 3 e dominar ângulos internos e externos.',
-        unlocked: currentPhaseIndex >= 2,
-      },
-      {
-        id: 'b4',
-        title: 'Mente do Mosaico',
-        description: 'Alcançar a Fase 4 e resolver desafios de ladrilhamento.',
-        unlocked: currentPhaseIndex >= 3,
-      },
-      {
-        id: 'b5',
-        title: 'Lenda da Geometria',
-        description: 'Alcançar a Fase 5: Triunfo Final.',
-        unlocked: currentPhaseIndex >= 4,
-      },
-      {
-        id: 'b6',
-        title: 'Mestre da Álgebra',
-        description: 'Alcançar a Fase 6: Álgebra Aplicada.',
-        unlocked: currentPhaseIndex >= 5,
-      },
-      {
-        id: 'b7',
-        title: 'Líder das Equações',
-        description: 'Alcançar a Fase 7: Oficina das Equações.',
-        unlocked: currentPhaseIndex >= 6,
-      },
-      {
-        id: 'b8',
-        title: 'Explorador Espacial',
-        description: 'Alcançar a Fase 8: Explorador Espacial.',
-        unlocked: currentPhaseIndex >= 7,
-      },
-      {
-        id: 'b9',
-        title: 'Acumulador de Pontos',
-        description: 'Somar pelo menos 100 pontos.',
-        unlocked: points >= 100,
-      },
-      {
-        id: 'b10',
-        title: 'Detetive de Elite',
-        description: 'Somar pelo menos 250 pontos.',
-        unlocked: points >= 250,
-      },
-    ];
-  }, [currentPhaseIndex, points]);
-
+  const badges = useMemo(() => computeBadges(trail, points), [trail, points]);
   const unlockedCount = badges.filter((badge) => badge.unlocked).length;
 
   return (
@@ -168,10 +89,38 @@ export default function AchievementsScreen() {
             <Text style={styles.statLabel}>Pontos</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statValue}>{progress}%</Text>
-            <Text style={styles.statLabel}>Fase Atual</Text>
+            <Text style={styles.statValue}>
+              {trail.districtsRestored}/{trail.totalPhases}
+            </Text>
+            <Text style={styles.statLabel}>Distritos</Text>
           </View>
         </View>
+
+        <Pressable style={styles.rankCard} onPress={() => router.push('/trail')}>
+          <View style={styles.rankRow}>
+            <View style={styles.rankIconWrap}>
+              <MaterialCommunityIcons name={trail.rank.current.icon as never} size={24} color="#0B5F8F" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.rankKicker}>OPERAÇÃO CIDADE NÍTIDA</Text>
+              <Text style={styles.rankName}>{trail.rank.current.title}</Text>
+              <Text style={styles.rankSub}>
+                {trail.medals.length}/{trail.totalPhases} medalhas · {trail.districtsRestored}{' '}
+                {trail.districtsRestored === 1 ? 'distrito restaurado' : 'distritos restaurados'}
+              </Text>
+            </View>
+            <Text style={styles.rankLink}>Ver trilha →</Text>
+          </View>
+          <View style={styles.medalRow}>
+            {trail.medals.length > 0 ? (
+              trail.medals.map((m) => (
+                <MaterialCommunityIcons key={m.phaseId} name="medal" size={20} color="#B45309" />
+              ))
+            ) : (
+              <Text style={styles.rankSub}>Derrote o chefão de cada fase para ganhar medalhas.</Text>
+            )}
+          </View>
+        </Pressable>
 
         <View style={styles.badgesList}>
           {badges.map((badge) => (
@@ -206,6 +155,31 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 12,
   },
+  rankCard: {
+    backgroundColor: '#F8FBFF',
+    borderWidth: 1,
+    borderColor: '#D5E2ED',
+    borderRadius: 16,
+    padding: 14,
+    gap: 10,
+  },
+  rankRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  rankIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#EEF6FF',
+    borderWidth: 1,
+    borderColor: '#C9DEEF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rankKicker: { color: '#0B5F8F', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
+  rankName: { color: '#0D3D66', fontSize: 18, fontWeight: '900' },
+  rankSub: { color: '#607287', fontSize: 11, marginTop: 2 },
+  rankLink: { color: '#0B5F8F', fontSize: 12, fontWeight: '900' },
+  medalRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  medalEmoji: { fontSize: 20 },
   title: {
     color: '#1F3E66',
     fontSize: 30,

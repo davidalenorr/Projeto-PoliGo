@@ -427,7 +427,7 @@ export type GeneratedQuizQuestion = {
   explanation: string;
 };
 
-function shuffle<T>(items: readonly T[]): T[] {
+export function shuffle<T>(items: readonly T[]): T[] {
   const a = [...items];
   for (let i = a.length - 1; i > 0; i--) {
     const j = randInt(0, i);
@@ -440,7 +440,7 @@ function shuffle<T>(items: readonly T[]): T[] {
  * Monta as opções de uma questão numérica: correta + distratores únicos,
  * positivos e diferentes entre si, embaralhados. Garante `total` alternativas.
  */
-function buildNumericOptions(
+export function buildNumericOptions(
   correctValue: number,
   unit: string,
   distractors: number[],
@@ -598,7 +598,7 @@ export function makePerimeterQuizQuestions(): GeneratedQuizQuestion[] {
   });
 }
 
-/** fase4_m4 (PerimeterGuardianMission): 2 cálculos de perímetro + 1 conceito fixo. */
+/** fase2_m1 (PerimeterGuardianMission): 2 cálculos de perímetro + 1 conceito fixo. */
 export function makePerimeterGuardianQuizQuestions(): GeneratedQuizQuestion[] {
   const first = makePerimeterQuizQuestions()[0];
   const side = randInt(5, 20);
@@ -622,7 +622,7 @@ export function makePerimeterGuardianQuizQuestions(): GeneratedQuizQuestion[] {
   ];
 }
 
-/** fase5_m3 (ApothemaSecretMission): 2 conceitos fixos + 1 cálculo de área com apótema. */
+/** fase2_m3 (ApothemaSecretMission): 2 conceitos fixos + 1 cálculo de área com apótema. */
 export function makeApothemaSecretQuizQuestions(): GeneratedQuizQuestion[] {
   const perimeter = randInt(4, 20) * 2;
   const apothem = randInt(2, 9);
@@ -658,7 +658,7 @@ export function makeApothemaSecretQuizQuestions(): GeneratedQuizQuestion[] {
   ];
 }
 
-/** fase8_m4 (SupremeEngineerMission): perímetro→lado, lado→área e 1 conceito fixo. */
+/** fase2_m5 (SupremeEngineerMission): perímetro→lado, lado→área e 1 conceito fixo. */
 export function makeSupremeEngineerQuizQuestions(): GeneratedQuizQuestion[] {
   const side = randInt(4, 20);
   const perimeter = 4 * side;
@@ -690,7 +690,7 @@ export function makeSupremeEngineerQuizQuestions(): GeneratedQuizQuestion[] {
   ];
 }
 
-/** fase6_m3 (TriangleBalanceMission): 2 de Pitágoras + 1 de soma de ângulos. */
+/** fase4_m2 (TriangleBalanceMission): 2 de Pitágoras + 1 de soma de ângulos. */
 export function makeTriangleBalanceQuizQuestions(): GeneratedQuizQuestion[] {
   const [p1, p2] = makePythagorasQuizQuestions();
   const [s1] = makeAngleSumQuizQuestions();
@@ -701,7 +701,7 @@ export function makeTriangleBalanceQuizQuestions(): GeneratedQuizQuestion[] {
   ];
 }
 
-// --- fase5_m2 (AreaMasterMission): casos de área com preview ---------------
+// --- fase2_m2 (AreaMasterMission): casos de área com preview ---------------
 
 export type ShapeAreaCase = {
   id: string;
@@ -776,4 +776,109 @@ export function makeShapeAreaCase(id: string): ShapeAreaCase {
 
 export function makeShapeAreaCases(): ShapeAreaCase[] {
   return [makeShapeAreaCase('a1'), makeShapeAreaCase('a2'), makeShapeAreaCase('a3')];
+}
+
+// ===========================================================================
+// Geradores de REVISÃO — combinam conceitos de uma fase num único bloco.
+// Usados pelas missões "_m4" de revisão das fases 3, 5, 9 e 10.
+// ===========================================================================
+
+/** fase5_m4: área de triângulo, de retângulo e por triangulação. */
+export function makeAreaReviewSteps(): GeneratedEquationStep[] {
+  const b1 = randInt(3, 12) * 2; // par -> área inteira
+  const h1 = randInt(3, 10);
+  const b2 = randInt(4, 15);
+  const h2 = randInt(3, 12);
+  const parts = [randInt(3, 9) * 2, randInt(3, 9) * 2, randInt(3, 9) * 2].map(
+    (base) => (base * randInt(2, 5)) / 2,
+  );
+  const total = parts.reduce((sum, value) => sum + value, 0);
+  return [
+    {
+      id: 'ar1',
+      prompt: `Um triângulo tem base ${b1} e altura ${h1}. Qual é a área?`,
+      type: 'number',
+      expected: (b1 * h1) / 2,
+      explanation: `A = (b × h) / 2 = (${b1} × ${h1}) / 2 = ${(b1 * h1) / 2}.`,
+    },
+    {
+      id: 'ar2',
+      prompt: `Um retângulo tem base ${b2} e altura ${h2}. Qual é a área?`,
+      type: 'number',
+      expected: b2 * h2,
+      explanation: `A = b × h = ${b2} × ${h2} = ${b2 * h2}.`,
+    },
+    {
+      id: 'ar3',
+      prompt: `Um polígono foi dividido em 3 triângulos de áreas ${parts.join(', ')}. Qual a área total?`,
+      type: 'number',
+      expected: total,
+      explanation: `Triangulação: some as áreas → ${parts.join(' + ')} = ${total}.`,
+    },
+  ];
+}
+
+/** fase9_m4: seno, altura por tangente e semelhança (Tales). */
+export function makeTrigReviewSteps(): GeneratedEquationStep[] {
+  const k = randInt(2, 6);
+  const opp = 3 * k;
+  const hyp = 5 * k;
+  const tg = pick([0.5, 1, 1.5, 2] as const);
+  const shadow = randInt(3, 10) * 2;
+  const x = randInt(2, 9);
+  const p = randInt(2, 7);
+  const scale = randInt(2, 4);
+  return [
+    {
+      id: 'tr1',
+      prompt: `Hipotenusa ${hyp}, cateto oposto ${opp}. Qual o valor de sen θ?`,
+      type: 'number',
+      expected: opp / hyp,
+      explanation: `sen θ = cateto oposto ÷ hipotenusa = ${opp} ÷ ${hyp} = ${(opp / hyp).toFixed(1)}.`,
+    },
+    {
+      id: 'tr2',
+      prompt: `Uma árvore projeta sombra de ${shadow} m com tg(θ) = ${tg}. Qual a altura da árvore (m)?`,
+      type: 'number',
+      expected: tg * shadow,
+      explanation: `altura = tg θ × sombra = ${tg} × ${shadow} = ${tg * shadow} m.`,
+    },
+    {
+      id: 'tr3',
+      prompt: `Semelhança (Tales): x/${p} = ${x * scale}/${p * scale}. Qual o valor de x?`,
+      type: 'number',
+      expected: x,
+      explanation: `Multiplique cruzado: x × ${p * scale} = ${p} × ${x * scale} → x = ${x}.`,
+    },
+  ];
+}
+
+/** fase10_m4: escala, probabilidade geométrica e porcentagem de área. */
+export function makeCartographyReviewSteps(): GeneratedEquationStep[] {
+  return [makeScaleSteps()[0], makeGeoProbSteps()[0], makePercentAreaSteps()[0]];
+}
+
+/** fase3_m4: ângulo externo, ângulo interno e eixos de simetria. */
+export function makeAngleMasteryQuizQuestions(): GeneratedQuizQuestion[] {
+  const [ext] = makeExternalAngleQuizQuestions();
+  const [sym] = makeSymmetryAxesQuizQuestions();
+  const n = pick([3, 4, 5, 6, 9, 10, 12] as const);
+  const internal = ((n - 2) * 180) / n;
+  const { options, answer } = buildNumericOptions(internal, '°', [
+    ((n - 1) * 180) / n,
+    360 / n,
+    ((n + 1) * 180) / n,
+    180 - 360 / n,
+  ]);
+  return [
+    { ...ext, id: 'am1' },
+    {
+      id: 'am2',
+      prompt: `Qual é o ângulo interno de um polígono regular de ${n} lados?`,
+      options,
+      answer,
+      explanation: `a_i = (n − 2) × 180° / n = (${n} − 2) × 180° / ${n} = ${internal}°.`,
+    },
+    { ...sym, id: 'am3' },
+  ];
 }

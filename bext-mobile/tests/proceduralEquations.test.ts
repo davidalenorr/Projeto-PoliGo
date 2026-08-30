@@ -9,6 +9,9 @@ import {
   makeScaleSteps,
   makeGeoProbSteps,
   makePercentAreaSteps,
+  makeAreaReviewSteps,
+  makeTrigReviewSteps,
+  makeCartographyReviewSteps,
   type GeneratedEquationStep,
 } from '../src/missions/procedural.ts';
 import { equationMissionConfigs } from '../src/data/equationMissions.ts';
@@ -48,6 +51,33 @@ test('todos os geradores respeitam o formato de passo', () => {
   assertGeneratorBasics('makeScaleSteps', makeScaleSteps);
   assertGeneratorBasics('makeGeoProbSteps', makeGeoProbSteps);
   assertGeneratorBasics('makePercentAreaSteps', makePercentAreaSteps);
+  assertGeneratorBasics('makeAreaReviewSteps', makeAreaReviewSteps);
+  assertGeneratorBasics('makeTrigReviewSteps', makeTrigReviewSteps);
+  assertGeneratorBasics('makeCartographyReviewSteps', makeCartographyReviewSteps);
+});
+
+test('makeAreaReviewSteps: áreas coerentes e inteiras', () => {
+  for (let i = 0; i < ITER; i++) {
+    const [tri, rect] = makeAreaReviewSteps();
+    const mt = tri.prompt.match(/base (\d+) e altura (\d+)/)!;
+    assert.equal(tri.expected, (Number(mt[1]) * Number(mt[2])) / 2);
+    const mr = rect.prompt.match(/base (\d+) e altura (\d+)/)!;
+    assert.equal(rect.expected, Number(mr[1]) * Number(mr[2]));
+    for (const step of makeAreaReviewSteps()) {
+      assert.ok(Number.isInteger(step.expected as number), `${step.id}: não inteiro`);
+    }
+  }
+});
+
+test('makeTrigReviewSteps: sen 0,6; tangente e Tales coerentes', () => {
+  for (let i = 0; i < ITER; i++) {
+    const [sen, , tales] = makeTrigReviewSteps();
+    assert.ok(Math.abs((sen.expected as number) - 0.6) < 1e-9);
+    const m = tales.prompt.match(/x\/(\d+) = (\d+)\/(\d+)/)!;
+    const [p, num, den] = [Number(m[1]), Number(m[2]), Number(m[3])];
+    assert.equal((tales.expected as number) * den, p * num);
+    assert.ok(Number.isInteger(tales.expected as number));
+  }
 });
 
 test('makeIsolateXSteps: o valor esperado resolve a equação do enunciado', () => {

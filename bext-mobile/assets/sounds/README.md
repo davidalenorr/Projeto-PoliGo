@@ -1,26 +1,35 @@
 # Efeitos sonoros das missões
 
-O som **está ativo**. Estes 4 arquivos são tocados pelo feedback:
+O som está ativo (via `expo-audio`). Estes 4 arquivos são tocados pelo feedback:
 
-| Arquivo        | Quando toca               | Placeholder atual          |
-|----------------|---------------------------|----------------------------|
-| `tap.wav`      | seleção de opção / botão  | clique triangular ~35 ms   |
-| `correct.wav`  | resposta certa            | blip 880→1320 Hz           |
-| `wrong.wav`    | resposta errada           | buzz grave ~220 ms         |
-| `complete.wav` | missão concluída          | arpejo 660/880/1175 Hz     |
+| Arquivo        | Quando toca               | Som                                        |
+|----------------|---------------------------|--------------------------------------------|
+| `tap.wav`      | seleção de opção / botão  | tick curto (~50 ms), bem discreto          |
+| `correct.wav`  | resposta certa            | arpejo maior C5–E5–G5, tipo carrilhão      |
+| `wrong.wav`    | resposta errada           | terça menor descendente E4→C4, timbre oco  |
+| `complete.wav` | missão / chefão concluído | fanfarra C5–E5–G5–C6 + acorde final        |
 
-Os `.wav` foram gerados sinteticamente (16-bit PCM mono, 44.1 kHz). Servem para
-validar o fluxo — para produção, substitua por sons melhores **mantendo os
-nomes e a extensão `.wav`** (ou ajuste os `require` em
-`src/missions/sound.expo-audio.ts` para `.mp3`).
+Os `.wav` são **sintetizados** por `scripts/gen-sounds.mjs` (16-bit PCM mono,
+44.1 kHz, sem dependências): envelopes ADSR, timbres aditivos tipo sino,
+varredura de tom, reverb curto e normalização.
 
-## Fontes livres (checar a licença de cada arquivo)
+## Regenerar / ajustar
 
-- https://freesound.org — filtrar por licença **CC0**.
-- https://kenney.nl/assets/interface-sounds — pacote CC0 de UI.
-- https://mixkit.co/free-sound-effects/ — uso livre.
+```bash
+npm run sounds
+```
+
+Edite os parâmetros no fim de `scripts/gen-sounds.mjs` (notas, durações,
+harmônicos, `master({ peak })`) e rode de novo.
+
+## Substituir por sons próprios
+
+Basta trocar os 4 arquivos mantendo os nomes e a extensão `.wav`
+(ou ajustar os `require` em `src/missions/sound.expo-audio.ts` para `.mp3`).
+Fontes livres: freesound.org (CC0), kenney.nl/assets/interface-sounds,
+mixkit.co/free-sound-effects.
 
 ## Desativar o som
 
 Remova a linha `import '@/src/missions/sound.expo-audio';` de `app/_layout.tsx`.
-O haptic/vibração continua funcionando normalmente.
+A vibração/haptic continua funcionando.
