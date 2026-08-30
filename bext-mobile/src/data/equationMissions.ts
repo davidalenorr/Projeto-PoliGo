@@ -4,6 +4,22 @@
 // sem tocar em app/mission-play.tsx. O id precisa bater com o id da missão em missions.ts.
 //
 // `explanation` é o feedback passo a passo mostrado quando o aluno erra o passo.
+//
+// `generate` (opcional): quando presente, a missão sorteia números novos a cada
+// abertura e pelo botão "Trocar números" — `steps` vira só o exemplo de fallback.
+
+// Import relativo com extensão .ts: funciona no Metro/tsc e também no runner
+// nativo do Node usado pelos testes (que não resolve o alias @/*).
+import {
+  makeGeoProbSteps,
+  makeIsolateXSteps,
+  makePercentAreaSteps,
+  makeScaleSteps,
+  makeSystemPairSteps,
+  makeTalesSteps,
+  makeTangentSteps,
+  makeTrigRatioSteps,
+} from '../missions/procedural.ts';
 
 export type EquationStep = {
   id: string;
@@ -17,12 +33,14 @@ export type EquationMissionConfig = {
   title: string;
   subtitle?: string;
   steps: EquationStep[];
+  generate?: () => EquationStep[];
 };
 
 export const equationMissionConfigs: Record<string, EquationMissionConfig> = {
   fase7_m1: {
     title: 'Sprint Algébrico',
     subtitle: 'Isolando incógnitas',
+    generate: makeIsolateXSteps,
     steps: [
       {
         id: 's1',
@@ -77,6 +95,7 @@ export const equationMissionConfigs: Record<string, EquationMissionConfig> = {
   fase7_m3: {
     title: 'Sistemas em Dupla',
     subtitle: 'Resolva pares (x,y)',
+    generate: makeSystemPairSteps,
     steps: [
       {
         id: 'p1',
@@ -158,6 +177,7 @@ export const equationMissionConfigs: Record<string, EquationMissionConfig> = {
   fase9_m1: {
     title: 'Teorema de Tales',
     subtitle: 'Proporções e semelhança',
+    generate: makeTalesSteps,
     steps: [
       {
         id: 't1',
@@ -185,6 +205,7 @@ export const equationMissionConfigs: Record<string, EquationMissionConfig> = {
   fase9_m2: {
     title: 'Seno e Cosseno',
     subtitle: 'Razões trigonométricas básicas',
+    generate: makeTrigRatioSteps,
     steps: [
       {
         id: 's1',
@@ -212,6 +233,7 @@ export const equationMissionConfigs: Record<string, EquationMissionConfig> = {
   fase9_m3: {
     title: 'A Sombra da Torre',
     subtitle: 'Calculando alturas com Tangente',
+    generate: makeTangentSteps,
     steps: [
       {
         id: 'tg1',
@@ -239,6 +261,7 @@ export const equationMissionConfigs: Record<string, EquationMissionConfig> = {
   fase10_m1: {
     title: 'Escalas do Mapa',
     subtitle: 'Distâncias no mundo real',
+    generate: makeScaleSteps,
     steps: [
       {
         id: 'e1',
@@ -266,6 +289,7 @@ export const equationMissionConfigs: Record<string, EquationMissionConfig> = {
   fase10_m2: {
     title: 'Alvo Probabilístico',
     subtitle: 'Probabilidade geométrica em alvos',
+    generate: makeGeoProbSteps,
     steps: [
       {
         id: 'p1',
@@ -293,6 +317,7 @@ export const equationMissionConfigs: Record<string, EquationMissionConfig> = {
   fase10_m3: {
     title: 'Gráfico da Horta',
     subtitle: 'Divisões proporcionais em gráfico de setores',
+    generate: makePercentAreaSteps,
     steps: [
       {
         id: 'g1',

@@ -73,7 +73,7 @@ export function FeedbackNote({
 }
 
 /** Botão discreto para sortear novos valores numa missão de cálculo procedural. */
-export function RegenerateButton({ onPress }: { onPress: () => void }) {
+export function RegenerateButton({ onPress, label }: { onPress: () => void; label?: string }) {
   return (
     <Pressable
       onPress={() => {
@@ -94,7 +94,7 @@ export function RegenerateButton({ onPress }: { onPress: () => void }) {
         pressed && { opacity: 0.8 },
       ]}
     >
-      <Text style={{ color: '#0B5F8F', fontSize: 12, fontWeight: '800' }}>🔄 Trocar números</Text>
+      <Text style={{ color: '#0B5F8F', fontSize: 12, fontWeight: '800' }}>{label ?? '🔄 Trocar números'}</Text>
     </Pressable>
   );
 }
@@ -306,7 +306,8 @@ export type QuizQuestion = {
 export function MissionQuizFlow({
   title,
   subtitle,
-  questions,
+  questions: staticQuestions,
+  generateQuestions,
   onComplete,
   alreadyCompleted,
   nextMissionId,
@@ -315,17 +316,32 @@ export function MissionQuizFlow({
   title: string;
   subtitle: string;
   questions: QuizQuestion[];
+  /** Se presente, sorteia questões novas a cada abertura e pelo botão "Trocar questões". */
+  generateQuestions?: () => QuizQuestion[];
   onComplete: () => void;
   alreadyCompleted: boolean;
   nextMissionId?: string | null;
   onNext?: () => void;
 }) {
+  const [questions, setQuestions] = useState<QuizQuestion[]>(() =>
+    generateQuestions ? generateQuestions() : staticQuestions,
+  );
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [lastCorrect, setLastCorrect] = useState<boolean | null>(null);
   const [locked, setLocked] = useState(false);
   const [hits, setHits] = useState(0);
   const { shakeStyle, triggerShake } = useShake();
+
+  const handleRegenerate = () => {
+    if (!generateQuestions) return;
+    setQuestions(generateQuestions());
+    setIndex(0);
+    setSelected(null);
+    setLastCorrect(null);
+    setLocked(false);
+    setHits(0);
+  };
 
   const finished = index >= questions.length;
   const current = finished ? null : questions[index];
@@ -359,6 +375,10 @@ export function MissionQuizFlow({
     <View style={styles.missionCard}>
       <Text style={styles.sectionTitle}>{title}</Text>
       <Text style={styles.sectionSubtitle}>{subtitle}</Text>
+
+      {generateQuestions && index === 0 && !locked && selected === null && (
+        <RegenerateButton onPress={handleRegenerate} label="🔄 Trocar questões" />
+      )}
 
       <Animated.View style={[styles.trainingCard, shakeStyle]}>
         <Text style={styles.trainingTitle}>Questão {index + 1} de {questions.length}</Text>
@@ -445,10 +465,20 @@ export function MissionQuizFlow({
   );
 }
 
+type EquationStepShape = {
+  id: string;
+  prompt: string;
+  type: 'number' | 'pair';
+  expected: number | { x: number; y: number };
+  /** Explicação passo a passo mostrada quando a resposta está errada. */
+  explanation?: string;
+};
+
 export function GenericEquationMission({
   title,
   subtitle,
-  steps,
+  steps: initialSteps,
+  generate,
   onComplete,
   alreadyCompleted,
   nextMissionId,
@@ -456,19 +486,17 @@ export function GenericEquationMission({
 }: {
   title: string;
   subtitle?: string;
-  steps: Array<{
-    id: string;
-    prompt: string;
-    type: 'number' | 'pair';
-    expected: number | { x: number; y: number };
-    /** Explicação passo a passo mostrada quando a resposta está errada. */
-    explanation?: string;
-  }>;
+  steps: EquationStepShape[];
+  /** Se presente, sorteia números novos a cada abertura e pelo botão "Trocar números". */
+  generate?: () => EquationStepShape[];
   onComplete: () => void;
   alreadyCompleted: boolean;
   nextMissionId?: string | null;
   onNext?: () => void;
 }) {
+  const [steps, setSteps] = useState<EquationStepShape[]>(() =>
+    generate ? generate() : initialSteps,
+  );
   const [index, setIndex] = useState(0);
   const [input, setInput] = useState('');
   const [inputY, setInputY] = useState('');
@@ -477,6 +505,15 @@ export function GenericEquationMission({
 
   const step = steps[index];
   const isLastStep = index + 1 >= steps.length;
+
+  const handleRegenerate = () => {
+    if (!generate) return;
+    setSteps(generate());
+    setIndex(0);
+    setInput('');
+    setInputY('');
+    setResult(null);
+  };
 
   const registerWrong = (kind: 'wrong' | 'invalid') => {
     setResult(kind);
@@ -551,6 +588,10 @@ export function GenericEquationMission({
     <View style={styles.missionCard}>
       <Text style={styles.sectionTitle}>{title}</Text>
       {!!subtitle && <Text style={styles.sectionSubtitle}>{subtitle}</Text>}
+
+      {generate && index === 0 && result !== 'correct' && (
+        <RegenerateButton onPress={handleRegenerate} />
+      )}
 
       <Animated.View style={[styles.trainingCard, shakeStyle]}>
         <Text style={styles.trainingTitle}>{`Problema ${index + 1} de ${steps.length}`}</Text>

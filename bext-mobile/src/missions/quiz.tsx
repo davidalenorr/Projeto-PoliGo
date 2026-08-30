@@ -1,7 +1,15 @@
 import React, { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Animated, Pressable, Text, View } from 'react-native';
 import { styles } from './styles';
-import { MissionCompletionAction, MissionQuizFlow, MissionRenderProps, QuizQuestion } from './shared';
+import { haptics, useAnswerCue } from './feedback';
+import {
+  makeApothemaSecretQuizQuestions,
+  makePerimeterGuardianQuizQuestions,
+  makeShapeAreaCases,
+  makeSupremeEngineerQuizQuestions,
+  makeTriangleBalanceQuizQuestions,
+} from './procedural';
+import { MissionCompletionAction, MissionQuizFlow, MissionRenderProps, RegenerateButton, QuizQuestion } from './shared';
 
 export function OptimizationChallenge({ onComplete, alreadyCompleted, nextMissionId, onNext }: {
   onComplete: () => void;
@@ -119,6 +127,7 @@ export function PerimeterGuardianMission(props: {
       title="Guardião do Perímetro"
       subtitle="Treine contorno e soma de lados em cenários práticos."
       questions={questions}
+      generateQuestions={makePerimeterGuardianQuizQuestions}
     />
   );
 }
@@ -129,50 +138,25 @@ export function AreaMasterMission(props: {
   nextMissionId?: string | null;
   onNext?: () => void;
 }) {
-  const stages = [
-    {
-      id: 'a1',
-      title: 'Piso Quadrado',
-      shape: 'quadrado' as const,
-      formula: 'A = l²',
-      hint: 'Lado do piso: 6m',
-      prompt: 'Quantos metros quadrados o piso ocupa?',
-      options: ['24 m²', '30 m²', '36 m²', '12 m²'],
-      answer: '36 m²',
-      explanation: 'Quadrado: A = l². Com lado 6, a área é 6 × 6 = 36 m².',
-    },
-    {
-      id: 'a2',
-      title: 'Terreno Retangular',
-      shape: 'retangulo' as const,
-      formula: 'A = b × h',
-      hint: 'Base 8m e altura 5m',
-      prompt: 'Qual é a área total do terreno?',
-      options: ['20 m²', '30 m²', '35 m²', '40 m²'],
-      answer: '40 m²',
-      explanation: 'Retângulo: A = b × h. Com 8 e 5, a área é 40 m².',
-    },
-    {
-      id: 'a3',
-      title: 'Jardim Triangular',
-      shape: 'triangulo' as const,
-      formula: 'A = (b × h) / 2',
-      hint: 'Base 10m e altura 6m',
-      prompt: 'Qual a área do jardim?',
-      options: ['16 m²', '24 m²', '30 m²', '60 m²'],
-      answer: '30 m²',
-      explanation: 'Triângulo: A = (b × h)/2. Com 10 e 6, a área é 30 m².',
-    },
-  ];
-
+  const [stages, setStages] = useState(makeShapeAreaCases);
   const [stepIndex, setStepIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [locked, setLocked] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [hits, setHits] = useState(0);
+  const { shakeStyle, signal } = useAnswerCue();
 
   const current = stages[stepIndex];
   const finished = stepIndex >= stages.length;
+
+  const newRound = () => {
+    setStages(makeShapeAreaCases());
+    setStepIndex(0);
+    setSelected(null);
+    setLocked(false);
+    setFeedback('');
+    setHits(0);
+  };
 
   if (finished) {
     const scorePct = Math.round((hits / stages.length) * 100);
@@ -195,20 +179,29 @@ export function AreaMasterMission(props: {
     );
   }
 
+  const hint =
+    current.shape === 'quadrado'
+      ? `Lado do piso: ${current.a} m`
+      : `Base ${current.a} m e altura ${current.b} m`;
+
   return (
-    <View style={styles.missionCard}>
+    <Animated.View style={[styles.missionCard, shakeStyle]}>
       <Text style={styles.sectionTitle}>Mestre da Área</Text>
       <Text style={styles.sectionSubtitle}>Leia a figura, escolha a fórmula e calcule a superfície correta.</Text>
+
+      {stepIndex === 0 && !locked && !selected && (
+        <RegenerateButton onPress={newRound} label="🔄 Trocar números" />
+      )}
 
       <View style={styles.trainingCard}>
         <Text style={styles.trainingTitle}>Desafio {stepIndex + 1} de {stages.length}: {current.title}</Text>
 
         <View style={styles.areaPreviewWrap}>
-          <AreaShapePreview shape={current.shape} />
+          <AreaShapePreview shape={current.shape} a={current.a} b={current.b} />
           <View style={styles.areaPreviewInfo}>
             <Text style={styles.areaFormulaLabel}>Fórmula</Text>
             <Text style={styles.areaFormulaValue}>{current.formula}</Text>
-            <Text style={styles.areaHint}>{current.hint}</Text>
+            <Text style={styles.areaHint}>{hint}</Text>
           </View>
         </View>
 
@@ -228,7 +221,10 @@ export function AreaMasterMission(props: {
                   pressed && !locked && styles.optionButtonPressed,
                 ]}
                 disabled={locked}
-                onPress={() => setSelected(option)}
+                onPress={() => {
+                  haptics.tap();
+                  setSelected(option);
+                }}
               >
                 <Text style={styles.optionButtonText}>{option}</Text>
               </Pressable>
@@ -256,6 +252,7 @@ export function AreaMasterMission(props: {
                 setHits((prev) => prev + 1);
               }
 
+              signal(correct);
               setFeedback(`${correct ? 'Correto!' : 'Não foi dessa vez.'} ${current.explanation}`);
               setLocked(true);
             }}
@@ -278,16 +275,24 @@ export function AreaMasterMission(props: {
           </Pressable>
         )}
       </View>
-    </View>
+    </Animated.View>
   );
 }
 
-export function AreaShapePreview({ shape }: { shape: 'quadrado' | 'retangulo' | 'triangulo' }) {
+export function AreaShapePreview({
+  shape,
+  a = 6,
+  b = 5,
+}: {
+  shape: 'quadrado' | 'retangulo' | 'triangulo';
+  a?: number;
+  b?: number;
+}) {
   if (shape === 'quadrado') {
     return (
       <View style={styles.areaShapeCard}>
         <View style={styles.squareShape}>
-          <Text style={styles.shapeMeasureText}>6m</Text>
+          <Text style={styles.shapeMeasureText}>{a}m</Text>
         </View>
         <Text style={styles.shapeCaption}>Quadrado</Text>
       </View>
@@ -298,8 +303,8 @@ export function AreaShapePreview({ shape }: { shape: 'quadrado' | 'retangulo' | 
     return (
       <View style={styles.areaShapeCard}>
         <View style={styles.rectangleShape}>
-          <Text style={styles.shapeMeasureText}>8m</Text>
-          <Text style={styles.shapeMeasureTextSmall}>5m</Text>
+          <Text style={styles.shapeMeasureText}>{a}m</Text>
+          <Text style={styles.shapeMeasureTextSmall}>{b}m</Text>
         </View>
         <Text style={styles.shapeCaption}>Retângulo</Text>
       </View>
@@ -310,8 +315,8 @@ export function AreaShapePreview({ shape }: { shape: 'quadrado' | 'retangulo' | 
     <View style={styles.areaShapeCard}>
       <View style={styles.triangleShape} />
       <View style={styles.triangleLabelsRow}>
-        <Text style={styles.shapeMeasureTextSmall}>10m</Text>
-        <Text style={styles.shapeMeasureTextSmall}>6m</Text>
+        <Text style={styles.shapeMeasureTextSmall}>{a}m</Text>
+        <Text style={styles.shapeMeasureTextSmall}>{b}m</Text>
       </View>
       <Text style={styles.shapeCaption}>Triângulo</Text>
     </View>
@@ -354,6 +359,7 @@ export function TriangleBalanceMission(props: {
       title="Triângulo em Equilíbrio"
       subtitle="Use Pitágoras e soma dos ângulos para descobrir medidas faltantes."
       questions={questions}
+      generateQuestions={makeTriangleBalanceQuizQuestions}
     />
   );
 }
@@ -444,6 +450,7 @@ export function ApothemaSecretMission(props: {
       title="Segredo do Apótema"
       subtitle="Identifique apótema e aplique a fórmula de área em polígonos regulares."
       questions={questions}
+      generateQuestions={makeApothemaSecretQuizQuestions}
     />
   );
 }
@@ -534,6 +541,7 @@ export function SupremeEngineerMission(props: {
       title="Engenheiro Supremo"
       subtitle="Integre perímetro, área, apótema e interpretação de cenário."
       questions={questions}
+      generateQuestions={makeSupremeEngineerQuizQuestions}
     />
   );
 }

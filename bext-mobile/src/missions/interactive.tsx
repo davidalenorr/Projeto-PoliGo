@@ -1,6 +1,8 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, PanResponder, Pressable, Text, View } from 'react-native';
 import { SCREEN_WIDTH, styles } from './styles';
+import { haptics, useAnswerCue } from './feedback';
+import { makeExternalAngleQuizQuestions, makeSymmetryAxesQuizQuestions } from './procedural';
 import { MissionCompletionAction, MissionQuizFlow, MissionRenderProps, QuizQuestion } from './shared';
 
 export function GuidedFirstMission({
@@ -18,6 +20,7 @@ export function GuidedFirstMission({
   const [touchedVertices, setTouchedVertices] = useState<number[]>([]);
   const [selectedName, setSelectedName] = useState<string | null>(null);
   const [trainingBoardSize, setTrainingBoardSize] = useState({ width: 0, height: 0 });
+  const { shakeStyle, signal } = useAnswerCue();
 
   const correctName = 'Triângulo';
   const options = ['Triângulo', 'Quadrado', 'Pentágono'];
@@ -71,7 +74,7 @@ export function GuidedFirstMission({
   }, [boardVertices]);
 
   return (
-    <View style={styles.missionCard}>
+    <Animated.View style={[styles.missionCard, shakeStyle]}>
       <Text style={styles.sectionTitle}>Treinamento Guiado</Text>
       <Text style={styles.sectionSubtitle}>Etapa {step}/3: domine a leitura de formas antes do desafio real.</Text>
 
@@ -151,7 +154,10 @@ export function GuidedFirstMission({
                     active && styles.quizOptionActive,
                     pressed && styles.quizOptionPressed,
                   ]}
-                  onPress={() => setSelectedName(option)}
+                  onPress={() => {
+                    setSelectedName(option);
+                    signal(option === correctName);
+                  }}
                 >
                   <Text style={[styles.quizOptionText, active && styles.quizOptionTextActive]}>{option}</Text>
                 </Pressable>
@@ -198,7 +204,7 @@ export function GuidedFirstMission({
           onNext={onNext}
         />
       )}
-    </View>
+    </Animated.View>
   );
 }
 
@@ -221,6 +227,7 @@ export function ConvexityTrapMission({
 }) {
   const [resultMap, setResultMap] = useState<Record<string, 'convexo' | 'concavo'>>({});
   const [selectedShapeId, setSelectedShapeId] = useState<string | null>(null);
+  const { shakeStyle, signal } = useAnswerCue();
 
   const shapes: DraggableShape[] = [
     { id: 's1', label: 'Placa Hexagonal', type: 'convexo' },
@@ -238,12 +245,14 @@ export function ConvexityTrapMission({
 
   const classifyShape = (shapeId: string, target: 'convexo' | 'concavo') => {
     setResultMap((prev) => ({ ...prev, [shapeId]: target }));
+    const shape = shapes.find((item) => item.id === shapeId);
+    if (shape) signal(shape.type === target);
   };
 
   const completed = shapes.every((shape) => resultMap[shape.id] === shape.type);
 
   return (
-    <View style={styles.missionCard}>
+    <Animated.View style={[styles.missionCard, shakeStyle]}>
       <Text style={styles.sectionTitle}>Arraste para classificar</Text>
       <Text style={styles.sectionSubtitle}>Caixa verde = convexos | caixa vermelha = não convexos</Text>
       <Text style={styles.tapAssistText}>No trackpad: toque em uma peça e depois toque na caixa desejada.</Text>
@@ -331,7 +340,7 @@ export function ConvexityTrapMission({
           />
         </>
       )}
-    </View>
+    </Animated.View>
   );
 }
 
@@ -408,6 +417,7 @@ export function NamingShapesMission({
   const [touchedSides, setTouchedSides] = useState<number[]>([]);
   const [feedback, setFeedback] = useState('');
   const [canAdvance, setCanAdvance] = useState(false);
+  const { shakeStyle, signal } = useAnswerCue();
 
   const BOARD_WIDTH = 300;
   const BOARD_HEIGHT = 210;
@@ -498,7 +508,7 @@ export function NamingShapesMission({
   }
 
   return (
-    <View style={styles.missionCard}>
+    <Animated.View style={[styles.missionCard, shakeStyle]}>
       <Text style={styles.sectionTitle}>Caso {stepIndex + 1} de {tasks.length}: {current.place}</Text>
       <Text style={styles.sectionSubtitle}>Toque nos lados do polígono e selecione o nome correto.</Text>
       <Text style={styles.caseContext}>{current.context}</Text>
@@ -566,16 +576,21 @@ export function NamingShapesMission({
             disabled={!canAnswerCurrentCase || canAdvance}
             onPress={() => {
               if (option !== current.answer) {
-                setFeedback('Resposta incorreta. Revise a contagem dos lados e tente novamente.');
+                setFeedback(
+                  `Resposta incorreta. O contorno tem ${current.sides} lados — reconte tocando em cada um e tente de novo.`,
+                );
+                signal(false);
                 return;
               }
 
               if (touchedSides.length < current.sides) {
                 setFeedback('Antes de responder, toque em todos os lados do contorno.');
+                signal(false);
                 return;
               }
 
               setFeedback('Correto! Clique em "Próximo caso" para continuar.');
+              signal(true);
               setCanAdvance(true);
             }}
           >
@@ -603,7 +618,7 @@ export function NamingShapesMission({
           <Text style={styles.nextCaseButtonText}>Próximo caso</Text>
         </Pressable>
       )}
-    </View>
+    </Animated.View>
   );
 }
 
@@ -625,6 +640,7 @@ export function ConvexityTapMission({
   onNext?: () => void;
 }) {
   const [selectionMap, setSelectionMap] = useState<Record<string, 'convexo' | 'concavo'>>({});
+  const { shakeStyle, signal } = useAnswerCue();
 
   const shapes: TapClassifyShape[] = [
     { id: 't1', label: 'Placa hexagonal (regular)', type: 'convexo' },
@@ -638,7 +654,7 @@ export function ConvexityTapMission({
   const completed = shapes.every((shape) => selectionMap[shape.id] === shape.type);
 
   return (
-    <View style={styles.missionCard}>
+    <Animated.View style={[styles.missionCard, shakeStyle]}>
       <Text style={styles.sectionTitle}>Classifique por toque</Text>
       <Text style={styles.sectionSubtitle}>Toque em Convexo ou Não convexo em cada item.</Text>
 
@@ -669,7 +685,10 @@ export function ConvexityTapMission({
                     selection === 'convexo' && styles.tapButtonActive,
                     pressed && styles.tapButtonPressed,
                   ]}
-                  onPress={() => setSelectionMap((prev) => ({ ...prev, [shape.id]: 'convexo' }))}
+                  onPress={() => {
+                    setSelectionMap((prev) => ({ ...prev, [shape.id]: 'convexo' }));
+                    signal(shape.type === 'convexo');
+                  }}
                 >
                   <Text style={[styles.tapButtonText, selection === 'convexo' && styles.tapButtonTextActive]}>Convexo</Text>
                 </Pressable>
@@ -680,7 +699,10 @@ export function ConvexityTapMission({
                     selection === 'concavo' && styles.tapButtonActive,
                     pressed && styles.tapButtonPressed,
                   ]}
-                  onPress={() => setSelectionMap((prev) => ({ ...prev, [shape.id]: 'concavo' }))}
+                  onPress={() => {
+                    setSelectionMap((prev) => ({ ...prev, [shape.id]: 'concavo' }));
+                    signal(shape.type === 'concavo');
+                  }}
                 >
                   <Text style={[styles.tapButtonText, selection === 'concavo' && styles.tapButtonTextActive]}>Não convexo</Text>
                 </Pressable>
@@ -704,7 +726,7 @@ export function ConvexityTapMission({
           />
         </>
       )}
-    </View>
+    </Animated.View>
   );
 }
 
@@ -790,6 +812,7 @@ export function DetectiveReportMission({
   const [convexityCorrectionMap, setConvexityCorrectionMap] = useState<Record<string, 'convexo' | 'concavo'>>({});
   const [expandedEntryId, setExpandedEntryId] = useState<string>('r1');
   const [feedback, setFeedback] = useState('');
+  const { shakeStyle, signal } = useAnswerCue();
 
   const entries: DetectiveReportEntry[] = [
     {
@@ -873,6 +896,10 @@ export function DetectiveReportMission({
     return true;
   });
 
+  useEffect(() => {
+    if (solved) signal(true);
+  }, [solved, signal]);
+
   if (solved) {
     return (
       <View style={styles.missionCard}>
@@ -891,7 +918,7 @@ export function DetectiveReportMission({
   }
 
   return (
-    <View style={styles.missionCard}>
+    <Animated.View style={[styles.missionCard, shakeStyle]}>
       <Text style={styles.sectionTitle}>Laudo do Detetive</Text>
       <Text style={styles.sectionSubtitle}>Analise cada linha, marque se está correta e corrija as incorretas.</Text>
 
@@ -1114,17 +1141,19 @@ export function DetectiveReportMission({
           if (wrongLines.length > 0) {
             setExpandedEntryId(wrongLines[0].id);
             setFeedback(`Ainda há erros nas linhas: ${wrongLines.map((item) => item.line).join(', ')}.`);
+            signal(false);
             return;
           }
 
           setFeedback('Ainda há inconsistências no laudo. Revise as linhas e tente novamente.');
+          signal(false);
         }}
       >
         <Text style={styles.checkButtonText}>Validar laudo</Text>
       </Pressable>
 
       {!!feedback && <Text style={styles.feedbackText}>{feedback}</Text>}
-    </View>
+    </Animated.View>
   );
 }
 
@@ -1152,16 +1181,18 @@ export function PolygonAngleCalculator({
   const [selected, setSelected] = useState<string | null>(null);
   const [locked, setLocked] = useState(false);
   const [hits, setHits] = useState(0);
+  const { shakeStyle, signal } = useAnswerCue();
 
   const handleValidate = () => {
     if (!selected) return;
     const correct = selected === `${ai}°`;
     if (correct) setHits((h) => h + 1);
+    signal(correct);
     setLocked(true);
   };
 
   return (
-    <View style={styles.missionCard}>
+    <Animated.View style={[styles.missionCard, shakeStyle]}>
       <Text style={styles.sectionTitle}>Ângulos em Polígonos Regulares</Text>
       <Text style={styles.sectionSubtitle}>Escolha o número de lados e calcule o ângulo interno.</Text>
 
@@ -1216,7 +1247,7 @@ export function PolygonAngleCalculator({
           </View>
         )}
       </View>
-    </View>
+    </Animated.View>
   );
 }
 
@@ -1260,6 +1291,7 @@ export function ExternalAngleVisualizer({
       title="Ângulos Externos"
       subtitle="Calcule a_e = 360° / n para polígonos regulares"
       questions={questions}
+      generateQuestions={makeExternalAngleQuizQuestions}
       onComplete={onComplete}
       alreadyCompleted={alreadyCompleted}
       nextMissionId={nextMissionId}
@@ -1308,6 +1340,7 @@ export function SymmetryExplorer({
       title="Mapa da Simetria"
       subtitle="Identifique o número de eixos de simetria em polígonos regulares"
       questions={questions}
+      generateQuestions={makeSymmetryAxesQuizQuestions}
       onComplete={onComplete}
       alreadyCompleted={alreadyCompleted}
       nextMissionId={nextMissionId}
@@ -1336,6 +1369,10 @@ export function EquationVaultMission({
   const perimeterOk = perimeter === 30;
   const areaOk = area === 56;
   const solved = perimeterOk && areaOk;
+
+  useEffect(() => {
+    if (solved) haptics.correct();
+  }, [solved]);
 
   return (
     <View style={styles.missionCard}>
@@ -1433,6 +1470,10 @@ export function CartesianRouteMission({
   const pointBOk = m * 3 + b === 7;
   const forecastOk = m * 5 + b === 11;
   const solved = pointAOk && pointBOk && forecastOk;
+
+  useEffect(() => {
+    if (solved) haptics.correct();
+  }, [solved]);
 
   return (
     <View style={styles.missionCard}>
