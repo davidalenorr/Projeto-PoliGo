@@ -7,22 +7,8 @@ import { Detective } from '@/src/data/detectives';
 import { getSelectedDetectiveId } from '@/src/storage/detectiveSelection';
 import { syncDetectiveProgress } from '@/src/storage/missionProgress';
 import { phases } from '@/src/data/phases';
+import { getCurrentPhaseIndex } from '@/src/domain/progress';
 import { ScreenBackButton } from '@/components/ScreenBackButton';
-
-function getCurrentPhaseIndex(phase?: string): number {
-  if (!phase) {
-    return 0;
-  }
-
-  const match = phase.match(/Fase\s*(\d+)/i);
-  const value = match ? Number(match[1]) : 1;
-
-  if (Number.isNaN(value) || value < 1) {
-    return 0;
-  }
-
-  return Math.min(value - 1, phases.length - 1);
-}
 
 export default function ChallengesHubScreen() {
   const [selectedDetective, setSelectedDetective] = useState<Detective | undefined>(undefined);
@@ -55,7 +41,7 @@ export default function ChallengesHubScreen() {
   }, [isFocused]);
 
   const currentPhaseIndex = selectedDetective
-    ? getCurrentPhaseIndex(selectedDetective.phase)
+    ? getCurrentPhaseIndex(selectedDetective.phase, phases.length)
     : 0;
 
   return (

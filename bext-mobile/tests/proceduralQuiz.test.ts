@@ -11,8 +11,13 @@ import {
   makeSupremeEngineerQuizQuestions,
   makeTriangleBalanceQuizQuestions,
   makeAngleMasteryQuizQuestions,
+  makeOptimizationQuizQuestions,
+  makePackagingQuizQuestions,
+  makeSystemBlueprintQuizQuestions,
   makeShapeAreaCase,
   makeShapeAreaCases,
+  makeTrainingQuestion,
+  makeTrainingQuiz,
   type GeneratedQuizQuestion,
 } from '../src/missions/procedural.ts';
 
@@ -47,6 +52,35 @@ test('todos os geradores de quiz respeitam o formato de questão', () => {
   assertGeneratorBasics('makeSupremeEngineerQuizQuestions', makeSupremeEngineerQuizQuestions);
   assertGeneratorBasics('makeTriangleBalanceQuizQuestions', makeTriangleBalanceQuizQuestions);
   assertGeneratorBasics('makeAngleMasteryQuizQuestions', makeAngleMasteryQuizQuestions);
+  assertGeneratorBasics('makeOptimizationQuizQuestions', makeOptimizationQuizQuestions);
+  assertGeneratorBasics('makePackagingQuizQuestions', makePackagingQuizQuestions);
+  assertGeneratorBasics('makeSystemBlueprintQuizQuestions', makeSystemBlueprintQuizQuestions);
+});
+
+test('makeSystemBlueprintQuizQuestions: área = produto dos lados do enunciado', () => {
+  for (let i = 0; i < ITER; i++) {
+    const qs = makeSystemBlueprintQuizQuestions();
+    const m = qs[1].prompt.match(/lados são|quais são os lados/) ? qs[1].answer.match(/(\d+) e (\d+)/) : null;
+    assert.ok(m, `não parseei os lados: ${qs[1].answer}`);
+    const [x, y] = [Number(m![1]), Number(m![2])];
+    assert.equal(qs[2].answer, `${x * y}`);
+  }
+});
+
+test('makePackagingQuizQuestions: a resposta aponta a caixa de menor superfície', () => {
+  for (let i = 0; i < ITER; i++) {
+    for (const q of makePackagingQuizQuestions().slice(0, 2)) {
+      const areas = [...q.prompt.matchAll(/([\d.]+) m³/g)];
+      // a resposta correta cita a menor área entre as opções "Caixa X (Área = N m²)"
+      const optAreas = q.options
+        .map((o) => o.match(/Área = (\d+) m²/))
+        .filter(Boolean)
+        .map((mm) => Number(mm![1]));
+      const answerArea = Number(q.answer.match(/Área = (\d+) m²/)![1]);
+      assert.equal(answerArea, Math.min(...optAreas), `${q.prompt}`);
+      assert.ok(areas.length >= 1);
+    }
+  }
 });
 
 test('makeAngleMasteryQuizQuestions: ângulo interno = (n−2)·180/n', () => {
@@ -55,6 +89,22 @@ test('makeAngleMasteryQuizQuestions: ângulo interno = (n−2)·180/n', () => {
     const n = Number(internal.prompt.match(/de (\d+) lados/)![1]);
     assert.equal(internal.answer, `${((n - 2) * 180) / n}°`);
   }
+});
+
+test('makeTrainingQuestion: qualquer tópico sorteado é uma questão válida', () => {
+  for (let i = 0; i < 8000; i++) {
+    assertQuizShape(makeTrainingQuestion(), `training[${i}]`);
+  }
+});
+
+test('makeTrainingQuiz: bloco com a contagem pedida e ids únicos', () => {
+  for (let i = 0; i < 500; i++) {
+    const quiz = makeTrainingQuiz(8);
+    assert.equal(quiz.length, 8);
+    assert.equal(new Set(quiz.map((q) => q.id)).size, 8, 'ids repetidos');
+    quiz.forEach((q, idx) => assertQuizShape(q, `quiz[${idx}]`));
+  }
+  assert.equal(makeTrainingQuiz(3).length, 3);
 });
 
 test('makeExternalAngleQuizQuestions: resposta = 360°/n', () => {

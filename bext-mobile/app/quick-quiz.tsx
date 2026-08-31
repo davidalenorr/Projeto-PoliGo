@@ -1,285 +1,172 @@
-import React, { useEffect, useState } from 'react';
-import {
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  Vibration,
-} from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialIcons } from '@expo/vector-icons';
-import { Mission, missions } from '@/src/data/missions';
 import { getSelectedDetectiveId } from '@/src/storage/detectiveSelection';
 import { getDetectives, saveDetectives } from '@/src/storage/detectives';
-import { Detective } from '@/src/data/detectives';
+import { recordQuickQuizResult } from '@/src/storage/practiceStats';
+import { makeTrainingQuiz, type GeneratedQuizQuestion } from '@/src/missions/procedural';
+import { haptics } from '@/src/missions/feedback';
+
+const QUESTIONS_PER_SESSION = 8;
+const POINTS_PER_CORRECT = 5;
 
 export default function QuickQuizScreen() {
-  const [detective, setDetective] = useState<Detective | undefined>(undefined);
-  const [quizMissions, setQuizMissions] = useState<Mission[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [detectiveId, setDetectiveId] = useState<string | null>(null);
+  const [questions, setQuestions] = useState<GeneratedQuizQuestion[]>(() => makeTrainingQuiz(QUESTIONS_PER_SESSION));
+  const [index, setIndex] = useState(0);
   const [score, setScore] = useState(0);
-  const [quizFinished, setQuizFinished] = useState(false);
-  const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [selected, setSelected] = useState<string | null>(null);
   const [answered, setAnswered] = useState(false);
-  const [isCorrect, setIsCorrect] = useState(false);
-  const [theme, setTheme] = useState<'classic' | 'cyberpunk' | 'space'>('classic');
+  const [finished, setFinished] = useState(false);
+  const [awardedPoints, setAwardedPoints] = useState(0);
 
   useEffect(() => {
-    let isMounted = true;
-
-    async function initQuiz() {
-      const selectedId = await getSelectedDetectiveId();
-      if (selectedId) {
-        const list = await getDetectives();
-        const d = list.find((item) => item.id === selectedId);
-        if (isMounted && d) setDetective(d);
-      }
-
-      const storedTheme = await AsyncStorage.getItem('@poligo:appTheme:v1');
-      if (storedTheme === 'classic' || storedTheme === 'cyberpunk' || storedTheme === 'space') {
-        if (isMounted) setTheme(storedTheme);
-      }
-
-      // Shuffle & select 5 random missions
-      startNewQuizSession();
-    }
-
-    initQuiz();
-
+    let mounted = true;
+    getSelectedDetectiveId().then((id) => {
+      if (mounted) setDetectiveId(id);
+    });
     return () => {
-      isMounted = false;
+      mounted = false;
     };
   }, []);
 
-  const startNewQuizSession = () => {
-    const shuffled = [...missions].sort(() => 0.5 - Math.random());
-    const selected = shuffled.slice(0, 5);
-    setQuizMissions(selected);
-    setCurrentIndex(0);
+  const startSession = useCallback(() => {
+    setQuestions(makeTrainingQuiz(QUESTIONS_PER_SESSION));
+    setIndex(0);
     setScore(0);
-    setQuizFinished(false);
-    setSelectedOption(null);
+    setSelected(null);
     setAnswered(false);
-  };
+    setFinished(false);
+    setAwardedPoints(0);
+  }, []);
 
-  const currentMission = quizMissions[currentIndex];
+  const current = questions[index];
+  const isCorrect = answered && selected === current?.answer;
 
-  // Options options generator based on mission tips/objective
-  const generateOptions = (mission?: Mission) => {
-    if (!mission) return [];
-    const correctText = mission.tips[0] || 'Aplica-se a propriedade correta dos polígonos';
-    const fake1 = 'Propriedade de polígonos irregulares com lados desiguais';
-    const fake2 = 'Soma angular igual a 180° fixo para qualquer polígono';
-    const fake3 = 'Vértices internos sempre nulos ou inexistentes';
-    
-    return [
-      { text: correctText, correct: true },
-      { text: fake1, correct: false },
-      { text: fake2, correct: false },
-      { text: fake3, correct: false },
-    ].sort(() => 0.5 - Math.random());
-  };
-
-  const [options, setOptions] = useState<Array<{ text: string; correct: boolean }>>([]);
-
-  useEffect(() => {
-    if (currentMission) {
-      setOptions(generateOptions(currentMission));
-      setSelectedOption(null);
-      setAnswered(false);
-    }
-  }, [currentIndex, currentMission]);
-
-  const handleSelectOption = (index: number) => {
+  const handleSelect = (option: string) => {
     if (answered) return;
-    setSelectedOption(index);
+    haptics.tap();
+    setSelected(option);
     setAnswered(true);
-
-    const chosen = options[index];
-    const correct = chosen.correct;
-    setIsCorrect(correct);
-
-    if (correct) {
-      Vibration.vibrate([0, 60, 40, 80]);
+    if (option === current.answer) {
+      haptics.correct();
       setScore((prev) => prev + 1);
     } else {
-      Vibration.vibrate(100);
+      haptics.wrong();
     }
   };
 
-  const handleNextQuestion = async () => {
-    Vibration.vibrate(30);
-    if (currentIndex < quizMissions.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
-    } else {
-      // Finish Quiz & Add bonus points (5 Pts per correct answer)
-      const bonusPoints = score * 5;
-      if (bonusPoints > 0 && detective) {
+  const handleNext = async () => {
+    if (index < questions.length - 1) {
+      setIndex((prev) => prev + 1);
+      setSelected(null);
+      setAnswered(false);
+      return;
+    }
+
+    // fim da sessão
+    const bonus = score * POINTS_PER_CORRECT;
+    setAwardedPoints(bonus);
+    setFinished(true);
+    haptics.complete();
+
+    if (detectiveId) {
+      await recordQuickQuizResult(detectiveId, score, questions.length);
+      if (bonus > 0) {
         const list = await getDetectives();
-        const updatedList = list.map((d) => {
-          if (d.id === detective.id) {
-            return { ...d, points: d.points + bonusPoints };
-          }
-          return d;
-        });
-        await saveDetectives(updatedList);
+        await saveDetectives(
+          list.map((d) => (d.id === detectiveId ? { ...d, points: d.points + bonus } : d)),
+        );
       }
-      setQuizFinished(true);
     }
-  };
-
-  const getBgColor = () => {
-    if (theme === 'cyberpunk') return '#0F172A';
-    if (theme === 'space') return '#1E1B4B';
-    return '#D8D8DB';
-  };
-
-  const getCardBg = () => {
-    if (theme === 'cyberpunk') return '#1E293B';
-    if (theme === 'space') return '#312E81';
-    return '#FFFFFF';
-  };
-
-  const getTextColor = () => {
-    if (theme === 'cyberpunk' || theme === 'space') return '#F8FAFC';
-    return '#1F3E66';
-  };
-
-  const getSubTextColor = () => {
-    if (theme === 'cyberpunk' || theme === 'space') return '#94A3B8';
-    return '#607287';
   };
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: getBgColor() }]}>
+    <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
-        {/* Header */}
         <View style={styles.header}>
           <Pressable
             onPress={() => router.back()}
+            accessibilityRole="button"
+            accessibilityLabel="Voltar"
             style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
           >
-            <MaterialIcons name="arrow-back" size={24} color={getTextColor()} />
+            <MaterialIcons name="arrow-back" size={22} color="#1F3E66" />
           </Pressable>
-          <View style={styles.headerTitleWrap}>
-            <Text style={[styles.headerTitle, { color: getTextColor() }]}>Modo Treino Livre</Text>
-            <Text style={[styles.headerSub, { color: getSubTextColor() }]}>Perguntas aleatórias + 5 Pts bônus por acerto!</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.headerTitle}>Modo Treino Livre</Text>
+            <Text style={styles.headerSub}>Questões sorteadas de todas as fases · +{POINTS_PER_CORRECT} Pts por acerto</Text>
           </View>
         </View>
 
-        {!quizFinished ? (
+        {!finished ? (
           <>
-            {/* Progress Counter */}
-            <View style={[styles.progressCard, { backgroundColor: getCardBg() }]}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Text style={{ fontSize: 13, fontWeight: '800', color: '#0B5F8F' }}>
-                  Questão {currentIndex + 1} de {quizMissions.length}
+            <View style={styles.progressCard}>
+              <View style={styles.progressRow}>
+                <Text style={styles.progressLabel}>
+                  Questão {index + 1} de {questions.length}
                 </Text>
-                <Text style={{ fontSize: 13, fontWeight: '800', color: '#D97706' }}>
-                  Acertos: {score}
-                </Text>
+                <Text style={styles.progressScore}>Acertos: {score}</Text>
               </View>
               <View style={styles.progressBase}>
-                <View
-                  style={[
-                    styles.progressFill,
-                    { width: `${((currentIndex + 1) / quizMissions.length) * 100}%` },
-                  ]}
-                />
+                <View style={[styles.progressFill, { width: `${((index + 1) / questions.length) * 100}%` }]} />
               </View>
             </View>
 
-            {/* Question Card */}
-            {currentMission ? (
-              <View style={[styles.card, { backgroundColor: getCardBg() }]}>
-                <View style={styles.badgeRow}>
-                  <Text style={styles.difficultyBadge}>
-                    {currentMission.difficulty.toUpperCase()}
-                  </Text>
-                  <Text style={styles.pointsBadge}>+5 Pts Bônus</Text>
-                </View>
+            {current ? (
+              <View style={styles.card}>
+                <Text style={styles.questionPrompt}>{current.prompt}</Text>
 
-                <Text style={[styles.questionTitle, { color: getTextColor() }]}>
-                  {currentMission.title}
-                </Text>
-                <Text style={[styles.questionDesc, { color: getSubTextColor() }]}>
-                  {currentMission.objective}
-                </Text>
-
-                <Text style={[styles.selectPrompt, { color: getTextColor() }]}>
-                  Qual das alternativas apresenta a propriedade correta?
-                </Text>
-
-                {/* Options List */}
                 <View style={styles.optionsList}>
-                  {options.map((opt, idx) => {
-                    const isSelected = selectedOption === idx;
-                    let optionStyle = [styles.optionCard];
-
-                    if (answered) {
-                      if (opt.correct) {
-                        optionStyle.push(styles.optionCorrect as any);
-                      } else if (isSelected && !opt.correct) {
-                        optionStyle.push(styles.optionIncorrect as any);
-                      }
-                    } else if (isSelected) {
-                      optionStyle.push(styles.optionSelected as any);
-                    }
+                  {current.options.map((option, idx) => {
+                    const chosen = selected === option;
+                    const showCorrect = answered && option === current.answer;
+                    const showWrong = answered && chosen && option !== current.answer;
 
                     return (
                       <Pressable
-                        key={idx}
+                        key={option}
                         disabled={answered}
-                        onPress={() => handleSelectOption(idx)}
-                        style={({ pressed }) => [...optionStyle, pressed && !answered && styles.pressed]}
+                        onPress={() => handleSelect(option)}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Alternativa ${String.fromCharCode(65 + idx)}: ${option}`}
+                        accessibilityState={{ disabled: answered, selected: chosen }}
+                        style={({ pressed }) => [
+                          styles.optionCard,
+                          chosen && !answered && styles.optionSelected,
+                          showCorrect && styles.optionCorrect,
+                          showWrong && styles.optionIncorrect,
+                          pressed && !answered && styles.pressed,
+                        ]}
                       >
                         <View style={styles.optionIndex}>
-                          <Text style={styles.optionIndexText}>
-                            {String.fromCharCode(65 + idx)}
-                          </Text>
+                          <Text style={styles.optionIndexText}>{String.fromCharCode(65 + idx)}</Text>
                         </View>
-                        <Text style={[styles.optionText, { color: getTextColor() }]}>
-                          {opt.text}
-                        </Text>
+                        <Text style={styles.optionText}>{option}</Text>
+                        {showCorrect ? (
+                          <MaterialIcons name="check-circle" size={18} color="#059669" />
+                        ) : showWrong ? (
+                          <MaterialIcons name="cancel" size={18} color="#DC2626" />
+                        ) : null}
                       </Pressable>
                     );
                   })}
                 </View>
 
-                {/* Answer Feedback & Action */}
                 {answered && (
                   <View style={styles.feedbackWrap}>
-                    <View
-                      style={[
-                        styles.feedbackCard,
-                        isCorrect ? styles.feedbackCorrectCard : styles.feedbackIncorrectCard,
-                      ]}
-                    >
-                      <MaterialIcons
-                        name={isCorrect ? 'check-circle' : 'cancel'}
-                        size={24}
-                        color={isCorrect ? '#059669' : '#DC2626'}
-                      />
-                      <Text
-                        style={[
-                          styles.feedbackText,
-                          { color: isCorrect ? '#059669' : '#DC2626' },
-                        ]}
-                      >
-                        {isCorrect
-                          ? 'Excelente! Você acertou e ganhou +5 Pts!'
-                          : 'Quase lá! Leia a alternativa em destaque verde.'}
+                    <View style={[styles.feedbackCard, isCorrect ? styles.feedbackOk : styles.feedbackBad]}>
+                      <Text style={[styles.feedbackTitle, { color: isCorrect ? '#059669' : '#DC2626' }]}>
+                        {isCorrect ? `Correto! +${POINTS_PER_CORRECT} Pts` : 'Não foi dessa vez.'}
                       </Text>
+                      {!!current.explanation && <Text style={styles.feedbackExpl}>{current.explanation}</Text>}
                     </View>
 
-                    <TouchableOpacity style={styles.nextBtn} onPress={handleNextQuestion}>
+                    <TouchableOpacity accessibilityRole="button" style={styles.nextBtn} onPress={handleNext}>
                       <Text style={styles.nextBtnText}>
-                        {currentIndex < quizMissions.length - 1 ? 'Próxima Questão' : 'Ver Resultado'}
+                        {index < questions.length - 1 ? 'Próxima questão' : 'Ver resultado'}
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -288,27 +175,29 @@ export default function QuickQuizScreen() {
             ) : null}
           </>
         ) : (
-          /* Finished Summary Card */
-          <View style={[styles.card, styles.summaryCard, { backgroundColor: getCardBg() }]}>
-            <MaterialIcons name="workspace-premium" size={56} color="#D97706" />
-            <Text style={[styles.summaryTitle, { color: getTextColor() }]}>Treino Concluído!</Text>
-            <Text style={[styles.summarySub, { color: getSubTextColor() }]}>
-              Você respondeu 5 perguntas do Modo Treino Livre.
-            </Text>
+          <View style={[styles.card, styles.summaryCard]}>
+            <MaterialIcons name="workspace-premium" size={52} color="#D97706" />
+            <Text style={styles.summaryTitle}>Treino concluído!</Text>
+            <Text style={styles.summarySub}>Você respondeu {questions.length} questões do Modo Treino Livre.</Text>
 
             <View style={styles.scoreBox}>
-              <Text style={styles.scoreBig}>{score} / 5</Text>
-              <Text style={styles.scoreLabel}>Perguntas Incorretas/Corretas</Text>
-              <Text style={styles.scoreBonus}>+{score * 5} Pts Adicionados ao Perfil!</Text>
+              <Text style={styles.scoreBig}>
+                {score} / {questions.length}
+              </Text>
+              <Text style={styles.scoreLabel}>acertos</Text>
+              {awardedPoints > 0 ? (
+                <Text style={styles.scoreBonus}>+{awardedPoints} Pts adicionados ao perfil</Text>
+              ) : (
+                <Text style={styles.scoreLabel}>Continue treinando para ganhar Pts!</Text>
+              )}
             </View>
 
             <View style={styles.summaryActions}>
-              <TouchableOpacity style={styles.retryBtn} onPress={startNewQuizSession}>
-                <MaterialIcons name="refresh" size={20} color="#FFFFFF" />
-                <Text style={styles.retryBtnText}>Treinar Novamente</Text>
+              <TouchableOpacity accessibilityRole="button" style={styles.retryBtn} onPress={startSession}>
+                <MaterialIcons name="refresh" size={18} color="#FFFFFF" />
+                <Text style={styles.retryBtnText}>Treinar novamente</Text>
               </TouchableOpacity>
-
-              <TouchableOpacity style={styles.backTrailBtn} onPress={() => router.back()}>
+              <TouchableOpacity accessibilityRole="button" style={styles.backTrailBtn} onPress={() => router.back()}>
                 <Text style={styles.backTrailText}>Voltar para a Trilha</Text>
               </TouchableOpacity>
             </View>
@@ -322,95 +211,48 @@ export default function QuickQuizScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1 },
+  safe: { flex: 1, backgroundColor: '#D8D8DB' },
   container: { padding: 20, gap: 16 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   backButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: '#EEF6FF',
+    borderWidth: 1,
+    borderColor: '#C9DEEF',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  pressed: {
-    opacity: 0.8,
-    transform: [{ scale: 0.97 }],
-  },
-  headerTitleWrap: { flex: 1 },
-  headerTitle: { fontSize: 24, fontWeight: '800' },
-  headerSub: { fontSize: 13, marginTop: 2 },
+  pressed: { opacity: 0.85, transform: [{ scale: 0.98 }] },
+  headerTitle: { fontSize: 22, fontWeight: '800', color: '#1F3E66' },
+  headerSub: { fontSize: 12, marginTop: 2, color: '#607287' },
 
   progressCard: {
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 14,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.08)',
+    borderColor: '#D5E2ED',
     gap: 8,
   },
-  progressBase: {
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#E2E8F0',
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#0B5F8F',
-  },
+  progressRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  progressLabel: { fontSize: 13, fontWeight: '800', color: '#0B5F8F' },
+  progressScore: { fontSize: 13, fontWeight: '800', color: '#D97706' },
+  progressBase: { height: 8, borderRadius: 4, backgroundColor: '#E2E8F0', overflow: 'hidden' },
+  progressFill: { height: '100%', backgroundColor: '#0B5F8F' },
 
   card: {
+    backgroundColor: '#FFFFFF',
     borderRadius: 20,
     padding: 18,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.08)',
+    borderColor: '#D5E2ED',
     gap: 12,
   },
-  badgeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  difficultyBadge: {
-    fontSize: 11,
-    fontWeight: '900',
-    color: '#0B5F8F',
-    backgroundColor: '#EEF6FF',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  pointsBadge: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#D97706',
-    backgroundColor: '#FEF3C7',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  questionTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-  },
-  questionDesc: {
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  selectPrompt: {
-    fontSize: 14,
-    fontWeight: '700',
-    marginTop: 4,
-  },
+  questionPrompt: { fontSize: 16, fontWeight: '700', color: '#0D3D66', lineHeight: 22 },
 
-  optionsList: {
-    gap: 10,
-    marginTop: 6,
-  },
+  optionsList: { gap: 10, marginTop: 2 },
   optionCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -418,121 +260,51 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     borderWidth: 1,
     borderColor: '#CBD5E1',
-    backgroundColor: 'rgba(0,0,0,0.02)',
+    backgroundColor: '#F8FBFF',
     gap: 10,
   },
-  optionSelected: {
-    borderColor: '#0B5F8F',
-    backgroundColor: '#EEF6FF',
-  },
-  optionCorrect: {
-    borderColor: '#059669',
-    backgroundColor: '#ECFDF5',
-  },
-  optionIncorrect: {
-    borderColor: '#DC2626',
-    backgroundColor: '#FEF2F2',
-  },
+  optionSelected: { borderColor: '#0B5F8F', backgroundColor: '#EEF6FF' },
+  optionCorrect: { borderColor: '#059669', backgroundColor: '#ECFDF5' },
+  optionIncorrect: { borderColor: '#DC2626', backgroundColor: '#FEF2F2' },
   optionIndex: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: 'rgba(0,0,0,0.06)',
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: 'rgba(11,95,143,0.08)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  optionIndexText: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: '#334155',
-  },
-  optionText: {
-    flex: 1,
-    fontSize: 13,
-    lineHeight: 17,
-  },
+  optionIndexText: { fontSize: 13, fontWeight: '800', color: '#334155' },
+  optionText: { flex: 1, fontSize: 14, lineHeight: 18, color: '#334155' },
 
-  feedbackWrap: {
-    gap: 12,
-    marginTop: 8,
-  },
-  feedbackCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    padding: 12,
-    borderRadius: 14,
-  },
-  feedbackCorrectCard: {
-    backgroundColor: '#ECFDF5',
-    borderWidth: 1,
-    borderColor: '#A7F3D0',
-  },
-  feedbackIncorrectCard: {
-    backgroundColor: '#FEF2F2',
-    borderWidth: 1,
-    borderColor: '#FCA5A5',
-  },
-  feedbackText: {
-    flex: 1,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  nextBtn: {
-    backgroundColor: '#0B5F8F',
-    paddingVertical: 12,
-    borderRadius: 14,
-    alignItems: 'center',
-  },
-  nextBtnText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '800',
-  },
+  feedbackWrap: { gap: 12, marginTop: 6 },
+  feedbackCard: { padding: 12, borderRadius: 14, borderWidth: 1, gap: 4 },
+  feedbackOk: { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' },
+  feedbackBad: { backgroundColor: '#FEF2F2', borderColor: '#FCA5A5' },
+  feedbackTitle: { fontSize: 13, fontWeight: '800' },
+  feedbackExpl: { fontSize: 12, lineHeight: 17, color: '#5B3A1E' },
+  nextBtn: { backgroundColor: '#0B5F8F', paddingVertical: 12, borderRadius: 14, alignItems: 'center' },
+  nextBtnText: { color: '#FFFFFF', fontSize: 14, fontWeight: '800' },
 
-  summaryCard: {
-    alignItems: 'center',
-    paddingVertical: 28,
-    gap: 12,
-  },
-  summaryTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-  },
-  summarySub: {
-    fontSize: 13,
-    textAlign: 'center',
-  },
+  summaryCard: { alignItems: 'center', paddingVertical: 26, gap: 10 },
+  summaryTitle: { fontSize: 22, fontWeight: '800', color: '#1F3E66' },
+  summarySub: { fontSize: 13, textAlign: 'center', color: '#607287' },
   scoreBox: {
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.03)',
+    backgroundColor: '#F8FBFF',
+    borderWidth: 1,
+    borderColor: '#D5E2ED',
     paddingHorizontal: 24,
     paddingVertical: 16,
-    borderRadius: 20,
+    borderRadius: 18,
     width: '100%',
-    marginVertical: 10,
-    gap: 4,
+    marginVertical: 8,
+    gap: 2,
   },
-  scoreBig: {
-    fontSize: 36,
-    fontWeight: '900',
-    color: '#0B5F8F',
-  },
-  scoreLabel: {
-    fontSize: 12,
-    color: '#607287',
-  },
-  scoreBonus: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#D97706',
-    marginTop: 4,
-  },
-  summaryActions: {
-    width: '100%',
-    gap: 10,
-    marginTop: 6,
-  },
+  scoreBig: { fontSize: 34, fontWeight: '900', color: '#0B5F8F' },
+  scoreLabel: { fontSize: 12, color: '#607287' },
+  scoreBonus: { fontSize: 14, fontWeight: '800', color: '#D97706', marginTop: 4 },
+  summaryActions: { width: '100%', gap: 10, marginTop: 4 },
   retryBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -542,11 +314,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 14,
   },
-  retryBtnText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '800',
-  },
+  retryBtnText: { color: '#FFFFFF', fontSize: 14, fontWeight: '800' },
   backTrailBtn: {
     alignItems: 'center',
     paddingVertical: 12,
@@ -554,9 +322,5 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#CBD5E1',
   },
-  backTrailText: {
-    color: '#334155',
-    fontSize: 14,
-    fontWeight: '700',
-  },
+  backTrailText: { color: '#334155', fontSize: 14, fontWeight: '700' },
 });

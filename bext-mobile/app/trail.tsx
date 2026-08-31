@@ -48,7 +48,12 @@ export default function TrailScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Pressable style={styles.backButton} onPress={() => router.replace('/(tabs)/two')}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Voltar para a Trilha"
+          style={styles.backButton}
+          onPress={() => router.replace('/(tabs)/two')}
+        >
           <Text style={styles.backButtonText}>← Voltar para a Trilha</Text>
         </Pressable>
 
@@ -118,6 +123,11 @@ export default function TrailScreen() {
               <View key={node.phaseId}>
                 {index > 0 && <View style={styles.connector} />}
                 <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Fase ${node.number}: ${node.district}. ${
+                    node.status === 'done' ? 'Concluída' : node.status === 'current' ? 'Em andamento' : 'Bloqueada'
+                  }. ${node.missionsDone} de ${node.missionsTotal} missões.`}
+                  accessibilityState={{ disabled: locked }}
                   style={({ pressed }) => [
                     styles.nodeCard,
                     locked && styles.nodeCardLocked,
@@ -154,6 +164,8 @@ export default function TrailScreen() {
                       </View>
                     ) : node.missionsComplete ? (
                       <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel={`Desafiar o chefão ${node.bossName}`}
                         style={({ pressed }) => [styles.bossBtn, pressed && { opacity: 0.85 }]}
                         onPress={() => router.push({ pathname: '/boss', params: { phaseId: node.phaseId } })}
                       >

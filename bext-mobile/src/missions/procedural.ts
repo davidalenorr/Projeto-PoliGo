@@ -882,3 +882,254 @@ export function makeAngleMasteryQuizQuestions(): GeneratedQuizQuestion[] {
     { ...sym, id: 'am3' },
   ];
 }
+
+// ===========================================================================
+// MODO TREINO LIVRE (quick-quiz): sorteia UMA questão de múltipla escolha de
+// um tópico aleatório, cobrindo todas as fases.
+// ===========================================================================
+
+/** Converte um passo numérico de equação numa questão de múltipla escolha. */
+function stepToQuiz(step: GeneratedEquationStep, unit = ''): GeneratedQuizQuestion {
+  const value = step.expected as number;
+  const { options, answer } = buildNumericOptions(value, unit, [
+    value * 2,
+    value + 1,
+    Math.max(1, Math.round(value / 2)),
+    value + 3,
+  ]);
+  return { id: step.id, prompt: step.prompt, options, answer, explanation: step.explanation ?? '' };
+}
+
+const TRAINING_TOPICS: ReadonlyArray<() => GeneratedQuizQuestion> = [
+  () => pick(makeExternalAngleQuizQuestions()),
+  () => pick(makeSymmetryAxesQuizQuestions()),
+  () => pick(makeAngleMasteryQuizQuestions()),
+  () => pick(makePythagorasQuizQuestions()),
+  () => pick(makeAngleSumQuizQuestions()),
+  () => pick(makePerimeterQuizQuestions()),
+  () => {
+    const c = makeShapeAreaCase('sa');
+    const dims = c.shape === 'quadrado' ? `lado ${c.a} m` : `base ${c.a} m e altura ${c.b} m`;
+    return {
+      id: 'sa',
+      prompt: `${c.title} (${c.formula}), ${dims}. Qual é a área?`,
+      options: c.options,
+      answer: c.answer,
+      explanation: c.explanation,
+    };
+  },
+  () => {
+    const perimeter = randInt(4, 12) * 2;
+    const apothem = randInt(2, 9);
+    const area = (perimeter * apothem) / 2;
+    const { options, answer } = buildNumericOptions(area, '', [
+      perimeter * apothem,
+      perimeter + apothem,
+      Math.round(area / 2),
+      area + apothem,
+    ]);
+    return {
+      id: 'ap',
+      prompt: `Polígono regular com perímetro ${perimeter} e apótema ${apothem}. Qual é a área?`,
+      options,
+      answer,
+      explanation: `Área = (P × a) / 2 = (${perimeter} × ${apothem}) / 2 = ${area}.`,
+    };
+  },
+  () => {
+    const a = randInt(2, 6);
+    const x = randInt(2, 9);
+    const b = randInt(1, 10);
+    const { options, answer } = buildNumericOptions(x, '', [x + 1, x - 1, a * x, a + b]);
+    return {
+      id: 'lin',
+      prompt: `Resolva a equação: ${a}x + ${b} = ${a * x + b}. Qual o valor de x?`,
+      options,
+      answer,
+      explanation: `Subtraia ${b}: ${a}x = ${a * x}. Divida por ${a}: x = ${x}.`,
+    };
+  },
+  () => stepToQuiz(makeScaleSteps()[randInt(0, 2)]),
+  () => stepToQuiz(makeGeoProbSteps()[randInt(0, 2)]),
+  () => stepToQuiz(makePercentAreaSteps()[randInt(0, 2)]),
+  () => stepToQuiz(makeTrigRatioSteps()[randInt(0, 2)]),
+  () => stepToQuiz(makeTangentSteps()[randInt(1, 2)]),
+  () => {
+    const edge = randInt(2, 7);
+    const { options, answer } = buildNumericOptions(edge ** 3, '', [edge * edge, edge * 3, edge ** 3 + edge, edge ** 2 * 2]);
+    return {
+      id: 'cube',
+      prompt: `Qual é o volume de um cubo de aresta ${edge}?`,
+      options,
+      answer,
+      explanation: `V = a³ = ${edge}³ = ${edge ** 3}.`,
+    };
+  },
+  () => {
+    const l = randInt(2, 8);
+    const w = randInt(2, 8);
+    const h = randInt(2, 8);
+    const { options, answer } = buildNumericOptions(l * w * h, '', [l + w + h, l * w, 2 * (l * w + l * h + w * h), l * w * h + l]);
+    return {
+      id: 'prism',
+      prompt: `Um paralelepípedo mede ${l} × ${w} × ${h}. Qual é o volume?`,
+      options,
+      answer,
+      explanation: `V = a × b × c = ${l} × ${w} × ${h} = ${l * w * h}.`,
+    };
+  },
+];
+
+/** Uma questão de treino livre, de tópico sorteado. */
+export function makeTrainingQuestion(): GeneratedQuizQuestion {
+  return pick(TRAINING_TOPICS)();
+}
+
+/** Um bloco de treino livre com `count` questões (tópicos podem repetir). */
+export function makeTrainingQuiz(count = 8): GeneratedQuizQuestion[] {
+  return Array.from({ length: count }, (_, i) => {
+    const q = makeTrainingQuestion();
+    return { ...q, id: `tq${i + 1}` };
+  });
+}
+
+// ===========================================================================
+// Missões de quiz "conceituais" agora procedurais (fase 6/8 — otimização,
+// embalagem, sistema).
+// ===========================================================================
+
+function stringOptions(answer: string, wrongs: string[]): string[] {
+  const opts = [answer];
+  for (const w of wrongs) {
+    if (opts.length >= 4) break;
+    if (!opts.includes(w)) opts.push(w);
+  }
+  return shuffle(opts);
+}
+
+/** fase6_m4 (OptimizationChallenge): perímetro fixo -> área máxima = quadrado. */
+export function makeOptimizationQuizQuestions(): GeneratedQuizQuestion[] {
+  const p = randInt(6, 15) * 4; // múltiplo de 4 -> lado inteiro (side >= 6)
+  const side = p / 4;
+  const half = p / 2;
+  const mid = Math.floor((side - 1) / 2);
+  const d1 = randInt(1, Math.max(1, mid));
+  const d2 = randInt(mid + 1, side - 1);
+
+  const rectOpt = (a: number, b: number) => `Lados ${a} m e ${b} m (Área = ${a * b} m²)`;
+
+  const wallP = randInt(2, 5) * 4; // 2x + y = wallP, máximo em x = wallP/4 (inteiro)
+  const wx = wallP / 4;
+  const wy = wallP / 2;
+  const wallOpt = (x: number, y: number) => `${x} m (perpendicular) e ${y} m (paralelo ao muro)`;
+  const e1 = randInt(1, Math.max(1, wx - 1));
+
+  return [
+    {
+      id: 'opt1',
+      prompt: `Você tem ${p} metros de cerca para um cercado retangular. Qual configuração dá a MAIOR área?`,
+      options: stringOptions(rectOpt(side, side), [
+        rectOpt(side - d1, half - (side - d1)),
+        rectOpt(side - d2, half - (side - d2)),
+        rectOpt(1, half - 1),
+      ]),
+      answer: rectOpt(side, side),
+      explanation: `Com perímetro fixo, a área do retângulo é máxima quando ele é um quadrado. Lado = ${p} ÷ 4 = ${side} m, área ${side * side} m².`,
+    },
+    {
+      id: 'opt2',
+      prompt: `Uma horta retangular usa um muro como um dos lados. Com ${wallP} m de cerca (2x + y = ${wallP}), quais medidas maximizam a área?`,
+      options: stringOptions(wallOpt(wx, wy), [
+        wallOpt(wx - e1, wallP - 2 * (wx - e1)),
+        wallOpt(wx + e1, wallP - 2 * (wx + e1)),
+        wallOpt(1, wallP - 2),
+      ]),
+      answer: wallOpt(wx, wy),
+      explanation: `A área é A = x(${wallP} − 2x), máxima em x = ${wallP} ÷ 4 = ${wx} m, dando y = ${wy} m.`,
+    },
+    {
+      id: 'opt3',
+      prompt: 'Para um perímetro fixo, a área de um retângulo é máxima quando ele é...',
+      options: shuffle(['um quadrado', 'bem alongado', 'um triângulo', 'o mais fino possível']),
+      answer: 'um quadrado',
+      explanation: 'Entre todos os retângulos de mesmo perímetro, o quadrado tem a maior área.',
+    },
+  ];
+}
+
+const BOX_CASES: ReadonlyArray<{ volume: number; cube: [number, number, number]; long: [number, number, number] }> = [
+  { volume: 24, cube: [2, 3, 4], long: [1, 2, 12] },
+  { volume: 36, cube: [3, 3, 4], long: [1, 4, 9] },
+  { volume: 48, cube: [3, 4, 4], long: [2, 3, 8] },
+  { volume: 60, cube: [3, 4, 5], long: [2, 5, 6] },
+  { volume: 72, cube: [4, 3, 6], long: [2, 4, 9] },
+];
+
+const surfaceArea = ([a, b, c]: readonly [number, number, number]) => 2 * (a * b + a * c + b * c);
+
+/** fase8_m4 (PackagingOptimizationChallenge): mesmo volume -> menor superfície é a "mais cúbica". */
+export function makePackagingQuizQuestions(): GeneratedQuizQuestion[] {
+  const build = (id: string): GeneratedQuizQuestion => {
+    const c = pick(BOX_CASES);
+    const saCube = surfaceArea(c.cube);
+    const saLong = surfaceArea(c.long);
+    const opt = (label: string, sa: number) => `Caixa ${label} (Área = ${sa} m²)`;
+    return {
+      id,
+      prompt: `Duas caixas têm volume ${c.volume} m³. Caixa A: ${c.cube.join(' × ')} m. Caixa B: ${c.long.join(' × ')} m. Qual gasta MENOS papelão?`,
+      options: stringOptions(opt('A', saCube), [
+        opt('B', saLong),
+        'As duas gastam o mesmo papelão',
+        'Impossível dizer sem saber o peso',
+      ]),
+      answer: opt('A', saCube),
+      explanation: `Superfície da A = 2(ab + ac + bc) = ${saCube} m²; da B = ${saLong} m². Formatos mais próximos de um cubo minimizam a área de superfície para um volume dado.`,
+    };
+  };
+  return [build('pk1'), build('pk2'), {
+    id: 'pk3',
+    prompt: 'Para um mesmo volume, a caixa que gasta menos material (menor área de superfície) é...',
+    options: shuffle(['a mais próxima de um cubo', 'a mais comprida e fina', 'a mais alta', 'sempre a de base quadrada, não importa a altura']),
+    answer: 'a mais próxima de um cubo',
+    explanation: 'Quanto mais "cúbica" a caixa, menor a superfície para o mesmo volume.',
+  }];
+}
+
+/** fase4_m4 (SystemBlueprintMission): retângulo a partir de perímetro + diferença dos lados. */
+export function makeSystemBlueprintQuizQuestions(): GeneratedQuizQuestion[] {
+  const y = randInt(3, 9);
+  const x = y + randInt(2, 6);
+  const perimeter = 2 * (x + y);
+  const diff = x - y;
+  const area = x * y;
+
+  const areaOpts = buildNumericOptions(area, '', [perimeter, x + y, area + x, Math.round(area / 2)]);
+
+  return [
+    {
+      id: 'sb1',
+      prompt: `Um retângulo tem perímetro ${perimeter} e a diferença entre os lados é ${diff}. Qual sistema representa o problema?`,
+      options: stringOptions(`2x + 2y = ${perimeter} e x − y = ${diff}`, [
+        `x + y = ${perimeter} e x + y = ${diff}`,
+        `2x + y = ${perimeter} e x + y = ${diff}`,
+        `x · y = ${perimeter} e x − y = ${diff}`,
+      ]),
+      answer: `2x + 2y = ${perimeter} e x − y = ${diff}`,
+      explanation: `O perímetro dá 2x + 2y = ${perimeter}; a diferença dá x − y = ${diff}.`,
+    },
+    {
+      id: 'sb2',
+      prompt: 'Resolvendo o sistema, quais são os lados do retângulo?',
+      options: stringOptions(`${x} e ${y}`, [`${x + 1} e ${y - 1}`, `${x - 2} e ${y}`, `${x} e ${y + 2}`]),
+      answer: `${x} e ${y}`,
+      explanation: `De x − y = ${diff}, x = y + ${diff}. Substituindo no perímetro: 2(y + ${diff}) + 2y = ${perimeter} → y = ${y}, x = ${x}.`,
+    },
+    {
+      id: 'sb3',
+      prompt: `Com lados ${x} e ${y}, qual é a área do retângulo?`,
+      options: areaOpts.options,
+      answer: areaOpts.answer,
+      explanation: `Área = x × y = ${x} × ${y} = ${area}.`,
+    },
+  ];
+}

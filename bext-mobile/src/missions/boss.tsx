@@ -84,7 +84,7 @@ export function BossMission({
         <Text style={styles.sectionSubtitle}>
           {config.title} — {maxHp} golpes certeiros para dissipar a Névoa deste distrito.
         </Text>
-        <Pressable style={({ pressed }) => [styles.completeButton, pressed && styles.completeButtonPressed]} onPress={startFight}>
+        <Pressable style={({ pressed }) => [styles.completeButton, pressed && styles.completeButtonPressed]} onPress={startFight} accessibilityRole="button">
           <Text style={styles.completeButtonText}>Começar o duelo</Text>
         </Pressable>
       </View>
@@ -140,6 +140,9 @@ export function BossMission({
             return (
               <Pressable
                 key={option}
+                accessibilityRole="button"
+                accessibilityLabel={`Alternativa: ${option}`}
+                accessibilityState={{ disabled: locked, selected: isSelected }}
                 style={({ pressed }) => [
                   styles.optionButton,
                   isSelected && styles.optionButtonSelected,
@@ -167,13 +170,13 @@ export function BossMission({
         )}
 
         {lastResult === 'hit' ? (
-          <Pressable style={styles.nextCaseButton} onPress={advance}>
+          <Pressable accessibilityRole="button" style={styles.nextCaseButton} onPress={advance}>
             <Text style={styles.nextCaseButtonText}>
               {index + 1 >= maxHp ? 'Golpe final!' : 'Próximo golpe'}
             </Text>
           </Pressable>
         ) : lastResult === 'miss' ? (
-          <Pressable style={styles.nextCaseButton} onPress={retry}>
+          <Pressable accessibilityRole="button" style={styles.nextCaseButton} onPress={retry}>
             <Text style={styles.nextCaseButtonText}>Tentar de novo</Text>
           </Pressable>
         ) : (
@@ -185,6 +188,7 @@ export function BossMission({
             ]}
             disabled={!selected}
             onPress={attack}
+            accessibilityRole="button"
           >
             <Text style={styles.nextCaseButtonText}>Atacar</Text>
           </Pressable>

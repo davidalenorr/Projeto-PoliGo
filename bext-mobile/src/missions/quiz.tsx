@@ -5,9 +5,12 @@ import { haptics, useAnswerCue } from './feedback';
 import {
   makeAngleMasteryQuizQuestions,
   makeApothemaSecretQuizQuestions,
+  makeOptimizationQuizQuestions,
+  makePackagingQuizQuestions,
   makePerimeterGuardianQuizQuestions,
   makeShapeAreaCases,
   makeSupremeEngineerQuizQuestions,
+  makeSystemBlueprintQuizQuestions,
   makeTriangleBalanceQuizQuestions,
 } from './procedural';
 import { MissionCompletionAction, MissionQuizFlow, MissionRenderProps, RegenerateButton, QuizQuestion } from './shared';
@@ -50,6 +53,7 @@ export function OptimizationChallenge({ onComplete, alreadyCompleted, nextMissio
       title="Desafio de Otimização"
       subtitle="Escolha a configuração que maximiza a área"
       questions={questions}
+      generateQuestions={makeOptimizationQuizQuestions}
       onComplete={onComplete}
       alreadyCompleted={alreadyCompleted}
       nextMissionId={nextMissionId}
@@ -84,6 +88,7 @@ export function PackagingOptimizationChallenge({ onComplete, alreadyCompleted, n
       title="Desafio das Embalagens"
       subtitle="Otimização de volume e superfície"
       questions={questions}
+      generateQuestions={makePackagingQuizQuestions}
       onComplete={onComplete}
       alreadyCompleted={alreadyCompleted}
       nextMissionId={nextMissionId}
@@ -406,6 +411,7 @@ export function SystemBlueprintMission(props: {
       title="Projeto por Sistema"
       subtitle="Modele cenários geométricos com duas equações e valide o resultado."
       questions={questions}
+      generateQuestions={makeSystemBlueprintQuizQuestions}
     />
   );
 }

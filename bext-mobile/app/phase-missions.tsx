@@ -131,7 +131,7 @@ export default function PhaseMissionsScreen() {
       <SafeAreaView style={styles.safe}>
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>Fase não encontrada</Text>
-          <Pressable onPress={handleBack} style={styles.backButton}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Voltar" onPress={handleBack} style={styles.backButton}>
             <Text style={styles.backButtonText}>Voltar</Text>
           </Pressable>
         </View>
@@ -144,7 +144,7 @@ export default function PhaseMissionsScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Pressable onPress={handleBack} style={styles.backButton}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Voltar" onPress={handleBack} style={styles.backButton}>
           <Text style={styles.backButtonText}>{backLabel}</Text>
         </Pressable>
 
@@ -259,6 +259,9 @@ export default function PhaseMissionsScreen() {
 
               <View style={styles.missionActionsRow}>
                 <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={completedMap[mission.id] ? `${mission.title}: concluída` : `Começar missão: ${mission.title}`}
+                  accessibilityState={{ disabled: !!completedMap[mission.id] }}
                   style={({ pressed }) => [
                     styles.startButton,
                     completedMap[mission.id] && styles.startButtonCompleted,
@@ -279,6 +282,8 @@ export default function PhaseMissionsScreen() {
 
                 {completedMap[mission.id] ? (
                   <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`Refazer missão: ${mission.title}`}
                     style={({ pressed }) => [styles.redoButton, pressed && styles.redoButtonPressed]}
                     onPress={() =>
                       router.push({
@@ -316,6 +321,15 @@ export default function PhaseMissionsScreen() {
                       : `Conclua as ${missions.length} missões da fase para desbloquear o duelo.`}
                 </Text>
                 <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    bossDefeated
+                      ? `Rever o duelo contra ${narrative.bossName}`
+                      : allMissionsDone
+                        ? `Desafiar o chefão ${narrative.bossName}`
+                        : 'Duelo bloqueado — conclua as missões da fase'
+                  }
+                  accessibilityState={{ disabled: !canFight }}
                   style={({ pressed }) => [
                     bossCardStyles.btn,
                     !canFight && bossCardStyles.btnLocked,

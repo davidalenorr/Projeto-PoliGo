@@ -10,6 +10,7 @@ import { missions } from '@/src/data/missions';
 import {
   getCurrentPhaseNumber,
   getPhaseIdFromNumber,
+  getPhaseNumberFromId,
 } from '@/src/domain/progress';
 import { getNextMissionIdForDetectivePhase, isMissionCompletedForDetective, syncDetectiveProgress } from '@/src/storage/missionProgress';
 
@@ -85,7 +86,7 @@ export default function SubmissionsScreen() {
 
   const bloqueadas = useMemo(() => {
     return missions.filter((mission) => {
-      const missionPhase = Number(mission.phaseId.replace('fase', ''));
+      const missionPhase = getPhaseNumberFromId(mission.phaseId);
       return missionPhase > currentPhase;
     });
   }, [currentPhase]);
@@ -94,6 +95,8 @@ export default function SubmissionsScreen() {
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
         <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Voltar para a Trilha"
           style={({ pressed }) => [styles.inlineBackButton, pressed && styles.inlineBackButtonPressed]}
           onPress={() => router.replace('/(tabs)/two')}
         >

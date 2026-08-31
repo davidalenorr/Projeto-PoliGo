@@ -2,8 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { missions, getMissionById, getMissionsByPhaseId } from '@/src/data/missions';
 import { phases } from '@/src/data/phases';
 import { getDetectives, saveDetectives } from '@/src/storage/detectives';
-import { getCurrentPhaseNumber, getPhaseIdFromNumber } from '@/src/domain/progress';
-import { bossReward, isBossId, phaseIdForBoss } from '@/src/domain/rank';
+import { getCurrentPhaseNumber, getPhaseIdFromNumber, getPhaseNumberFromId } from '@/src/domain/progress';
+import { bossReward, isBossId } from '@/src/domain/rank';
 import {
   countCompletedInPhase,
   findNextIncompleteMissionId,
@@ -73,8 +73,7 @@ export async function completeMissionForDetective(
   // Chefão de fase: não está em missions.ts. Concede Pts fixos por fase e não
   // mexe na fase atual (ela já avançou ao concluir as missões normais).
   if (isBossId(missionId)) {
-    const phaseNumber = Number(phaseIdForBoss(missionId).replace('fase', '')) || 1;
-    const reward = bossReward(phaseNumber);
+    const reward = bossReward(getPhaseNumberFromId(missionId));
     const detectiveList = await getDetectives();
     await saveDetectives(
       detectiveList.map((detective) =>

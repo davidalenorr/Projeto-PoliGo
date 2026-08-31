@@ -110,6 +110,9 @@ export function GuidedFirstMission({
               return (
                 <Pressable
                   key={vertexId}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Vértice ${vertexId}${touched ? ', marcado' : ''}`}
+                  accessibilityState={{ selected: touched }}
                   style={[
                     styles.vertexDot,
                     { left: `${vertex.leftPct}%`, top: `${vertex.topPct}%` },
@@ -149,6 +152,9 @@ export function GuidedFirstMission({
               return (
                 <Pressable
                   key={option}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Nome da forma: ${option}`}
+                  accessibilityState={{ selected: active }}
                   style={({ pressed }) => [
                     styles.quizOption,
                     active && styles.quizOptionActive,
@@ -540,6 +546,9 @@ export function NamingShapesMission({
           return (
             <Pressable
               key={`touch-${current.id}-${edge.sideNumber}`}
+              accessibilityRole="button"
+              accessibilityLabel={`Lado ${edge.sideNumber}${touched ? ', contado' : ''}`}
+              accessibilityState={{ selected: touched }}
               style={[
                 styles.polygonTouchPoint,
                 touched && styles.polygonTouchPointTouched,
@@ -568,6 +577,9 @@ export function NamingShapesMission({
         {options.map((option) => (
           <Pressable
             key={option}
+            accessibilityRole="button"
+            accessibilityLabel={`Resposta: ${option}`}
+            accessibilityState={{ disabled: !canAnswerCurrentCase || canAdvance }}
             style={({ pressed }) => [
               styles.optionButton,
               (!canAnswerCurrentCase || canAdvance) && styles.optionButtonDisabled,
@@ -680,6 +692,9 @@ export function ConvexityTapMission({
 
               <View style={styles.tapButtonsRow}>
                 <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`${shape.label}: classificar como convexo`}
+                  accessibilityState={{ selected: selection === 'convexo' }}
                   style={({ pressed }) => [
                     styles.tapButton,
                     selection === 'convexo' && styles.tapButtonActive,
@@ -694,6 +709,9 @@ export function ConvexityTapMission({
                 </Pressable>
 
                 <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`${shape.label}: classificar como não convexo`}
+                  accessibilityState={{ selected: selection === 'concavo' }}
                   style={({ pressed }) => [
                     styles.tapButton,
                     selection === 'concavo' && styles.tapButtonActive,
@@ -1205,6 +1223,9 @@ export function PolygonAngleCalculator({
             return (
               <Pressable
                 key={val}
+                accessibilityRole="button"
+                accessibilityLabel={`Polígono de ${val} lados`}
+                accessibilityState={{ selected: active }}
                 style={({ pressed }) => [styles.sideChip, active && styles.sideChipTouched, pressed && styles.optionButtonPressed]}
                 onPress={() => {
                   setN(val);
@@ -1227,6 +1248,9 @@ export function PolygonAngleCalculator({
           {options.map((opt) => (
             <Pressable
               key={opt}
+              accessibilityRole="button"
+              accessibilityLabel={`Alternativa: ${opt}`}
+              accessibilityState={{ disabled: locked, selected: selected === opt }}
               style={({ pressed }) => [styles.optionButton, selected === opt && styles.optionButtonSelected, pressed && !locked && styles.optionButtonPressed]}
               disabled={locked}
               onPress={() => setSelected(opt)}
@@ -1237,7 +1261,7 @@ export function PolygonAngleCalculator({
         </View>
 
         {!locked ? (
-          <Pressable style={styles.nextCaseButton} onPress={handleValidate} disabled={!selected}>
+          <Pressable accessibilityRole="button" accessibilityState={{ disabled: !selected }} style={styles.nextCaseButton} onPress={handleValidate} disabled={!selected}>
             <Text style={styles.nextCaseButtonText}>Validar resposta</Text>
           </Pressable>
         ) : (
@@ -1389,6 +1413,8 @@ export function EquationVaultMission({
             <Text style={styles.equationAdjustLabel}>Valor de x</Text>
             <View style={styles.equationAdjustControls}>
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Diminuir x, valor atual ${x}`}
                 style={({ pressed }) => [styles.optionButton, pressed && styles.optionButtonPressed]}
                 onPress={() => setX((prev) => Math.max(1, prev - 1))}
               >
@@ -1396,6 +1422,8 @@ export function EquationVaultMission({
               </Pressable>
               <Text style={styles.equationAdjustValue}>{x}</Text>
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Aumentar x, valor atual ${x}`}
                 style={({ pressed }) => [styles.optionButton, pressed && styles.optionButtonPressed]}
                 onPress={() => setX((prev) => Math.min(30, prev + 1))}
               >
@@ -1408,6 +1436,8 @@ export function EquationVaultMission({
             <Text style={styles.equationAdjustLabel}>Valor de y</Text>
             <View style={styles.equationAdjustControls}>
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Diminuir y, valor atual ${y}`}
                 style={({ pressed }) => [styles.optionButton, pressed && styles.optionButtonPressed]}
                 onPress={() => setY((prev) => Math.max(1, prev - 1))}
               >
@@ -1415,6 +1445,8 @@ export function EquationVaultMission({
               </Pressable>
               <Text style={styles.equationAdjustValue}>{y}</Text>
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Aumentar y, valor atual ${y}`}
                 style={({ pressed }) => [styles.optionButton, pressed && styles.optionButtonPressed]}
                 onPress={() => setY((prev) => Math.min(30, prev + 1))}
               >
@@ -1489,6 +1521,8 @@ export function CartesianRouteMission({
             <Text style={styles.equationAdjustLabel}>Coeficiente m</Text>
             <View style={styles.equationAdjustControls}>
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Diminuir m, valor atual ${m}`}
                 style={({ pressed }) => [styles.optionButton, pressed && styles.optionButtonPressed]}
                 onPress={() => setM((prev) => Math.max(-10, prev - 1))}
               >
@@ -1496,6 +1530,8 @@ export function CartesianRouteMission({
               </Pressable>
               <Text style={styles.equationAdjustValue}>{m}</Text>
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Aumentar m, valor atual ${m}`}
                 style={({ pressed }) => [styles.optionButton, pressed && styles.optionButtonPressed]}
                 onPress={() => setM((prev) => Math.min(10, prev + 1))}
               >
@@ -1508,6 +1544,8 @@ export function CartesianRouteMission({
             <Text style={styles.equationAdjustLabel}>Intercepto b</Text>
             <View style={styles.equationAdjustControls}>
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Diminuir b, valor atual ${b}`}
                 style={({ pressed }) => [styles.optionButton, pressed && styles.optionButtonPressed]}
                 onPress={() => setB((prev) => Math.max(-10, prev - 1))}
               >
@@ -1515,6 +1553,8 @@ export function CartesianRouteMission({
               </Pressable>
               <Text style={styles.equationAdjustValue}>{b}</Text>
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Aumentar b, valor atual ${b}`}
                 style={({ pressed }) => [styles.optionButton, pressed && styles.optionButtonPressed]}
                 onPress={() => setB((prev) => Math.min(10, prev + 1))}
               >

@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Detective } from '@/src/data/detectives';
 import { getSelectedDetectiveId } from '@/src/storage/detectiveSelection';
@@ -35,7 +34,6 @@ export default function ShopScreen() {
     borderId: 'border-default',
   });
   const [selectedTab, setSelectedTab] = useState<'all' | 'avatar' | 'border'>('all');
-  const [theme, setTheme] = useState<'classic' | 'cyberpunk' | 'space'>('classic');
 
   useEffect(() => {
     let isMounted = true;
@@ -56,10 +54,6 @@ export default function ShopScreen() {
           }
         }
 
-        const storedTheme = await AsyncStorage.getItem('@poligo:appTheme:v1');
-        if (storedTheme === 'classic' || storedTheme === 'cyberpunk' || storedTheme === 'space') {
-          if (isMounted) setTheme(storedTheme);
-        }
       } catch (e) {
         console.log(e);
       }
@@ -127,27 +121,11 @@ export default function ShopScreen() {
     return item.category === selectedTab;
   });
 
-  const getBgColor = () => {
-    if (theme === 'cyberpunk') return '#0F172A';
-    if (theme === 'space') return '#1E1B4B';
-    return '#D8D8DB';
-  };
-
-  const getCardBg = () => {
-    if (theme === 'cyberpunk') return '#1E293B';
-    if (theme === 'space') return '#312E81';
-    return '#FFFFFF';
-  };
-
-  const getTextColor = () => {
-    if (theme === 'cyberpunk' || theme === 'space') return '#F8FAFC';
-    return '#1F3E66';
-  };
-
-  const getSubTextColor = () => {
-    if (theme === 'cyberpunk' || theme === 'space') return '#94A3B8';
-    return '#607287';
-  };
+  // Tema único "Blueprint" (claro).
+  const getBgColor = () => '#D8D8DB';
+  const getCardBg = () => '#FFFFFF';
+  const getTextColor = () => '#1F3E66';
+  const getSubTextColor = () => '#607287';
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: getBgColor() }]}>
@@ -156,6 +134,8 @@ export default function ShopScreen() {
         <View style={styles.header}>
           <Pressable
             onPress={() => router.back()}
+            accessibilityRole="button"
+            accessibilityLabel="Voltar"
             style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
           >
             <MaterialIcons name="arrow-back" size={24} color={getTextColor()} />
@@ -266,6 +246,8 @@ export default function ShopScreen() {
                   ) : isUnlocked ? (
                     <TouchableOpacity
                       onPress={() => handleEquip(item)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Equipar ${item.name}`}
                       style={styles.equipBtn}
                     >
                       <Text style={styles.equipBtnText}>Equipar</Text>
@@ -273,6 +255,9 @@ export default function ShopScreen() {
                   ) : (
                     <TouchableOpacity
                       onPress={() => handleBuy(item)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Comprar ${item.name} por ${item.cost} pontos`}
+                      accessibilityState={{ disabled: !canAfford }}
                       style={[
                         styles.buyBtn,
                         !canAfford && styles.buyBtnDisabled,

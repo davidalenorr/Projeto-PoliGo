@@ -23,6 +23,13 @@ export function getPhaseIdFromNumber(phaseNumber: number): string {
   return `fase${phaseNumber}`;
 }
 
+/** "fase3" | "fase3_m2" | "fase3_boss" -> 3 (1 se não reconhecer). */
+export function getPhaseNumberFromId(phaseId?: string): number {
+  const match = phaseId?.match(/^fase(\d+)/i);
+  const parsed = match ? Number(match[1]) : 1;
+  return Number.isNaN(parsed) || parsed < 1 ? 1 : parsed;
+}
+
 export function getFirstMissionIdForPhase(phaseId: string, missionList: Mission[]): string | undefined {
   const firstMission = missionList.find((mission) => mission.phaseId === phaseId);
   return firstMission?.id;

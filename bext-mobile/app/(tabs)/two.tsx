@@ -8,11 +8,9 @@ import {
   TouchableOpacity,
   View,
   Image,
-  Vibration,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useIsFocused } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors } from '../../src/theme/colors';
@@ -61,53 +59,13 @@ export default function MissionsScreen() {
   const [selectedDetective, setSelectedDetective] = useState<Detective | undefined>(undefined);
   const [streak, setStreak] = useState<DetectiveStreak | undefined>(undefined);
   const isFocused = useIsFocused();
-  const [theme, setTheme] = useState<'classic' | 'cyberpunk' | 'space'>('classic');
 
-  useEffect(() => {
-    async function loadTheme() {
-      try {
-        const storedTheme = await AsyncStorage.getItem('@poligo:appTheme:v1');
-        if (storedTheme === 'classic' || storedTheme === 'cyberpunk' || storedTheme === 'space') {
-          setTheme(storedTheme);
-        }
-      } catch (e) {
-        console.log(e);
-      }
-    }
-    loadTheme();
-  }, [isFocused]);
-
-  const handleSelectTheme = async (selectedTheme: 'classic' | 'cyberpunk' | 'space') => {
-    setTheme(selectedTheme);
-    Vibration.vibrate(50);
-    try {
-      await AsyncStorage.setItem('@poligo:appTheme:v1', selectedTheme);
-    } catch (e) {
-      console.log(e);
-    }
-  };
-
-  const getThemeBackground = () => {
-    if (theme === 'cyberpunk') return '#0F172A';
-    if (theme === 'space') return '#1E1B4B';
-    return '#D8D8DB';
-  };
-
-  const getThemeCardBg = () => {
-    if (theme === 'cyberpunk') return '#1E293B';
-    if (theme === 'space') return '#312E81';
-    return '#FFFFFF';
-  };
-
-  const getThemeText = () => {
-    if (theme === 'cyberpunk' || theme === 'space') return '#F8FAFC';
-    return '#1F3E66';
-  };
-
-  const getThemeSubText = () => {
-    if (theme === 'cyberpunk' || theme === 'space') return '#94A3B8';
-    return '#607287';
-  };
+  // Tema único "Blueprint" (claro). Mantidos como funções para não alterar os
+  // muitos call sites no JSX.
+  const getThemeBackground = () => '#D8D8DB';
+  const getThemeCardBg = () => '#FFFFFF';
+  const getThemeText = () => '#1F3E66';
+  const getThemeSubText = () => '#607287';
 
   useEffect(() => {
     if (!isFocused) {
@@ -216,6 +174,8 @@ export default function MissionsScreen() {
         <View style={styles.headerRow}>
           <Pressable
             onPress={handleAvatarPress}
+            accessibilityRole="button"
+            accessibilityLabel="Perfil do detetive — toque para trocar de usuário"
             style={({ pressed }) => [
               styles.avatar,
               { backgroundColor: selectedDetective?.avatarBg ?? '#2F84B0', alignItems: 'center', justifyContent: 'center' },
@@ -252,6 +212,8 @@ export default function MissionsScreen() {
           </View>
           <Pressable
             onPress={() => router.push('/settings')}
+            accessibilityRole="button"
+            accessibilityLabel="Configurações"
             style={({ pressed }) => [
               styles.settingsHeaderBtn,
               pressed && { opacity: 0.75, transform: [{ scale: 0.95 }] },
@@ -261,7 +223,7 @@ export default function MissionsScreen() {
           </Pressable>
         </View>
 
-        <Text style={[styles.sectionLabel, { color: theme === 'classic' ? '#516074' : '#E2E8F0' }]}>TRILHA DE MISSÕES</Text>
+        <Text style={[styles.sectionLabel, { color: '#516074' }]}>TRILHA DE MISSÕES</Text>
 
         <View style={[styles.overviewCard, { backgroundColor: getThemeCardBg() }]}>
           <Text style={[styles.overviewTitle, { color: getThemeText() }]}>Como a trilha funciona</Text>
@@ -269,15 +231,15 @@ export default function MissionsScreen() {
             Cada fase reúne missões com dificuldade crescente e objetivos de aprendizagem claros. Progrida resolvendo missões para avançar.
           </Text>
           <View style={styles.overviewSteps}>
-            <View style={[styles.overviewStepCard, { backgroundColor: theme === 'classic' ? '#F8FBFF' : '#475569' }]}>
+            <View style={[styles.overviewStepCard, { backgroundColor: '#F8FBFF' }]}>
               <Text style={[styles.overviewStepTitle, { color: getThemeText() }]}>Retomar</Text>
               <Text style={[styles.overviewStepText, { color: getThemeSubText() }]}>Volta para a missão atual do seu progresso.</Text>
             </View>
-            <View style={[styles.overviewStepCard, { backgroundColor: theme === 'classic' ? '#F8FBFF' : '#475569' }]}>
+            <View style={[styles.overviewStepCard, { backgroundColor: '#F8FBFF' }]}>
               <Text style={[styles.overviewStepTitle, { color: getThemeText() }]}>Hub</Text>
               <Text style={[styles.overviewStepText, { color: getThemeSubText() }]}>Mostra todas as fases e o que já foi concluído.</Text>
             </View>
-            <View style={[styles.overviewStepCard, { backgroundColor: theme === 'classic' ? '#F8FBFF' : '#475569' }]}>
+            <View style={[styles.overviewStepCard, { backgroundColor: '#F8FBFF' }]}>
               <Text style={[styles.overviewStepTitle, { color: getThemeText() }]}>Submissões</Text>
               <Text style={[styles.overviewStepText, { color: getThemeSubText() }]}>Acompanha entregas e resultados já registrados.</Text>
             </View>
@@ -298,6 +260,8 @@ export default function MissionsScreen() {
           </View>
 
           <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Retomar missão"
             style={styles.cta}
             onPress={handleResumeMission}
           >
@@ -309,6 +273,7 @@ export default function MissionsScreen() {
           <Text style={[styles.navigationTitle, { color: getThemeText() }]}>Atalhos principais</Text>
           <View style={styles.navigationList}>
             <Pressable
+              accessibilityRole="button"
               style={({ pressed }) => [styles.navigationButton, pressed && styles.navigationButtonPressed]}
               onPress={() => router.push('/trail')}
             >
@@ -324,6 +289,7 @@ export default function MissionsScreen() {
             </Pressable>
 
             <Pressable
+              accessibilityRole="button"
               style={({ pressed }) => [styles.navigationButton, pressed && styles.navigationButtonPressed]}
               onPress={() => router.push('/shop')}
             >
@@ -339,6 +305,7 @@ export default function MissionsScreen() {
             </Pressable>
 
             <Pressable
+              accessibilityRole="button"
               style={({ pressed }) => [styles.navigationButton, pressed && styles.navigationButtonPressed]}
               onPress={() => router.push('/challenges')}
             >
@@ -354,6 +321,7 @@ export default function MissionsScreen() {
             </Pressable>
 
             <Pressable
+              accessibilityRole="button"
               style={({ pressed }) => [styles.navigationButton, pressed && styles.navigationButtonPressed]}
               onPress={() => router.push('/submissions')}
             >
@@ -369,6 +337,7 @@ export default function MissionsScreen() {
             </Pressable>
 
             <Pressable
+              accessibilityRole="button"
               style={({ pressed }) => [styles.navigationButton, pressed && styles.navigationButtonPressed]}
               onPress={() => router.push('/quick-quiz')}
             >
@@ -384,6 +353,7 @@ export default function MissionsScreen() {
             </Pressable>
 
             <Pressable
+              accessibilityRole="button"
               style={({ pressed }) => [styles.navigationButton, pressed && styles.navigationButtonPressed]}
               onPress={() => router.push('/stats')}
             >
@@ -399,6 +369,7 @@ export default function MissionsScreen() {
             </Pressable>
 
             <Pressable
+              accessibilityRole="button"
               style={({ pressed }) => [styles.navigationButton, pressed && styles.navigationButtonPressed]}
               onPress={() => router.push('/settings')}
             >
@@ -415,33 +386,6 @@ export default function MissionsScreen() {
           </View>
         </View>
 
-        <View style={[styles.navigationCard, { backgroundColor: getThemeCardBg() }]}>
-          <Text style={[styles.navigationTitle, { color: getThemeText() }]}>Tema do Jogo</Text>
-          <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
-            {(['classic', 'cyberpunk', 'space'] as const).map((t) => (
-              <TouchableOpacity
-                key={t}
-                onPress={() => handleSelectTheme(t)}
-                style={[
-                  styles.themeButton,
-                  theme === t && styles.themeButtonActive,
-                  t === 'cyberpunk' && { borderColor: '#EC4899' },
-                  t === 'space' && { borderColor: '#8B5CF6' }
-                ]}
-              >
-                <Text style={[
-                  styles.themeButtonText,
-                  theme === t && styles.themeButtonTextActive,
-                  t === 'cyberpunk' && theme === t && { color: '#EC4899', fontWeight: '900' },
-                  t === 'space' && theme === t && { color: '#8B5CF6', fontWeight: '900' }
-                ]}>
-                  {t === 'classic' ? 'Clássico' : t === 'cyberpunk' ? 'Cyberpunk' : 'Espacial'}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
         <Text style={styles.quickAccessTitle}>Mapa das 10 Fases</Text>
         <View style={styles.phaseGrid}>
           {phaseSummary.map((phase, index) => {
@@ -451,6 +395,11 @@ export default function MissionsScreen() {
             return (
               <Pressable
                 key={phase.id}
+                accessibilityRole="button"
+                accessibilityLabel={`Fase ${phase.number}: ${phase.title}. ${
+                  isCurrent ? 'Atual' : isUnlocked ? 'Desbloqueada' : 'Bloqueada'
+                }`}
+                accessibilityState={{ disabled: !isUnlocked }}
                 style={({ pressed }) => [
                   styles.phaseTile,
                   isCurrent && styles.phaseTileActive,
@@ -864,26 +813,5 @@ const styles = StyleSheet.create({
   },
   phaseItemLocked: {
     color: '#7A8796',
-  },
-  themeButton: {
-    flex: 1,
-    paddingVertical: 10,
-    backgroundColor: '#F3F4F6',
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: 'transparent',
-    alignItems: 'center',
-  },
-  themeButtonActive: {
-    backgroundColor: '#FFFFFF',
-    borderColor: '#0B5F8F',
-  },
-  themeButtonText: {
-    color: '#4B5563',
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  themeButtonTextActive: {
-    color: '#0B5F8F',
   },
 });

@@ -8,7 +8,6 @@ import {
   Switch,
   Text,
   TextInput,
-  TouchableOpacity,
   View,
   Vibration,
 } from 'react-native';
@@ -38,7 +37,6 @@ function getInitials(name?: string): string {
 
 export default function SettingsScreen() {
   const [selectedDetective, setSelectedDetective] = useState<Detective | undefined>(undefined);
-  const [theme, setTheme] = useState<'classic' | 'cyberpunk' | 'space'>('classic');
   const [hapticsEnabled, setHapticsEnabled] = useState(true);
 
   // Edit Name Modal State
@@ -61,11 +59,6 @@ export default function SettingsScreen() {
           }
         }
 
-        const storedTheme = await AsyncStorage.getItem('@poligo:appTheme:v1');
-        if (storedTheme === 'classic' || storedTheme === 'cyberpunk' || storedTheme === 'space') {
-          if (isMounted) setTheme(storedTheme);
-        }
-
         const storedHaptics = await AsyncStorage.getItem('@poligo:haptics:v1');
         if (storedHaptics !== null) {
           if (isMounted) setHapticsEnabled(storedHaptics === 'true');
@@ -85,16 +78,6 @@ export default function SettingsScreen() {
   const triggerVibration = () => {
     if (hapticsEnabled) {
       Vibration.vibrate(50);
-    }
-  };
-
-  const handleSelectTheme = async (selectedTheme: 'classic' | 'cyberpunk' | 'space') => {
-    setTheme(selectedTheme);
-    triggerVibration();
-    try {
-      await AsyncStorage.setItem('@poligo:appTheme:v1', selectedTheme);
-    } catch (e) {
-      console.log(e);
     }
   };
 
@@ -200,28 +183,11 @@ export default function SettingsScreen() {
     );
   };
 
-  // Theme Styles
-  const getBgColor = () => {
-    if (theme === 'cyberpunk') return '#0F172A';
-    if (theme === 'space') return '#1E1B4B';
-    return '#D8D8DB';
-  };
-
-  const getCardBg = () => {
-    if (theme === 'cyberpunk') return '#1E293B';
-    if (theme === 'space') return '#312E81';
-    return '#FFFFFF';
-  };
-
-  const getTextColor = () => {
-    if (theme === 'cyberpunk' || theme === 'space') return '#F8FAFC';
-    return '#1F3E66';
-  };
-
-  const getSubTextColor = () => {
-    if (theme === 'cyberpunk' || theme === 'space') return '#94A3B8';
-    return '#607287';
-  };
+  // Tema único "Blueprint" (claro).
+  const getBgColor = () => '#D8D8DB';
+  const getCardBg = () => '#FFFFFF';
+  const getTextColor = () => '#1F3E66';
+  const getSubTextColor = () => '#607287';
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: getBgColor() }]}>
@@ -230,6 +196,8 @@ export default function SettingsScreen() {
         <View style={styles.topHeader}>
           <Pressable
             onPress={() => router.back()}
+            accessibilityRole="button"
+            accessibilityLabel="Voltar"
             style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
           >
             <MaterialIcons name="arrow-back" size={24} color={getTextColor()} />
@@ -333,34 +301,7 @@ export default function SettingsScreen() {
         <View style={[styles.card, { backgroundColor: getCardBg() }]}>
           <Text style={[styles.sectionTitle, { color: getTextColor() }]}>Preferências</Text>
 
-          <Text style={[styles.preferenceLabel, { color: getSubTextColor() }]}>TEMA DO APLICATIVO</Text>
-          <View style={styles.themeRow}>
-            {(['classic', 'cyberpunk', 'space'] as const).map((t) => (
-              <TouchableOpacity
-                key={t}
-                onPress={() => handleSelectTheme(t)}
-                style={[
-                  styles.themeButton,
-                  theme === t && styles.themeButtonActive,
-                  t === 'cyberpunk' && { borderColor: '#EC4899' },
-                  t === 'space' && { borderColor: '#8B5CF6' },
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.themeButtonText,
-                    theme === t && styles.themeButtonTextActive,
-                    t === 'cyberpunk' && theme === t && { color: '#EC4899', fontWeight: '900' },
-                    t === 'space' && theme === t && { color: '#8B5CF6', fontWeight: '900' },
-                  ]}
-                >
-                  {t === 'classic' ? 'Clássico' : t === 'cyberpunk' ? 'Cyberpunk' : 'Espacial'}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          <View style={[styles.switchRow, { marginTop: 16 }]}>
+          <View style={styles.switchRow}>
             <View style={styles.actionLeft}>
               <MaterialIcons name="vibration" size={20} color="#0B5F8F" />
               <View>
@@ -416,10 +357,7 @@ export default function SettingsScreen() {
               placeholderTextColor="#94A3B8"
               maxLength={24}
               autoFocus
-              style={[
-                styles.input,
-                { color: getTextColor(), backgroundColor: theme === 'classic' ? '#F8FBFF' : '#334155' },
-              ]}
+              style={[styles.input, { color: getTextColor(), backgroundColor: '#F8FBFF' }]}
             />
 
             {editNameError ? <Text style={styles.errorText}>{editNameError}</Text> : null}

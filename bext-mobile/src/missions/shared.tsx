@@ -76,6 +76,8 @@ export function FeedbackNote({
 export function RegenerateButton({ onPress, label }: { onPress: () => void; label?: string }) {
   return (
     <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label ?? 'Trocar números'}
       onPress={() => {
         haptics.tap();
         onPress();
@@ -169,6 +171,8 @@ export function MissionHints({ tips }: { tips: string[] }) {
   return (
     <View style={styles.hintsWrap}>
       <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={isOpen ? 'Ocultar dicas' : 'Pedir dica'}
         style={({ pressed }) => [styles.hintTrigger, pressed && styles.hintTriggerPressed]}
         onPress={() => {
           Vibration.vibrate(30);
@@ -283,7 +287,7 @@ export function MissionCompletionAction({
         </Animated.View>
 
         {nextMissionId && onNext ? (
-          <Pressable style={({ pressed }) => [styles.nextMissionButton, pressed && styles.nextMissionButtonPressed]} onPress={onNext}>
+          <Pressable accessibilityRole="button" style={({ pressed }) => [styles.nextMissionButton, pressed && styles.nextMissionButtonPressed]} onPress={onNext}>
             <Text style={styles.nextMissionButtonText}>Ir para a próxima missão</Text>
           </Pressable>
         ) : null}
@@ -292,7 +296,7 @@ export function MissionCompletionAction({
   }
 
   return (
-    <Pressable style={({ pressed }) => [styles.completeButton, pressed && styles.completeButtonPressed]} onPress={handlePress}>
+    <Pressable accessibilityRole="button" style={({ pressed }) => [styles.completeButton, pressed && styles.completeButtonPressed]} onPress={handlePress}>
       <Text style={styles.completeButtonText}>Concluir missão e continuar</Text>
     </Pressable>
   );
@@ -394,6 +398,9 @@ export function MissionQuizFlow({
             return (
               <Pressable
                 key={option}
+                accessibilityRole="button"
+                accessibilityLabel={`Alternativa: ${option}`}
+                accessibilityState={{ disabled: locked, selected: isSelected }}
                 style={({ pressed }) => [
                   styles.optionButton,
                   isSelected && styles.optionButtonSelected,
@@ -422,6 +429,8 @@ export function MissionQuizFlow({
 
         {!locked ? (
           <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ disabled: !selected }}
             style={({ pressed }) => [
               styles.nextCaseButton,
               pressed && styles.nextCaseButtonPressed,
@@ -450,6 +459,7 @@ export function MissionQuizFlow({
           </Pressable>
         ) : (
           <Pressable
+            accessibilityRole="button"
             style={({ pressed }) => [styles.nextCaseButton, pressed && styles.nextCaseButtonPressed]}
             onPress={() => {
               setIndex((prev) => prev + 1);
@@ -601,28 +611,46 @@ export function GenericEquationMission({
         <Text style={styles.caseContext}>{step.prompt}</Text>
 
         {step.type === 'number' ? (
-          <TextInput style={styles.textInput} keyboardType="numeric" value={input} onChangeText={(v) => { setInput(v); setResult(null); }} />
+          <TextInput
+            style={styles.textInput}
+            keyboardType="numeric"
+            accessibilityLabel="Sua resposta"
+            value={input}
+            onChangeText={(v) => { setInput(v); setResult(null); }}
+          />
         ) : (
           <>
             <Text style={styles.caseContext}>x</Text>
-            <TextInput style={styles.textInput} keyboardType="numeric" value={input} onChangeText={(v) => { setInput(v); setResult(null); }} />
+            <TextInput
+              style={styles.textInput}
+              keyboardType="numeric"
+              accessibilityLabel="Valor de x"
+              value={input}
+              onChangeText={(v) => { setInput(v); setResult(null); }}
+            />
             <Text style={styles.caseContext}>y</Text>
-            <TextInput style={styles.textInput} keyboardType="numeric" value={inputY} onChangeText={(v) => { setInputY(v); setResult(null); }} />
+            <TextInput
+              style={styles.textInput}
+              keyboardType="numeric"
+              accessibilityLabel="Valor de y"
+              value={inputY}
+              onChangeText={(v) => { setInputY(v); setResult(null); }}
+            />
           </>
         )}
 
         {feedbackNote}
 
         {result === null || result === 'invalid' ? (
-          <Pressable style={styles.nextCaseButton} onPress={handleCheck}>
+          <Pressable accessibilityRole="button" style={styles.nextCaseButton} onPress={handleCheck}>
             <Text style={styles.nextCaseButtonText}>Verificar</Text>
           </Pressable>
         ) : result === 'wrong' ? (
-          <Pressable style={styles.nextCaseButton} onPress={() => setResult(null)}>
+          <Pressable accessibilityRole="button" style={styles.nextCaseButton} onPress={() => setResult(null)}>
             <Text style={styles.nextCaseButtonText}>Tentar novamente</Text>
           </Pressable>
         ) : !isLastStep ? (
-          <Pressable style={styles.nextCaseButton} onPress={handleAdvance}>
+          <Pressable accessibilityRole="button" style={styles.nextCaseButton} onPress={handleAdvance}>
             <Text style={styles.nextCaseButtonText}>Próximo problema</Text>
           </Pressable>
         ) : null}

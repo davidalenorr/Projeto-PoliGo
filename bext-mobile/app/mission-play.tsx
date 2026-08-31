@@ -10,6 +10,7 @@ import {
   isMissionCompletedForDetective,
 } from '@/src/storage/missionProgress';
 import { recordDetectiveActivity } from '@/src/storage/streaks';
+import { getPhaseNumberFromId } from '@/src/domain/progress';
 import { phases } from '@/src/data/phases';
 import { equationMissionConfigs } from '@/src/data/equationMissions';
 import { styles } from '@/src/missions/styles';
@@ -41,7 +42,7 @@ export default function MissionPlayScreen() {
       return currentPhaseNextMissionId;
     }
 
-    const currentPhaseNumber = Number(missionPhaseId.replace('fase', ''));
+    const currentPhaseNumber = getPhaseNumberFromId(missionPhaseId);
     const nextPhase = phases.find((phase) => phase.number === currentPhaseNumber + 1);
 
     if (!nextPhase) {
@@ -179,7 +180,7 @@ export default function MissionPlayScreen() {
       <SafeAreaView style={styles.safe}>
         <View style={styles.notFound}>
           <Text style={styles.notFoundText}>Missão não encontrada.</Text>
-          <Pressable style={styles.backButton} onPress={handleBack}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Voltar" style={styles.backButton} onPress={handleBack}>
             <Text style={styles.backButtonText}>Voltar</Text>
           </Pressable>
         </View>
@@ -190,7 +191,7 @@ export default function MissionPlayScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Pressable style={styles.backButton} onPress={handleBack}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Voltar" style={styles.backButton} onPress={handleBack}>
           <Text style={styles.backButtonText}>{backLabel}</Text>
         </Pressable>
 

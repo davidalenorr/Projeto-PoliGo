@@ -9,7 +9,12 @@ export function ScreenBackButton({
   onPress: () => void;
 }) {
   return (
-    <Pressable style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]} onPress={onPress}>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+      onPress={onPress}
+    >
       <Text style={styles.text}>{label}</Text>
     </Pressable>
   );

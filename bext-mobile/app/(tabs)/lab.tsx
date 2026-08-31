@@ -5,21 +5,7 @@ import { useIsFocused } from '@react-navigation/native';
 import { Detective } from '@/src/data/detectives';
 import { getDetectives } from '@/src/storage/detectives';
 import { getSelectedDetectiveId } from '@/src/storage/detectiveSelection';
-
-function getCurrentPhaseIndex(phase?: string): number {
-  if (!phase) {
-    return 0;
-  }
-
-  const match = phase.match(/Fase\s*(\d+)/i);
-  const value = match ? Number(match[1]) : 1;
-
-  if (Number.isNaN(value) || value < 1) {
-    return 0;
-  }
-
-  return Math.max(0, value - 1);
-}
+import { getCurrentPhaseIndex } from '@/src/domain/progress';
 
 interface Challenge {
   shape: 'rectangle' | 'triangle' | 'circle';

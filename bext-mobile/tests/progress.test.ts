@@ -4,6 +4,7 @@ import {
   getCurrentPhaseNumber,
   getCurrentPhaseIndex,
   getPhaseIdFromNumber,
+  getPhaseNumberFromId,
   getFirstMissionIdForPhase,
 } from '../src/domain/progress.ts';
 import { missions } from '../src/data/missions.ts';
@@ -34,6 +35,17 @@ test('getCurrentPhaseIndex é o número menos 1', () => {
 test('getPhaseIdFromNumber', () => {
   assert.equal(getPhaseIdFromNumber(1), 'fase1');
   assert.equal(getPhaseIdFromNumber(10), 'fase10');
+});
+
+test('getPhaseNumberFromId: aceita fase, missão e chefão', () => {
+  assert.equal(getPhaseNumberFromId('fase3'), 3);
+  assert.equal(getPhaseNumberFromId('fase10_m2'), 10);
+  assert.equal(getPhaseNumberFromId('fase7_boss'), 7);
+  assert.equal(getPhaseNumberFromId('FASE5'), 5);
+  assert.equal(getPhaseNumberFromId(undefined), 1);
+  assert.equal(getPhaseNumberFromId('lixo'), 1);
+  // ida e volta
+  assert.equal(getPhaseIdFromNumber(getPhaseNumberFromId('fase8_m1')), 'fase8');
 });
 
 test('getFirstMissionIdForPhase', () => {
