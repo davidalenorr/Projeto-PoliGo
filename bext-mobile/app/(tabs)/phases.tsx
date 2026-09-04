@@ -47,7 +47,7 @@ export default function LearnTabScreen() {
   const statusByPhase = new Map(nodes.map((n) => [n.phaseId, n]));
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.title}>Aprender</Text>
         <Text style={styles.subtitle}>Caderno do aluno: fórmulas, resumos e o caminho até cada missão</Text>

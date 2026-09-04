@@ -4,7 +4,6 @@ import { Tabs } from 'expo-router';
 
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
-import { useClientOnlyValue } from '@/components/useClientOnlyValue';
 
 export const unstable_settings = {
   initialRouteName: 'index',
@@ -17,9 +16,9 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme].tint,
-        // Disable the static render of the header on web
-        // to prevent a hydration error in React Navigation v6.
-        headerShown: useClientOnlyValue(false, true),
+        // Cada tela de aba tem o próprio cabeçalho interno; o header nativo
+        // ("Trilha", "Aprender"…) era redundante e comia espaço no topo.
+        headerShown: false,
       }}>
       <Tabs.Screen
         name="index"

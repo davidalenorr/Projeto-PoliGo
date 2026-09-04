@@ -151,7 +151,7 @@ export default function LabScreen() {
   const maxCanvas = 150;
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {!labUnlocked ? (
           <View style={styles.card}>

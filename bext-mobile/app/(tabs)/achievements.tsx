@@ -57,7 +57,7 @@ export default function AchievementsScreen() {
   const unlockedCount = badges.filter((badge) => badge.unlocked).length;
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.title}>Conquistas</Text>
         <Text style={styles.subtitle}>Medalhas e progresso do seu detetive</Text>

@@ -169,7 +169,7 @@ export default function MissionsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: getThemeBackground() }]}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={[styles.safe, { backgroundColor: getThemeBackground() }]}>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.headerRow}>
           <Pressable
