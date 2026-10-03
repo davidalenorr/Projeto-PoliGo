@@ -1,0 +1,38 @@
+# Configuração da CLI do Supabase — backend do PoliGo.
+# Rode `supabase start` para subir tudo localmente (Docker) e testar antes de ir pro remoto.
+
+project_id = "poligo"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[studio]
+enabled = true
+port = 54323
+
+[auth]
+enabled = true
+site_url = "http://localhost:5173"
+# no piloto o login do professor é magic link por e-mail
+enable_confirmations = false
+
+[auth.email]
+enable_signup = true
+
+# As duas funções são chamadas pelo APP DO ALUNO, que não tem sessão —
+# por isso verify_jwt = false. A segurança vem da validação do join_code
+# e do service_role dentro da função.
+[functions.join-class]
+verify_jwt = false
+
+[functions.ingest-events]
+verify_jwt = false
