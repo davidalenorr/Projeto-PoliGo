@@ -8,6 +8,7 @@ import { getDetectives, saveDetectives } from '@/src/storage/detectives';
 import { recordQuickQuizResult } from '@/src/storage/practiceStats';
 import { makeTrainingQuiz, type GeneratedQuizQuestion } from '@/src/missions/procedural';
 import { haptics } from '@/src/missions/feedback';
+import { emitQuizSession } from '@/src/sync/emit';
 
 const QUESTIONS_PER_SESSION = 8;
 const POINTS_PER_CORRECT = 5;
@@ -71,6 +72,7 @@ export default function QuickQuizScreen() {
     setAwardedPoints(bonus);
     setFinished(true);
     haptics.complete();
+    emitQuizSession(questions.length, score);
 
     if (detectiveId) {
       await recordQuickQuizResult(detectiveId, score, questions.length);

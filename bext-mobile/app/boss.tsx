@@ -17,6 +17,8 @@ import {
 import { recordDetectiveActivity } from '@/src/storage/streaks';
 import { styles } from '@/src/missions/styles';
 import { BossMission } from '@/src/missions/boss';
+import { getPhaseNumberFromId } from '@/src/domain/progress';
+import { emitBossDefeated, emitMissionAttempt } from '@/src/sync/emit';
 
 export default function BossScreen() {
   const { phaseId } = useLocalSearchParams<{ phaseId: string }>();
@@ -70,6 +72,7 @@ export default function BossScreen() {
 
   const handleComplete = async () => {
     if (!detectiveId || !phaseId) return;
+    emitBossDefeated(bossId, getPhaseNumberFromId(phaseId));
     const result = await completeMissionForDetective(detectiveId, bossId);
     const streakRes = await recordDetectiveActivity(detectiveId);
     setAlreadyDefeated(true);
@@ -141,6 +144,7 @@ export default function BossScreen() {
             alreadyCompleted={alreadyDefeated}
             nextMissionId={null}
             onNext={backToTrail}
+            onAttempt={(correct) => emitMissionAttempt(bossId, getPhaseNumberFromId(phaseId), correct)}
           />
         )}
 

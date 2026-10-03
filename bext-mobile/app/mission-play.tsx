@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, Text, View, Vibration } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -22,6 +22,7 @@ import {
   type MissionRenderProps,
 } from '@/src/missions/shared';
 import { customMissionComponents } from '@/src/missions/registry';
+import { emitMissionAttempt, emitMissionCompleted, emitMissionStarted } from '@/src/sync/emit';
 
 export default function MissionPlayScreen() {
   const { missionId, phaseId, from } = useLocalSearchParams<{
@@ -34,6 +35,7 @@ export default function MissionPlayScreen() {
   const [missionAlreadyCompleted, setMissionAlreadyCompleted] = useState(false);
   const [nextMissionId, setNextMissionId] = useState<string | null>(null);
   const [completionFeedback, setCompletionFeedback] = useState('');
+  const mountedAtRef = useRef(Date.now());
 
   const resolveNextMissionId = async (detectiveId: string, missionPhaseId: string) => {
     const currentPhaseNextMissionId = await getNextMissionIdForDetectivePhase(detectiveId, missionPhaseId);
@@ -51,6 +53,13 @@ export default function MissionPlayScreen() {
 
     return getNextMissionIdForDetectivePhase(detectiveId, nextPhase.id);
   };
+
+  useEffect(() => {
+    if (mission) {
+      mountedAtRef.current = Date.now();
+      emitMissionStarted(mission.id, getPhaseNumberFromId(mission.phaseId));
+    }
+  }, [mission]);
 
   useEffect(() => {
     let isMounted = true;
@@ -99,6 +108,12 @@ export default function MissionPlayScreen() {
     if (!mission || !selectedDetectiveId) {
       return;
     }
+
+    emitMissionCompleted(
+      mission.id,
+      getPhaseNumberFromId(mission.phaseId),
+      Date.now() - mountedAtRef.current,
+    );
 
     const result = await completeMissionForDetective(selectedDetectiveId, mission.id);
     const streakRes = await recordDetectiveActivity(selectedDetectiveId);
@@ -204,6 +219,7 @@ export default function MissionPlayScreen() {
             alreadyCompleted: missionAlreadyCompleted,
             nextMissionId,
             onNext: handleNextMission,
+            onAttempt: (correct) => emitMissionAttempt(mission.id, getPhaseNumberFromId(mission.phaseId), correct),
           };
 
           const equationConfig = equationMissionConfigs[mission.id];

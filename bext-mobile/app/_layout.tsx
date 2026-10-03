@@ -3,11 +3,13 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
+import { AppState } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
 import '@/src/missions/sound.expo-audio';
+import { flushQueue } from '@/src/sync/flush';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -47,6 +49,14 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
+
+  useEffect(() => {
+    flushQueue(); // ao abrir o app
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      if (nextState === 'active') flushQueue(); // ao voltar do background
+    });
+    return () => subscription.remove();
+  }, []);
 
   return (
     <SafeAreaProvider>

@@ -141,6 +141,7 @@ export type MissionRenderProps = {
   alreadyCompleted: boolean;
   nextMissionId?: string | null;
   onNext?: () => void;
+  onAttempt?: (correct: boolean) => void;
 };
 
 export function MissionHeader({ mission }: { mission: Mission }) {
@@ -319,6 +320,7 @@ export function MissionQuizFlow({
   alreadyCompleted,
   nextMissionId,
   onNext,
+  onAttempt,
 }: {
   title: string;
   subtitle: string;
@@ -329,6 +331,7 @@ export function MissionQuizFlow({
   alreadyCompleted: boolean;
   nextMissionId?: string | null;
   onNext?: () => void;
+  onAttempt?: (correct: boolean) => void;
 }) {
   const [questions, setQuestions] = useState<QuizQuestion[]>(() =>
     generateQuestions ? generateQuestions() : staticQuestions,
@@ -443,6 +446,7 @@ export function MissionQuizFlow({
               }
 
               const correct = selected === current.answer;
+              onAttempt?.(correct);
               if (correct) {
                 setHits((prev) => prev + 1);
                 haptics.correct();
@@ -496,6 +500,7 @@ export function GenericEquationMission({
   alreadyCompleted,
   nextMissionId,
   onNext,
+  onAttempt,
 }: {
   title: string;
   subtitle?: string;
@@ -506,6 +511,7 @@ export function GenericEquationMission({
   alreadyCompleted: boolean;
   nextMissionId?: string | null;
   onNext?: () => void;
+  onAttempt?: (correct: boolean) => void;
 }) {
   const [steps, setSteps] = useState<EquationStepShape[]>(() =>
     generate ? generate() : initialSteps,
@@ -532,6 +538,7 @@ export function GenericEquationMission({
     setResult(kind);
     haptics.wrong();
     triggerShake();
+    if (kind === 'wrong') onAttempt?.(false);
   };
 
   const handleCheck = () => {
@@ -546,6 +553,7 @@ export function GenericEquationMission({
       if (numbersEqual(parsed, expected, 1e-2)) {
         setResult('correct');
         haptics.correct();
+        onAttempt?.(true);
         return;
       }
 
@@ -564,6 +572,7 @@ export function GenericEquationMission({
     if (numbersEqual(parsedPair.x, exp.x, 1e-2) && numbersEqual(parsedPair.y, exp.y, 1e-2)) {
       setResult('correct');
       haptics.correct();
+      onAttempt?.(true);
       return;
     }
 

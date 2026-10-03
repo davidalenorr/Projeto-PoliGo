@@ -19,6 +19,7 @@ export type NewSyncEvent = {
   phaseNumber?: number;
   correct?: boolean;
   durationMs?: number;
+  payload?: Record<string, unknown>;
   occurredAt: string;
 };
 

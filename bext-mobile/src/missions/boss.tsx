@@ -26,6 +26,7 @@ export function BossMission({
   alreadyCompleted,
   nextMissionId,
   onNext,
+  onAttempt,
 }: BossMissionProps) {
   const [stage, setStage] = useState<Stage>(alreadyCompleted ? 'won' : 'intro');
   const [questions, setQuestions] = useState<BossQuestion[]>(() => config.buildQuestions());
@@ -52,6 +53,7 @@ export function BossMission({
   const attack = () => {
     if (!selected || lastResult === 'hit') return;
     const correct = selected === current.answer;
+    onAttempt?.(correct);
     signal(correct);
     setLastResult(correct ? 'hit' : 'miss');
   };
