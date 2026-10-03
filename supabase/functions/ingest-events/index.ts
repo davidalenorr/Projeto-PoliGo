@@ -7,6 +7,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { clampPayload, isUuid, json, preflight } from "../_shared/http.ts";
+import { checkRateLimit } from "../_shared/rateLimit.ts";
 
 const MAX_EVENTS = 200;
 const MAX_PAST_MS = 1000 * 60 * 60 * 24 * 30; // 30 dias
@@ -73,6 +74,12 @@ Deno.serve(async (req) => {
   if (!student || student.class_id !== classId || student.classes?.archived_at) {
     return json({ error: "student_not_in_class" }, 403);
   }
+
+  const [studentOk, classOk] = await Promise.all([
+    checkRateLimit(admin, "ingest-events:student", studentId, 30, 60_000),
+    checkRateLimit(admin, "ingest-events:class", classId, 300, 60_000),
+  ]);
+  if (!studentOk || !classOk) return json({ error: "rate_limited" }, 429);
 
   const now = Date.now();
   const rows: Record<string, unknown>[] = [];

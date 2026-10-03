@@ -7,6 +7,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { json, preflight, sha256Hex } from "../_shared/http.ts";
+import { checkRateLimit } from "../_shared/rateLimit.ts";
 
 Deno.serve(async (req) => {
   const pre = preflight(req);
@@ -37,6 +38,9 @@ Deno.serve(async (req) => {
     { auth: { persistSession: false } },
   );
 
+  const deviceOk = await checkRateLimit(admin, "join-class:device", deviceId, 20, 60_000);
+  if (!deviceOk) return json({ error: "rate_limited" }, 429);
+
   const { data, error: classErr } = await admin
     .from("classes")
     .select("id, name, archived_at")
@@ -50,6 +54,9 @@ Deno.serve(async (req) => {
     | null;
 
   if (!klass || klass.archived_at) return json({ error: "class_not_found" }, 404);
+
+  const classOk = await checkRateLimit(admin, "join-class:class", klass.id, 60, 60_000);
+  if (!classOk) return json({ error: "rate_limited" }, 429);
 
   const deviceHash = await sha256Hex(deviceId);
 

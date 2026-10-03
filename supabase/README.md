@@ -7,8 +7,10 @@ Fica **fora** do app Expo (`bext-mobile/`) de propósito — o app só é tocado
 supabase/
   config.toml              config da CLI (local + funções)
   migrations/0001_init.sql  esquema: classes, students, events, RLS, view student_progress
+  migrations/0002_rate_limits.sql  tabela + função de rate limit por janela fixa
   functions/
     _shared/http.ts         utilidades (CORS, json, uuid, sha256, clamp)
+    _shared/rateLimit.ts    checkRateLimit() — janela fixa via rate_limit_hit() no banco
     join-class/index.ts      aluno entra numa turma → { studentId, classId, className }
     ingest-events/index.ts   recebe lote de eventos de jogo (append-only, dedupe)
   seed.sql                 professor + turma de teste (SÓ no `supabase db reset` local)
@@ -23,6 +25,17 @@ supabase/
 - **`student_progress`** — view (roda com a RLS de quem consulta) que agrega tudo por aluno para o painel.
 
 **RLS:** nenhuma policy para `anon`. O app do aluno **nunca** fala com as tabelas — só com as duas Edge Functions (que rodam com `service_role`). O professor lê só as suas turmas; `admin` lê todas.
+
+**Rate limit:** as duas Edge Functions limitam por aparelho e por turma (janela fixa de 1 min — `join-class`: 20/aparelho, 60/turma; `ingest-events`: 30/aluno, 300/turma), guardado em `rate_limits` via `rate_limit_hit()`. Estoura o limite → `429 {"error":"rate_limited"}`.
+
+## O que é coletado
+
+Dado mínimo, documentado aqui para quem precisa explicar isso a uma escola:
+
+- **Sai do aparelho do aluno:** primeiro nome, código da turma, um id anônimo do aparelho (gerado no app, nunca o id real), e eventos de jogo (missão, fase, acerto/erro, duração, horário).
+- **Não sai:** sobrenome, e-mail, telefone, foto, localização ou qualquer identificador pessoal.
+- **Quem vê:** só o professor dono da turma (ou `admin`), pelo painel — nunca outro aluno, nunca outra turma.
+- **Apagar:** o professor pode arquivar (para novos alunos/eventos, mantém o histórico) ou excluir a turma inteira (apaga aluno e eventos em cascade, irreversível) direto pelo painel.
 
 ## Pré-requisitos
 
@@ -91,7 +104,6 @@ curl -s -X POST http://localhost:54321/functions/v1/ingest-events \
 
 ## O que ainda não está aqui
 
-- **Rate limit** nas funções (Fase 4).
 - **Painel web** (`packages/dashboard`, Fase 3).
 - **Instrumentação no app** — os `emit*` (Fase 2).
 - Decisão pendente: manter Edge Functions (Deno) **ou** trocar por uma função serverless na Vercel. Para o piloto, ficar no Supabase é o mais simples.

@@ -108,7 +108,23 @@ export default function JoinClassScreen() {
               </Text>
             </View>
           ) : (
-            <View style={[styles.card, { backgroundColor: theme.card }]}>
+            <>
+              <View style={[styles.card, styles.privacyCard, { backgroundColor: theme.cardAlt, borderColor: theme.cardBorder }]}>
+                <View style={styles.privacyHeader}>
+                  <MaterialIcons name="shield" size={18} color={theme.bodyMuted} />
+                  <Text style={[styles.privacyTitle, { color: theme.heading }]}>O que seu professor vê</Text>
+                </View>
+                <Text style={[styles.privacyText, { color: theme.bodyMuted }]}>
+                  Ao entrar, saem do aparelho: seu primeiro nome, o código da turma, um
+                  identificador anônimo deste aparelho e os eventos de jogo (missão, fase,
+                  acerto/erro, duração, horário).
+                </Text>
+                <Text style={[styles.privacyText, { color: theme.bodyMuted }]}>
+                  Não saem: sobrenome, e-mail, telefone, foto ou localização.
+                </Text>
+              </View>
+
+              <View style={[styles.card, { backgroundColor: theme.card }]}>
               <Text style={[styles.label, { color: theme.heading }]}>Código da turma</Text>
               <TextInput
                 value={code}
@@ -155,7 +171,8 @@ export default function JoinClassScreen() {
                   <Text style={[styles.primaryButtonText, { color: theme.onAccent }]}>Entrar na Turma</Text>
                 )}
               </Pressable>
-            </View>
+              </View>
+            </>
           )}
         </View>
       </KeyboardAvoidingView>
@@ -196,6 +213,18 @@ const styles = StyleSheet.create({
     padding: 20,
     gap: 12,
   },
+  privacyCard: {
+    borderWidth: 1,
+    marginBottom: 14,
+    gap: 6,
+  },
+  privacyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  privacyTitle: { fontSize: 14, fontWeight: '700' },
+  privacyText: { fontSize: 12, lineHeight: 17 },
   label: { fontSize: 13, fontWeight: '700' },
   input: {
     borderWidth: 1,
