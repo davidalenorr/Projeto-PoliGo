@@ -253,6 +253,17 @@ export default function SettingsScreen() {
               </View>
               <MaterialIcons name="chevron-right" size={22} color={getSubTextColor()} />
             </Pressable>
+
+            <Pressable
+              onPress={() => router.push('/join-class')}
+              style={({ pressed }) => [styles.actionButton, pressed && styles.pressed]}
+            >
+              <View style={styles.actionLeft}>
+                <MaterialIcons name="group-add" size={20} color="#0B5F8F" />
+                <Text style={[styles.actionText, { color: getTextColor() }]}>Entrar em Turma</Text>
+              </View>
+              <MaterialIcons name="chevron-right" size={22} color={getSubTextColor()} />
+            </Pressable>
           </View>
         </View>
 

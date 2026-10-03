@@ -62,6 +62,7 @@ function RootLayoutNav() {
         <Stack.Screen name="trail" options={{ headerShown: false }} />
         <Stack.Screen name="boss" options={{ headerShown: false }} />
         <Stack.Screen name="settings" options={{ headerShown: false }} />
+        <Stack.Screen name="join-class" options={{ headerShown: false }} />
         <Stack.Screen name="shop" options={{ headerShown: false }} />
         <Stack.Screen name="quick-quiz" options={{ headerShown: false }} />
         <Stack.Screen name="stats" options={{ headerShown: false }} />
