@@ -1,0 +1,59 @@
+:root {
+  --paper: #f3f6fa;
+  --surface: #ffffff;
+  --ink: #132a4c;
+  --ink-soft: #4b6180;
+  --line: #c7d4e3;
+  --line-soft: #e1e8f0;
+  --blue: #0b5f8f;
+  --blue-soft: #e9f2f8;
+  --flag: #c2540c;
+  --flag-soft: #fbece0;
+  --good: #1f7a4d;
+  --good-soft: #e8f5ee;
+
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-plex-sans), system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--blue);
+}
+
+button {
+  font-family: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+.num {
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
