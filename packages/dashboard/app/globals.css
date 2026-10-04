@@ -12,6 +12,13 @@
   --good: #1f7a4d;
   --good-soft: #e8f5ee;
 
+  /* marca PoliGo — mesma paleta "Blueprint" do app (bext-mobile/src/theme/theme.ts) */
+  --navy: #1e1b4b;
+  --navy-soft: #2c2866;
+  --on-navy: #eeecff;
+  --on-navy-soft: #ada8e0;
+  --gold: #b45309;
+  --gold-soft: #fef3c7;
 }
 
 * {
@@ -49,6 +56,18 @@ button {
 .num {
   font-family: var(--font-plex-mono), ui-monospace, monospace;
   font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 860px) {
+  .case-motif {
+    display: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .login-main {
+    flex-direction: column;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

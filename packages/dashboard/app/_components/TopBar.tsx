@@ -11,20 +11,25 @@ export function TopBar({ crumbs }: { crumbs: { label: string; href?: string }[] 
 
   return (
     <div style={styles.bar}>
-      <nav style={styles.crumbs}>
-        {crumbs.map((crumb, i) => (
-          <span key={i} style={styles.crumbItem}>
-            {i > 0 && <span style={styles.sep}>/</span>}
-            {crumb.href ? (
-              <Link href={crumb.href} style={styles.crumbLink}>
-                {crumb.label}
-              </Link>
-            ) : (
-              <span style={styles.crumbCurrent}>{crumb.label}</span>
-            )}
-          </span>
-        ))}
-      </nav>
+      <div style={styles.left}>
+        <Link href="/turmas" style={styles.brand}>
+          PoliGo
+        </Link>
+        <nav style={styles.crumbs}>
+          {crumbs.map((crumb, i) => (
+            <span key={i} style={styles.crumbItem}>
+              <span style={styles.sep}>/</span>
+              {crumb.href ? (
+                <Link href={crumb.href} style={styles.crumbLink}>
+                  {crumb.label}
+                </Link>
+              ) : (
+                <span style={styles.crumbCurrent}>{crumb.label}</span>
+              )}
+            </span>
+          ))}
+        </nav>
+      </div>
       <button onClick={handleSignOut} style={styles.signOut}>
         Sair
       </button>
@@ -37,9 +42,19 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: '18px 28px',
-    borderBottom: '1px solid var(--line)',
-    background: 'var(--surface)',
+    padding: '16px 28px',
+    background: 'var(--navy)',
+  },
+  left: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+  brand: {
+    fontSize: 15,
+    fontWeight: 700,
+    color: 'var(--on-navy)',
+    textDecoration: 'none',
+    letterSpacing: 0.2,
   },
   crumbs: {
     display: 'flex',
@@ -52,23 +67,23 @@ const styles: Record<string, React.CSSProperties> = {
   },
   sep: {
     margin: '0 8px',
-    color: 'var(--line)',
+    color: 'var(--on-navy-soft)',
   },
   crumbLink: {
-    color: 'var(--ink-soft)',
+    color: 'var(--on-navy-soft)',
     textDecoration: 'none',
   },
   crumbCurrent: {
-    color: 'var(--ink)',
+    color: 'var(--on-navy)',
     fontWeight: 600,
   },
   signOut: {
-    border: '1px solid var(--line)',
+    border: '1px solid var(--navy-soft)',
     background: 'transparent',
     borderRadius: 3,
     padding: '6px 12px',
     fontSize: 13,
-    color: 'var(--ink-soft)',
+    color: 'var(--on-navy-soft)',
     cursor: 'pointer',
   },
 };

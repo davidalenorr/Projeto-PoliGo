@@ -33,11 +33,11 @@ export default function AuthCallbackPage() {
   }, [router]);
 
   return (
-    <main style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <p style={{ fontSize: 14, color: error ? 'var(--flag)' : 'var(--ink-soft)' }}>
+    <main style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: 'var(--navy)' }}>
+      <p style={{ fontSize: 14, color: error ? '#f3a06b' : 'var(--on-navy-soft)' }}>
         {error ? (
           <>
-            Link inválido ou expirado. <a href="/login">Pedir um novo link</a>.
+            Link inválido ou expirado. <a href="/login" style={{ color: 'var(--on-navy)' }}>Pedir um novo link</a>.
           </>
         ) : (
           'Entrando…'

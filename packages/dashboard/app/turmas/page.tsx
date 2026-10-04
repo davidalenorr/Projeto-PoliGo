@@ -62,13 +62,17 @@ export default function TurmasPage() {
     <main>
       <TopBar crumbs={[{ label: 'Turmas' }]} />
       <div style={styles.container}>
+        <h1 style={styles.heading}>Suas turmas</h1>
+
         {error && <p style={styles.error}>{error}</p>}
 
         {classes.length === 0 ? (
-          <p style={styles.empty}>
-            Nenhuma turma ainda. Crie uma pelo SQL Editor do Supabase
-            (<code>supabase/snippets.sql</code>, bloco 2).
-          </p>
+          <div style={styles.emptyCard}>
+            <p style={styles.empty}>
+              Nenhuma turma ainda. Crie uma pelo SQL Editor do Supabase
+              (<code>supabase/snippets.sql</code>, bloco 2) e ela aparece aqui.
+            </p>
+          </div>
         ) : (
           <ul style={styles.list}>
             {classes.map((c) => (
@@ -96,16 +100,25 @@ export default function TurmasPage() {
 const styles: Record<string, React.CSSProperties> = {
   loading: { padding: 28, color: 'var(--ink-soft)', fontSize: 14 },
   container: { maxWidth: 720, margin: '0 auto', padding: '28px' },
+  heading: { fontSize: 22, fontWeight: 700, margin: '0 0 20px', color: 'var(--ink)' },
   error: { color: 'var(--flag)', fontSize: 14 },
-  empty: { color: 'var(--ink-soft)', fontSize: 14, lineHeight: 1.6 },
-  list: { listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 1 },
+  emptyCard: {
+    border: '1px dashed var(--line)',
+    borderRadius: 4,
+    padding: 28,
+    background: 'var(--surface)',
+  },
+  empty: { color: 'var(--ink-soft)', fontSize: 14, lineHeight: 1.6, margin: 0 },
+  list: { listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 10 },
   row: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: '16px 18px',
+    padding: '18px 20px',
     background: 'var(--surface)',
     border: '1px solid var(--line)',
+    borderLeft: '3px solid var(--blue)',
+    borderRadius: 3,
     textDecoration: 'none',
     color: 'var(--ink)',
   },
