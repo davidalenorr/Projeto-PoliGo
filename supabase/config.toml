@@ -21,9 +21,14 @@ port = 54323
 
 [auth]
 enabled = true
-site_url = "http://localhost:5173"
+site_url = "https://dashboard-six-beige-61.vercel.app"
 # no piloto o login do professor é magic link por e-mail
 enable_confirmations = false
+additional_redirect_urls = [
+  "https://dashboard-six-beige-61.vercel.app/auth/callback",
+  "http://localhost:3000/auth/callback",
+  "http://localhost:3100/auth/callback",
+]
 
 [auth.email]
 enable_signup = true
