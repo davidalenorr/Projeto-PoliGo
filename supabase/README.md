@@ -80,7 +80,12 @@ curl -s -X POST http://localhost:54321/functions/v1/ingest-events \
 # -> {"accepted":1}   (repetir o mesmo clientEventId -> {"accepted":0})
 ```
 
-## Ir para o projeto remoto
+## Projeto remoto
+
+**Já feito:** projeto dedicado `PoliGo` (ref `qhhfcplozilwzrwztwpx`, região
+`sa-east-1`), migrations e as duas Edge Functions já aplicadas/deployadas.
+Senha do banco em `supabase/.env` local (git-ignored, não está aqui). Passos
+abaixo ficam para referência / caso precise recriar.
 
 1. Crie o projeto no <https://supabase.com/dashboard> (região **South America (São Paulo)** se disponível). Guarde a senha do banco.
 2. Ligue o repo ao projeto e suba o esquema + as funções:

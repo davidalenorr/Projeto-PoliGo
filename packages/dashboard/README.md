@@ -52,10 +52,24 @@ Sem gráfico de terceiros — o gráfico de barras é SVG simples em
 
 ## Deploy
 
-Pensado para Vercel (ainda não configurado/deployado nesta fase — é uma
-decisão de conta, fora do escopo deste commit). `NEXT_PUBLIC_SUPABASE_URL`
-e `NEXT_PUBLIC_SUPABASE_ANON_KEY` do projeto remoto (não o local) viram
-env vars do projeto na Vercel.
+No ar: <https://dashboard-six-beige-61.vercel.app> (projeto Vercel
+`davidalenorrs-projects/dashboard`), apontando para o projeto Supabase
+remoto dedicado `PoliGo` (ref `qhhfcplozilwzrwztwpx`, região `sa-east-1`
+— migrations e as duas Edge Functions já aplicadas/deployadas nele).
+`NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_ANON_KEY` desse projeto
+já estão configuradas como env var de Production na Vercel.
+
+Falta, manual (ação de conta, não automatizável):
+- **Auto-deploy no push:** `vercel git connect` falhou — o GitHub App da
+  Vercel precisa ser autorizado para este repo primeiro. Em
+  vercel.com → projeto `dashboard` → Settings → Git → conectar
+  `davidalenorr/Projeto-PoliGo`.
+- **E-mail de magic link em produção:** o projeto Supabase remoto usa o
+  provedor de e-mail padrão (baixo limite, só para teste). Para o piloto
+  valendo, configurar SMTP próprio em Project Settings → Auth → SMTP
+  Settings.
+- **Primeira turma real:** rodar `supabase/snippets.sql` (blocos 1 e 2)
+  no SQL Editor do projeto remoto — virar admin e criar a turma.
 
 ## Fora do escopo desta fase
 
