@@ -6,11 +6,12 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 
 const ERROR_MESSAGES: Record<string, string> = {
-  'Invalid login credentials': 'E-mail ou senha incorretos.',
+  'User already registered': 'Já existe uma conta com esse e-mail. Tente entrar.',
 };
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter();
+  const [school, setSchool] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [status, setStatus] = useState<'idle' | 'sending' | 'error'>('idle');
@@ -18,14 +19,25 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (password.length < 6) {
+      setStatus('error');
+      setError('A senha precisa ter pelo menos 6 caracteres.');
+      return;
+    }
+
     setStatus('sending');
     setError('');
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    const { error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { school } },
+    });
 
-    if (signInError) {
+    if (signUpError) {
       setStatus('error');
-      setError(ERROR_MESSAGES[signInError.message] ?? signInError.message);
+      setError(ERROR_MESSAGES[signUpError.message] ?? signUpError.message);
       return;
     }
 
@@ -39,18 +51,32 @@ export default function LoginPage() {
           PoliGo
         </Link>
         <p style={styles.panelText}>
-          Entre com seu e-mail e senha da escola para acompanhar suas turmas.
+          Crie a conta da sua escola. Depois, peça pro suporte liberar sua
+          primeira turma com o código de entrada.
         </p>
       </div>
 
       <div style={styles.formSide}>
         <div style={styles.card}>
-          <h1 style={styles.title}>Entrar</h1>
-          <p style={styles.subtitle}>Acompanhamento de turmas para professores</p>
+          <h1 style={styles.title}>Cadastrar escola</h1>
+          <p style={styles.subtitle}>Leva menos de um minuto</p>
 
           <form onSubmit={handleSubmit} style={styles.form}>
+            <label style={styles.label} htmlFor="school">
+              Nome da escola
+            </label>
+            <input
+              id="school"
+              type="text"
+              required
+              value={school}
+              onChange={(e) => setSchool(e.target.value)}
+              placeholder="Escola Municipal X"
+              style={styles.input}
+            />
+
             <label style={styles.label} htmlFor="email">
-              E-mail
+              Seu e-mail
             </label>
             <input
               id="email"
@@ -63,27 +89,28 @@ export default function LoginPage() {
             />
 
             <label style={styles.label} htmlFor="password">
-              Senha
+              Crie uma senha
             </label>
             <input
               id="password"
               type="password"
               required
+              minLength={6}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="mínimo 6 caracteres"
               style={styles.input}
             />
 
             {status === 'error' && <p style={styles.errorText}>{error}</p>}
 
             <button type="submit" disabled={status === 'sending'} style={styles.button}>
-              {status === 'sending' ? 'Entrando…' : 'Entrar'}
+              {status === 'sending' ? 'Criando conta…' : 'Criar conta'}
             </button>
           </form>
 
           <p style={styles.footerText}>
-            Ainda não tem conta? <Link href="/signup" style={styles.footerLink}>Cadastre sua escola</Link>
+            Já tem conta? <Link href="/login" style={styles.footerLink}>Entrar</Link>
           </p>
         </div>
       </div>
@@ -136,7 +163,7 @@ const styles: Record<string, React.CSSProperties> = {
     border: 'none',
     borderRadius: 3,
     padding: '11px 16px',
-    background: 'var(--blue)',
+    background: 'var(--gold)',
     color: '#fff',
     fontSize: 14,
     fontWeight: 600,
