@@ -39,7 +39,7 @@ export default function HomePage() {
             </h1>
             <p style={styles.subhead}>
               PoliGo é um jogo de missões de geometria e álgebra para o 8º e 9º
-              ano. Seus alunos jogam pelo celular; este painel mostra, turma por
+              ano. Seus alunos jogam pelo celular, e este painel mostra, turma por
               turma e aluno por aluno, o que cada um já resolveu, onde errou e
               quanto tempo levou em cada fase.
             </p>
@@ -62,7 +62,7 @@ export default function HomePage() {
             />
             <FeatureBlock
               title="Quem precisa de ajuda"
-              text="Tabela ordenável por precisão, missões concluídas, chefões derrotados e tempo médio — para achar rápido quem está travado."
+              text="Tabela ordenável por precisão, missões concluídas, chefões derrotados e tempo médio  para achar rápido quem está travado."
             />
             <FeatureBlock
               title="O caminho de cada aluno"
@@ -97,7 +97,7 @@ export default function HomePage() {
       </section>
 
       <footer style={styles.footer}>
-        <span>PoliGo · painel do professor</span>
+        <span>PoliGo</span>
       </footer>
     </main>
   );

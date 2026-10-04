@@ -264,7 +264,7 @@ const styles: Record<string, React.CSSProperties> = {
   loading: { padding: 28, color: 'var(--ink-soft)', fontSize: 14 },
   container: { maxWidth: 1040, margin: '0 auto', padding: '28px' },
   header: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20 },
-  title: { margin: 0, fontSize: 20, fontWeight: 600 },
+  title: { margin: 0, fontSize: 22, fontWeight: 700, color: 'var(--ink)' },
   meta: { margin: '4px 0 0', fontSize: 13, color: 'var(--ink-soft)' },
   metaDot: { margin: '0 8px' },
   actions: { display: 'flex', gap: 8 },
@@ -310,7 +310,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   error: { color: 'var(--flag)', fontSize: 14 },
   empty: { color: 'var(--ink-soft)', fontSize: 14 },
-  tableWrap: { border: '1px solid var(--line)', background: 'var(--surface)', overflowX: 'auto' },
+  tableWrap: { border: '1px solid var(--line)', borderRadius: 4, background: 'var(--surface)', overflowX: 'auto' },
   table: { width: '100%', borderCollapse: 'collapse', fontSize: 14 },
   th: {
     padding: '10px 14px',

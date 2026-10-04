@@ -15,6 +15,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [status, setStatus] = useState<'idle' | 'sending' | 'error'>('idle');
   const [error, setError] = useState('');
+  const [forgotMode, setForgotMode] = useState(false);
+  const [forgotStatus, setForgotStatus] = useState<'idle' | 'sending' | 'sent'>('idle');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,6 +34,15 @@ export default function LoginPage() {
     router.push('/turmas');
   };
 
+  const handleForgot = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotStatus('sending');
+    await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setForgotStatus('sent');
+  };
+
   return (
     <main className="login-main" style={styles.main}>
       <div style={styles.panel}>
@@ -45,45 +56,85 @@ export default function LoginPage() {
 
       <div style={styles.formSide}>
         <div style={styles.card}>
-          <h1 style={styles.title}>Entrar</h1>
-          <p style={styles.subtitle}>Acompanhamento de turmas para professores</p>
+          <h1 style={styles.title}>{forgotMode ? 'Recuperar senha' : 'Entrar'}</h1>
+          <p style={styles.subtitle}>
+            {forgotMode ? 'Enviamos um link pra você criar uma senha nova' : 'Acompanhamento de turmas para professores'}
+          </p>
 
-          <form onSubmit={handleSubmit} style={styles.form}>
-            <label style={styles.label} htmlFor="email">
-              E-mail
-            </label>
-            <input
-              id="email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="professor@escola.com"
-              style={styles.input}
-            />
+          {forgotMode ? (
+            forgotStatus === 'sent' ? (
+              <p style={styles.hint}>
+                Se <strong>{email}</strong> tiver uma conta, chegou um e-mail com o link. Confira a caixa de entrada.
+              </p>
+            ) : (
+              <form onSubmit={handleForgot} style={styles.form}>
+                <label style={styles.label} htmlFor="forgot-email">
+                  E-mail
+                </label>
+                <input
+                  id="forgot-email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="professor@escola.com"
+                  style={styles.input}
+                />
+                <button type="submit" disabled={forgotStatus === 'sending'} style={styles.button}>
+                  {forgotStatus === 'sending' ? 'Enviando…' : 'Enviar link'}
+                </button>
+              </form>
+            )
+          ) : (
+            <form onSubmit={handleSubmit} style={styles.form}>
+              <label style={styles.label} htmlFor="email">
+                E-mail
+              </label>
+              <input
+                id="email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="professor@escola.com"
+                style={styles.input}
+              />
 
-            <label style={styles.label} htmlFor="password">
-              Senha
-            </label>
-            <input
-              id="password"
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              style={styles.input}
-            />
+              <label style={styles.label} htmlFor="password">
+                Senha
+              </label>
+              <input
+                id="password"
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                style={styles.input}
+              />
 
-            {status === 'error' && <p style={styles.errorText}>{error}</p>}
+              {status === 'error' && <p style={styles.errorText}>{error}</p>}
 
-            <button type="submit" disabled={status === 'sending'} style={styles.button}>
-              {status === 'sending' ? 'Entrando…' : 'Entrar'}
-            </button>
-          </form>
+              <button type="submit" disabled={status === 'sending'} style={styles.button}>
+                {status === 'sending' ? 'Entrando…' : 'Entrar'}
+              </button>
+            </form>
+          )}
 
           <p style={styles.footerText}>
-            Ainda não tem conta? <Link href="/signup" style={styles.footerLink}>Cadastre sua escola</Link>
+            {forgotMode ? (
+              <button onClick={() => { setForgotMode(false); setForgotStatus('idle'); }} style={styles.linkButton}>
+                Voltar pro login
+              </button>
+            ) : (
+              <>
+                <button onClick={() => setForgotMode(true)} style={styles.linkButton}>
+                  Esqueceu a senha?
+                </button>
+                {' · '}
+                Ainda não tem conta? <Link href="/signup" style={styles.footerLink}>Cadastre sua escola</Link>
+              </>
+            )}
           </p>
         </div>
       </div>
@@ -144,4 +195,14 @@ const styles: Record<string, React.CSSProperties> = {
   },
   footerText: { fontSize: 13, color: 'var(--ink-soft)', marginTop: 20 },
   footerLink: { color: 'var(--blue)', fontWeight: 600 },
+  hint: { fontSize: 14, color: 'var(--ink-soft)', lineHeight: 1.6 },
+  linkButton: {
+    border: 'none',
+    background: 'transparent',
+    color: 'var(--blue)',
+    fontWeight: 600,
+    fontSize: 13,
+    cursor: 'pointer',
+    padding: 0,
+  },
 };

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { formatDuration, formatRelativeTime, toCsv, trailPercent } from '../lib/format.ts';
+import { generateJoinCode } from '../lib/joinCode.ts';
 
 test('formatDuration', () => {
   assert.equal(formatDuration(49000), '0:49');
@@ -24,6 +25,17 @@ test('trailPercent', () => {
   assert.equal(trailPercent(43, 43), 100);
   assert.equal(trailPercent(50, 43), 100, 'clamps above total instead of exceeding 100');
   assert.equal(trailPercent(5, 0), 0, 'no missions in app -> 0, no division by zero');
+});
+
+test('generateJoinCode matches the DB/Edge Function format', () => {
+  const code = generateJoinCode();
+  assert.match(code, /^[A-Z0-9]{6}$/);
+});
+
+test('generateJoinCode is deterministic for a fixed rng', () => {
+  const a = generateJoinCode(() => 0.5);
+  const b = generateJoinCode(() => 0.5);
+  assert.equal(a, b);
 });
 
 test('toCsv escapes commas, quotes and newlines; empty/null becomes blank', () => {

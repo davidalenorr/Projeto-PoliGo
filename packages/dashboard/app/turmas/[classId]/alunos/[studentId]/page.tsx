@@ -215,7 +215,7 @@ const styles: Record<string, React.CSSProperties> = {
   loading: { padding: 28, color: 'var(--ink-soft)', fontSize: 14 },
   container: { maxWidth: 760, margin: '0 auto', padding: '28px' },
   header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 },
-  title: { margin: 0, fontSize: 20, fontWeight: 600 },
+  title: { margin: 0, fontSize: 22, fontWeight: 700, color: 'var(--ink)' },
   exportButton: {
     border: '1px solid var(--blue)',
     background: 'transparent',
@@ -230,7 +230,7 @@ const styles: Record<string, React.CSSProperties> = {
   section: { marginBottom: 32 },
   sectionTitle: { fontSize: 13, fontWeight: 600, color: 'var(--ink-soft)', margin: '0 0 12px' },
   empty: { color: 'var(--ink-soft)', fontSize: 14 },
-  timeline: { listStyle: 'none', margin: 0, padding: 0, border: '1px solid var(--line)', background: 'var(--surface)' },
+  timeline: { listStyle: 'none', margin: 0, padding: 0, border: '1px solid var(--line)', borderRadius: 4, overflow: 'hidden', background: 'var(--surface)' },
   timelineRow: {
     display: 'flex',
     alignItems: 'center',

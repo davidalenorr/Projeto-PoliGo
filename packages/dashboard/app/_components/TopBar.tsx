@@ -30,9 +30,14 @@ export function TopBar({ crumbs }: { crumbs: { label: string; href?: string }[] 
           ))}
         </nav>
       </div>
-      <button onClick={handleSignOut} style={styles.signOut}>
-        Sair
-      </button>
+      <div style={styles.right}>
+        <Link href="/configuracoes" style={styles.settingsLink}>
+          Configurações
+        </Link>
+        <button onClick={handleSignOut} style={styles.signOut}>
+          Sair
+        </button>
+      </div>
     </div>
   );
 }
@@ -76,6 +81,12 @@ const styles: Record<string, React.CSSProperties> = {
   crumbCurrent: {
     color: 'var(--on-navy)',
     fontWeight: 600,
+  },
+  right: { display: 'flex', alignItems: 'center', gap: 16 },
+  settingsLink: {
+    fontSize: 13,
+    color: 'var(--on-navy-soft)',
+    textDecoration: 'none',
   },
   signOut: {
     border: '1px solid var(--navy-soft)',
